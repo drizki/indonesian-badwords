@@ -1,0 +1,16 @@
+{
+  "name": "indonesian-badwords",
+  "version": "1.0.0",
+  "description": "Detect Bahasa Indonesia swear/cursing words in a string",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": "https://github.com/drizki/indonesian-badwords",
+  "author": "Dwi Rizki Irawan",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "jest": "^28.1.0"
+  }
+}
