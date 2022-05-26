@@ -1,4 +1,6 @@
-# INDONESIAN BADWORDS
+# Indonesian Badwords
+
+![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg) ![Size](https://img.shields.io/bundlephobia/min/indonesian-badwords)
 
 This is a small JavaScript utility library to find and replace bad/swearing/cursing words in Bahasa Indonesia.
 
