@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Detect Bahasa Indonesia swear/cursing words in a string",
   "main": "src/main.js",
   "scripts": {
