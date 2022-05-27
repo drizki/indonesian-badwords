@@ -4,6 +4,8 @@
 
 This is a small JavaScript utility library to find and replace bad/swearing/cursing words in Bahasa Indonesia.
 
+[Live Demo](https://codesandbox.io/s/indonesian-badwords-fm36vs?file=/src/index.js)
+
 ## Installation
 
 Using NPM
@@ -27,6 +29,12 @@ const badwords = require("indonesian-badwords");
 
 console.log(badwords.flag("halo, namaku budi")); // false
 console.log(badwords.flag("halo, namaku babi")); // true
+
+console.log(badwords.filter("halo, namaku budi")); // halo, namaku budi
+console.log(badwords.filter("halo, namaku babi")); // halo, namaku
+
+console.log(badwords.badwords("halo, namaku budi")); // []
+console.log(badwords.badwords("halo, namaku babi")); // ['anjing']
 
 console.log(badwords.censor("halo, namaku budi")); // halo, namaku budi
 console.log(badwords.censor("halo, namaku babi")); // halo, namaku ***
