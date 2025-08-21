@@ -1,69 +1,103 @@
 # Indonesian Badwords
 
-![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg) ![Size](https://img.shields.io/bundlephobia/min/indonesian-badwords)
+![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg) 
 
-This is a small JavaScript utility library to find and replace bad/swearing/cursing words in Bahasa Indonesia.
+A small JavaScript library designed for the detection, censorship, and analysis of profane words within the Indonesian language. The library is engineered for efficiency, accuracy, and flexibility, with capabilities to identify not only standard profanity but also disguised lexical variations, such as leetspeak and concatenated terms.
 
-[Live Demo](https://codesandbox.io/s/indonesian-badwords-fm36vs?file=/src/index.js)
+A live demonstration is available for further examination.
+
+## Features
+
+This utility is distinguished by several key features. It is computationally efficient, employing a `Set` data structure to achieve O(1) average time complexity for lexical lookups. The library is equipped with an extensive dictionary containing over 200 curated terms, which includes regional dialects, contemporary internet slang, and common abbreviations. Furthermore, it incorporates functionality for leetspeak detection, enabling the identification of words with common character substitutions (e.g., `4nj1ng` is recognized as `anjing`). The `flag()` and `badwords()` methods are capable of detecting profanity within concatenated strings where standard delimiters are absent (e.g., `bajingankontol`). The dictionary is also designed to be fully customizable, allowing for the addition or removal of terms at runtime.
 
 ## Installation
 
-Using NPM
+The package can be installed via NPM or Yarn.
 
+**NPM:**
 ```bash
 npm install indonesian-badwords
 ```
 
-Using Yarn
-
+**Yarn:**
 ```bash
 yarn add indonesian-badwords
 ```
 
 ## Usage
 
-A basic example looks like this:
+### Fundamental Usage
+
+The following examples illustrate the basic functionality of the library.
 
 ```javascript
 const badwords = require("indonesian-badwords");
 
-console.log(badwords.flag("halo, namaku budi")); // false
-console.log(badwords.flag("halo, namaku babi")); // true
+// Check for the presence of profane words
+console.log(badwords.flag("kalimat ini bersih")); // Returns: false
+console.log(badwords.flag("dasar monyet")); // Returns: true
 
-console.log(badwords.filter("halo, namaku budi")); // halo, namaku budi
-console.log(badwords.filter("halo, namaku babi")); // halo, namaku
+// Censor profane words
+console.log(badwords.censor("dasar monyet")); // Returns: "dasar ***"
 
-console.log(badwords.badwords("halo, namaku budi")); // []
-console.log(badwords.badwords("halo, namaku babi")); // ['anjing']
-
-console.log(badwords.censor("halo, namaku budi")); // halo, namaku budi
-console.log(badwords.censor("halo, namaku babi")); // halo, namaku ***
-
-console.log(badwords.analyze("halo, namaku budi")); // Returns object, see table below
-console.log(badwords.analyze("halo, namaku babi")); // Returns object, see table below
+// Retrieve a list of profane words found
+console.log(badwords.badwords("dasar monyet dan babi")); // Returns: ['monyet', 'babi']
 ```
 
-## Available Functions
+### Advanced Detection Capabilities
 
-| Function | Params      | Type     | Required | Default | Return    | Description                                                                                                                                 |
-| -------- | ----------- | -------- | -------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| flag     | text        | `string` | yes      |         | `boolean` | Checks if passed text contains bad word.                                                                                                    |
-| badwords | text        | `string` | yes      |         | `array`   | Get all contained bad words from text.                                                                                                      |
-| filter   | text        | `string` | yes      |         | `string`  | Trim bad words from text.                                                                                                                   |
-| censor   | text        | `string` | yes      |         | `string`  | Censors passed text with replacement.                                                                                                       |
-|          | replacement | `string` | no       | `***`   | `string`  |                                                                                                                                             |
-| analyze  | text        | `string` | yes      |         | `object`  | Outputs object of original text, number of words, censored text, array of bad words, count of bad words, and index of individual bad words. |
+The library is designed to automatically handle leetspeak and can identify concatenated profanities.
 
-## Test
+```javascript
+// Leetspeak detection and censorship
+console.log(badwords.flag("dasar 4nj1ng")); // Returns: true
+console.log(badwords.censor("dasar 4nj1ng")); // Returns: "dasar ***"
 
-Clone this repository and run the following:
+// Concatenated word detection
+console.log(badwords.flag("dasarbajingankontol")); // Returns: true
+console.log(badwords.badwords("dasarbajingankontol")); // Returns: ['bajingan', 'kontol']
+```
+
+### Dictionary Customization
+
+The dictionary can be modified programmatically during runtime.
+
+```javascript
+const badwords = require("indonesian-badwords");
+
+// Add a new term to the dictionary
+badwords.addWords('kucel');
+console.log(badwords.flag('muka kamu kucel')); // Returns: true
+
+// Remove an existing term from the dictionary
+badwords.removeWords('monyet');
+console.log(badwords.flag('dasar monyet')); // Returns: false
+```
+
+## API Reference
+
+| Function | Parameter | Type | Required | Default | Return Type | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `flag` | `text` | `string` | Yes | | `boolean` | Performs a comprehensive substring search to detect profane words. |
+| `badwords` | `text` | `string` | Yes | | `string[]` | Returns an array of all dictionary-defined words found within the text. |
+| `filter` | `text` | `string` | Yes | | `string` | Removes profane words from the text, with accurate handling of leetspeak. |
+| `censor` | `text` | `string` | Yes | | `string` | Replaces profane words with a substitute string. |
+| | `replacement` | `string` | No | `***` | | Specifies the string to be used for replacement. |
+| `analyze` | `text` | `string` | Yes | | `object` | Returns a detailed analysis object of the provided text. |
+| `addWords` | `words` | `string` or `string[]` | Yes | | `void` | Appends one or more terms to the dictionary. |
+| `removeWords`| `words` | `string` or `string[]` | Yes | | `void` | Deletes one or more terms from the dictionary. |
+
+## Testing
+
+To execute the test suite, clone the repository and run the following commands:
 
 ```bash
+npm install
 npm run test
 ```
 
 ## Contributing
 
-If you think the dictionary is missing a bad word, feel free to submit a PR.
+Contributions to the project are encouraged. If the dictionary is observed to be missing a significant profane term, please submit a Pull Request for consideration.
 
 Semoga bermanfaat 😉
