@@ -87,9 +87,9 @@ call. Each case warms up for at least 250 ms, then measures 41 calibrated batche
 These are medians of per-call batch averages; import, setup, input generation,
 and correctness checks are excluded. Results vary with input, hardware, and runtime.
 
-Run `npm run benchmark` for 87 self-checking workloads, including cold calls,
+Run `npm run benchmark` for 104 self-checking workloads, including cold calls,
 match positions, Unicode, callbacks, masking, scoped exceptions, custom dictionaries,
-bounded evasion, and memory. Run
+bounded evasion, fuzzy edits/composition, and memory. Run
 `npm run benchmark:compare` to compare with pinned Indonesian libraries; different
 detection outputs are reported separately from timings.
 
@@ -195,6 +195,20 @@ censor('goblok', ({ match, words }) => `[${words.join(',')}:${match}]`);
 
 Strategies count original graphemes and always mask at least one, including short
 matches. See [callback and strategy options](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#custom-censorship).
+
+## Bounded spelling edits
+
+Import the optional fuzzy policy when spelling errors should count as matches:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedFuzzy } from 'indonesian-badwords/fuzzy';
+const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
+checker.censor('goblox'); // '***'
+```
+
+Configure edit families, adjacent transpositions, key lengths, evasion composition,
+and finite work limits in the [fuzzy API](docs/api.md#bounded-fuzzy-matching).
 
 ## Documentation
 

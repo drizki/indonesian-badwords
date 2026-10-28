@@ -45,7 +45,7 @@ for (const [entry, name, value] of [
 }
 
 // Optional behavior bundles import only types from the root.
-for (const optional of ['censor', 'evasion']) await build({
+for (const optional of ['censor', 'evasion', 'fuzzy']) await build({
     entryPoints: [fileURLToPath(new URL(`../src/${optional}.ts`, import.meta.url))],
     outfile: fileURLToPath(new URL(`../dist/cjs/${optional}.js`, import.meta.url)),
     bundle: true,
@@ -60,7 +60,7 @@ for (const optional of ['censor', 'evasion']) await build({
 // declaration identities are shared when consumers mix import and require.
 const directory = new URL('../dist/esm/', import.meta.url);
 await mkdir(directory, { recursive: true });
-for (const entry of ['index', 'censor', 'metadata', 'catalog', 'evasion']) {
+for (const entry of ['index', 'censor', 'metadata', 'catalog', 'evasion', 'fuzzy']) {
     const api = require(`../dist/cjs/${entry}.js`);
     const names = Object.keys(api).filter((name) => name !== 'default' && name !== '__esModule');
     for (const name of names) {

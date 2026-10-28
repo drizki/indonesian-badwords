@@ -1,5 +1,6 @@
 import { dictionary as defaultDictionary } from './dictionary.ts';
 import { Matcher, type Match } from './matcher.ts';
+import type { FuzzyCompiler, FuzzyPolicy } from './fuzzy-types.ts';
 import type { EvasionCompiler, EvasionPolicy, EvasionRuntime } from './evasion-types.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './exceptions.ts';
 import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
@@ -13,6 +14,7 @@ const presetPatterns = typeof __BADWORDS_PRESET_PATTERNS__ === 'undefined' ? und
 export { dictionary, contextualDictionary, expandedDictionary } from './dictionary.ts';
 export type { DictionaryWord, ContextualDictionaryWord, ExpandedDictionaryWord } from './dictionary.ts';
 export type { Normalization } from './normalize.ts';
+export type { FuzzyPolicy } from './fuzzy-types.ts';
 export type { EvasionPolicy } from './evasion-types.ts';
 
 /** One occurrence with exclusive end and UTF-16 offsets into the original input. */
@@ -64,6 +66,8 @@ export type MatchMode = 'substring' | 'word';
 export interface BadwordsOptions {
     /** Explicit bounded transformations from the optional /evasion module. */
     evasion?: EvasionPolicy;
+    /** Explicit bounded edits from the optional /fuzzy module. */
+    fuzzy?: FuzzyPolicy;
     dictionary?: readonly string[];
     /** Literal whole-word phrases exempt only occurrences fully contained inside them. */
     allowPhrases?: readonly string[];
@@ -155,6 +159,7 @@ function emojiDelimiter(character: string): boolean {
 export class Badwords {
     #dictionary = new Set<string>();
     readonly #evasionCompiler: EvasionCompiler | undefined;
+    readonly #fuzzyCompiler: FuzzyCompiler | undefined;
     #evasion: EvasionRuntime | undefined;
     readonly #mode: MatchMode;
     readonly #normalization: Normalization;
@@ -190,8 +195,16 @@ export class Badwords {
             if (!compiler || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
                 throw new TypeError('evasion must be created by boundedEvasion()');
             this.#evasionCompiler = compiler;
-            compiler.checkDictionary(wordsArray(options.dictionary ?? defaultDictionary));
         }
+        if (options.fuzzy !== undefined) {
+            if (!options.fuzzy || typeof options.fuzzy !== 'object' || !Object.isFrozen(options.fuzzy))
+                throw new TypeError('fuzzy must be created by boundedFuzzy()');
+            const compiler = Reflect.get(options.fuzzy, Symbol.for('indonesian-badwords.fuzzy.v1')) as FuzzyCompiler | undefined;
+            if (!compiler || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
+                throw new TypeError('fuzzy must be created by boundedFuzzy()');
+            this.#fuzzyCompiler = compiler;
+        }
+        if (this.#evasionCompiler || this.#fuzzyCompiler) this.#checkDictionary(wordsArray(options.dictionary ?? defaultDictionary));
         this.#mode = mode;
         this.#normalization = normalization;
         this.#ignoreRepeatedLetters = ignoreRepeatedLetters;
@@ -208,14 +221,14 @@ export class Badwords {
         } else {
             this.addWords(options.dictionary);
         }
-        if (this.#evasionCompiler && !this.#evasion) this.#setEvasion(this.#dictionary, this.#preset);
+        if ((this.#evasionCompiler || this.#fuzzyCompiler) && !this.#evasion) this.#setEvasion(this.#dictionary, this.#preset);
     }
 
     /** A snapshot; mutating it does not change the checker. */
     get dict(): string[] { return [...this.#dictionary]; }
 
     addWords(words: string | readonly string[]): void {
-        if (this.#evasionCompiler) { this.#changeDictionary(words, true); return; }
+        if (this.#evasionCompiler || this.#fuzzyCompiler) { this.#changeDictionary(words, true); return; }
         for (const word of wordsArray(words)) {
             // Canonical keys may themselves contain whitespace introduced by
             // compatibility normalization. A snapshot must round-trip unchanged.
@@ -231,7 +244,7 @@ export class Badwords {
         }
     }
     removeWords(words: string | readonly string[]): void {
-        if (this.#evasionCompiler) { this.#changeDictionary(words, false); return; }
+        if (this.#evasionCompiler || this.#fuzzyCompiler) { this.#changeDictionary(words, false); return; }
         for (const word of wordsArray(words)) {
             if (this.#dictionary.delete(word)
                 || this.#dictionary.delete(trimDictionaryWord(normalizeKey(trimDictionaryWord(word), this.#normalization)))) {
@@ -242,14 +255,20 @@ export class Badwords {
         }
     }
 
+    #checkDictionary(words: readonly string[]): void {
+        if (this.#fuzzyCompiler) this.#fuzzyCompiler.checkDictionary(words, this.#evasionCompiler);
+        else this.#evasionCompiler?.checkDictionary(words);
+    }
+
     #setEvasion(words: Set<string>, preset = false): void {
-        const entries = [...words].map((word, order) => ({ word, key: word, order }));
-        this.#evasionCompiler!.checkDictionary([...words]);
+        const entries = [...words].map((word, order) => ({ word, order,
+            key: this.#ignoreRepeatedLetters ? normalize(word, 'none', true).text : word }));
+        this.#checkDictionary([...words]);
         let matcher: Matcher | undefined;
-        const runtime = this.#evasionCompiler!.compile(entries, this.#normalization, normalizeKey, limit => {
+        const runtime = (this.#fuzzyCompiler ?? this.#evasionCompiler)!.compile(entries, this.#normalization, normalizeKey, limit => {
             matcher = new Matcher(entries, limit);
             return matcher.view();
-        }, text => foldCandidateText(canonicalSearchView(text).text)?.normalize('NFKC'));
+        }, text => foldCandidateText(canonicalSearchView(text).text)?.normalize('NFKC'), this.#evasionCompiler);
         this.#dictionary = words;
         this.#matcher = matcher;
         this.#evasion = runtime;
@@ -261,7 +280,7 @@ export class Badwords {
 
     #changeDictionary(words: string | readonly string[], add: boolean): void {
         const batch = wordsArray(words);
-        this.#evasionCompiler!.checkDictionary(batch);
+        this.#checkDictionary(batch);
         const staged = new Set(this.#dictionary);
         let changed = false;
         for (const word of batch) {

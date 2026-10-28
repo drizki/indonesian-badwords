@@ -1,5 +1,5 @@
 import type { EvasionCompiler, EvasionPolicy } from './evasion-types.ts';
-import { compileEvasion, type CompiledOptions } from './evasion-scan.ts';
+import { compileEvasion, prepareEvasion, type CompiledOptions } from './evasion-scan.ts';
 export type { EvasionPolicy } from './evasion-types.ts';
 
 export type EvasionLimit = 'input' | 'states' | 'steps' | 'compileStates' | 'dictionaryLength';
@@ -128,6 +128,10 @@ export function boundedEvasion(options: EvasionOptions): EvasionPolicy {
     });
     const fail = (limit: EvasionLimit, maximum: number, used: number): never => { throw new EvasionLimitError(limit, maximum, used); };
     const compiler = Object.freeze<EvasionCompiler>({
+        dictionaryLimit: Object.freeze({ maximum: config.maxDictionaryLength, exceeded: (used: number) => fail('dictionaryLength', config.maxDictionaryLength, used) }),
+        plan(normalization, canonicalize) {
+            return Object.freeze({ ...config, ...prepareEvasion(config, normalization, canonicalize), version: 1 as const, exceeded: fail });
+        },
         checkDictionary(words: readonly string[]) {
             let length = 0;
             for (const word of words) {

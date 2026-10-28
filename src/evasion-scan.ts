@@ -90,9 +90,8 @@ function contribute(spans: Cluster[], start: number, end: number, entries: Set<E
     spans.push(current);
 }
 
-export function compileEvasion(config: CompiledOptions, entries: readonly Entry[], normalization: Normalization,
-    canonicalize: (text: string, normalization: Normalization) => string,
-    trie: (limit: TrieLimit) => readonly MatcherNode[], candidateText: (text: string) => string | undefined, fail: Fail): EvasionRuntime {
+export function prepareEvasion(config: CompiledOptions, normalization: Normalization,
+    canonicalize: (text: string, normalization: Normalization) => string) {
     const gaps = new Set<number>(), mappings = new Map<number, number>();
     for (const character of config.separators) {
         const canonical = canonicalize(character, normalization);
@@ -109,6 +108,13 @@ export function compileEvasion(config: CompiledOptions, entries: readonly Entry[
         if (mappings.has(code) && mappings.get(code) !== replacement) throw new TypeError('conflicting normalized mapping sources');
         mappings.set(code, replacement);
     }
+    return { gaps, mappings };
+}
+
+export function compileEvasion(config: CompiledOptions, entries: readonly Entry[], normalization: Normalization,
+    canonicalize: (text: string, normalization: Normalization) => string,
+    trie: (limit: TrieLimit) => readonly MatcherNode[], candidateText: (text: string) => string | undefined, fail: Fail): EvasionRuntime {
+    const { gaps, mappings } = prepareEvasion(config, normalization, canonicalize);
     const nodes = trie({ maximum: config.maxCompileStates,
         exceeded: used => fail('compileStates', config.maxCompileStates, used) });
     const expandable = new Uint8Array(nodes.length), eligible = new Uint8Array(entries.length);

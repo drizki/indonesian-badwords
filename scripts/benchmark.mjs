@@ -116,6 +116,24 @@ add('bounded-repeats-280-flag', 'placed', 280, 'flag', {
     position: 'middle', surface: 'goooblok', terms: terms('goooblok', 'goblok'), evasion: bounded
 });
 
+for (const length of [280, 4_000]) {
+    for (const method of ['flag', 'censor', 'analyze']) add(`fuzzy-clean-${length}-${method}`, 'clean', length, method,
+        { options: { dictionary: ['goblok'] }, fuzzy: {} });
+    for (const method of ['flag', 'censor', 'analyze']) add(`fuzzy-typo-${length}-${method}`, 'placed', length, method,
+        { options: { dictionary: ['goblok'] }, position: 'middle', surface: 'goblox', terms: terms('goblox', 'goblok'), fuzzy: {} });
+}
+add('fuzzy-osa-transpose-280-censor', 'placed', 280, 'censor', {
+    options: { dictionary: ['goblok'] }, position: 'middle', surface: 'golbok', terms: terms('golbok', 'goblok'), fuzzy: { model: 'osa' }
+});
+for (const method of ['flag', 'censor', 'analyze']) add(`fuzzy-composed-280-${method}`, 'placed', 280, method, {
+    options: { dictionary: ['goblok'] }, position: 'middle', surface: 'g-o-b-l-o-x',
+    terms: [{ surface: 'g-o-b-l-o', word: 'goblok', offset: 0 }, ...terms('g-o-b-l-o-x', 'goblok')], fuzzy: {}, evasion: bounded
+});
+add('fuzzy-scoped-callback-280-censor', 'placed', 280, 'censor', {
+    options: { dictionary: ['goblok'], allowPhrases: ['goblox aman'] }, position: 'middle', surface: 'goblox aman goblox',
+    terms: [{ surface: 'goblox', word: 'goblok', offset: 12 }], fuzzy: {}, replacement: 'callback'
+});
+
 function alphabeticId(number) {
     let value = '';
     do { value = String.fromCharCode(97 + number % 26) + value; number = Math.floor(number / 26); } while (number);
@@ -232,7 +250,12 @@ async function measure(job) {
     if (job.evasion) {
         const setupStart = performance.now();
         options.evasion = require('../dist/cjs/evasion.js').boundedEvasion(job.evasion);
-        optionalSetupUs = us(performance.now() - setupStart);
+        optionalSetupUs += us(performance.now() - setupStart);
+    }
+    if (job.fuzzy) {
+        const setupStart = performance.now();
+        options.fuzzy = require('../dist/cjs/fuzzy.js').boundedFuzzy(job.fuzzy);
+        optionalSetupUs += us(performance.now() - setupStart);
     }
     if (job.dictionary === 'expanded') options.dictionary = api.expandedDictionary;
     if (job.dictionary === 'prefixes') options.dictionary = Array.from({ length: 64 }, (_, index) => 'a'.repeat(index + 1));
@@ -306,7 +329,7 @@ async function measure(job) {
     return { type: 'measurement', id: job.id, status: job.limited ? 'limited' : 'measured', method: job.method,
         policy: { dictionary: job.dictionary ?? 'core', dictionaryTerms: orders.size, mode: options.mode ?? 'word',
             normalization: options.normalization ?? 'standard', ignoreRepeatedLetters: options.ignoreRepeatedLetters ?? false,
-            maxMatches: options.maxMatches ?? 10_000, evasion: job.evasion ?? null, allowPhrases: options.allowPhrases ?? [],
+            maxMatches: options.maxMatches ?? 10_000, evasion: job.evasion ?? null, fuzzy: job.fuzzy ?? null, allowPhrases: options.allowPhrases ?? [],
             ignoreRanges: first.checkOptions?.ignoreRanges ?? [],
             replacement: !['censor', 'analyze'].includes(job.method) ? null
                 : job.replacement === 'mask' ? { kind: 'mask', keepFirst: 1, keepLast: 1 }
@@ -338,7 +361,7 @@ if (process.argv.includes('--worker')) {
         node: process.version, v8: process.versions.v8, platform: process.platform, architecture: process.arch, quick,
         cases: selected.length, warmupMinimumMs: quick ? 40 : 250, timedSamples: quick ? 15 : 41,
         measurements: 'Own-library synthetic workloads. Inputs are unique; input/range-fixture generation and every-result correctness checks are outside timings. Dispatch, callback execution/call-count capture, library range validation and result storage are included; no overhead subtraction, accuracy or production-throughput claim.',
-        cold: 'Fresh process root CommonJS require, explicit instance construction, optional helper require, replacement factory setup and first operation are separate. Censorship helpers load only in mask/grawlix cases; bounded-evasion import/factory setup is reported separately. Excludes process startup and fixture generation. One cold observation per case.',
+        cold: 'Fresh process root CommonJS require, explicit instance construction, optional helper require, replacement factory setup and first operation are separate. Censorship helpers load only in mask/grawlix cases; bounded-evasion and fuzzy import/factory setup is reported separately. Excludes process startup and fixture generation. One cold observation per case.',
         memory: 'Peak process RSS includes Node, library, corpus generation, collected batch results, assertions and GC. Not library-only memory.',
         limits: 'Match-limit RangeErrors are expected only for the two overlapping-prefix detail cases. All other errors, wrong results and 20-second child timeouts fail the run.',
         nodeCompileCache: Boolean(process.env.NODE_COMPILE_CACHE) }));

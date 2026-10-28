@@ -73,6 +73,16 @@
         "types": "./dist/cjs/evasion.d.ts",
         "default": "./dist/cjs/evasion.js"
       }
+    },
+    "./fuzzy": {
+      "import": {
+        "types": "./dist/esm/fuzzy.d.ts",
+        "default": "./dist/esm/fuzzy.js"
+      },
+      "require": {
+        "types": "./dist/cjs/fuzzy.d.ts",
+        "default": "./dist/cjs/fuzzy.js"
+      }
     }
   },
   "files": [
@@ -94,7 +104,10 @@
     "dist/cjs/evasion.d.ts",
     "dist/cjs/evasion-types.d.ts",
     "dist/cjs/matcher.d.ts",
-    "THIRD_PARTY_NOTICES"
+    "THIRD_PARTY_NOTICES",
+    "dist/cjs/fuzzy.js",
+    "dist/cjs/fuzzy.d.ts",
+    "dist/cjs/fuzzy-types.d.ts"
   ],
   "sideEffects": false,
   "scripts": {
