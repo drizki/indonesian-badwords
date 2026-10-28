@@ -3,7 +3,7 @@ import type { NormalizedText } from './normalize.ts';
 export interface Entry { word: string; key: string; order: number }
 export interface Match { word: string; start: number; end: number; order: number; from: number; to: number }
 export interface CensorSpan { start: number; end: number; entries: Entry[] }
-interface CensorCluster extends CensorSpan { id: number }
+interface CensorCluster { start: number; end: number; entries: Set<Entry>; id: number }
 interface Node { next: Map<number, number>; fail: number; output: number; entries: Entry[] }
 function node(): Node { return { next: new Map(), fail: 0, output: -1, entries: [] }; }
 function acceptsEnd(value: NormalizedText, to: number, wholeWords: boolean): boolean {
@@ -18,10 +18,8 @@ function acceptsStart(value: NormalizedText, from: number, wholeWords: boolean):
 /** A cached Aho–Corasick automaton; suffix outputs use links instead of copies. */
 export class Matcher {
     readonly #nodes: Node[] = [node()];
-    readonly #entryCount: number;
 
     constructor(entries: readonly Entry[]) {
-        this.#entryCount = entries.length;
         for (const entry of entries) {
             let state = 0;
             for (let index = 0; index < entry.key.length; index++) {
@@ -87,7 +85,6 @@ export class Matcher {
     scanCensor(value: NormalizedText, wholeWords: boolean): CensorSpan[] {
         const spans: CensorCluster[] = [];
         const pending: number[] = [];
-        let seen: Uint32Array | undefined;
         let complete: Uint32Array | undefined;
         let sequence = 0;
         let state = 0;
@@ -103,11 +100,10 @@ export class Matcher {
             while (output !== -1) {
                 if (span && complete![output] === span.id) break;
                 for (const entry of this.#nodes[output].entries) {
-                    if (span && seen![entry.order] === span.id) continue;
+                    if (span && span.entries.has(entry)) continue;
                     const from = to - entry.key.length;
                     if (!acceptsStart(value, from, wholeWords)) continue;
                     if (!span) {
-                        seen ??= new Uint32Array(this.#entryCount);
                         complete ??= new Uint32Array(this.#nodes.length);
                         const start = value.starts[from];
                         const end = value.ends[index];
@@ -121,24 +117,26 @@ export class Matcher {
                             while (spans.length > 1 && span.start < spans[spans.length - 2].end) {
                                 spans.pop();
                                 const older = spans.pop()!;
-                                span.start = Math.min(span.start, older.start);
-                                for (const contributor of older.entries) {
-                                    if (seen[contributor.order] !== span.id) {
-                                        seen[contributor.order] = span.id;
-                                        span.entries.push(contributor);
-                                    }
-                                }
+                                const start = Math.min(span.start, older.start);
+                                const end = span.end;
+                                // Keep the larger contributor set and its ID:
+                                // repeated bridges must not copy a large prefix
+                                // into each tiny new cluster. Its completed
+                                // suffix chains stay valid as membership grows.
+                                const larger: CensorCluster = span.entries.size >= older.entries.size ? span : older;
+                                const smaller: CensorCluster = larger === span ? older : span;
+                                for (const contributor of smaller.entries) larger.entries.add(contributor);
+                                span = larger;
+                                span.start = start;
+                                span.end = end;
                                 spans.push(span);
                             }
                         } else {
-                            span = { start, end, entries: [], id: ++sequence };
+                            span = { start, end, entries: new Set(), id: ++sequence };
                             spans.push(span);
                         }
                     }
-                    if (seen![entry.order] !== span.id) {
-                        seen![entry.order] = span.id;
-                        span.entries.push(entry);
-                    }
+                    span.entries.add(entry);
                     if (complete![output] === span.id) break;
                 }
                 if (span && complete![output] === span.id) break;
@@ -152,11 +150,11 @@ export class Matcher {
             for (let item = pending.length - 1; item >= 0 && finished; item--) {
                 const current = pending[item];
                 for (const entry of this.#nodes[current].entries) {
-                    if (seen![entry.order] !== span.id) { finished = false; break; }
+                    if (!span.entries.has(entry)) { finished = false; break; }
                 }
                 if (finished) complete![current] = span.id;
             }
         }
-        return spans;
+        return spans.map(({ start, end, entries }) => ({ start, end, entries: [...entries] }));
     }
 }

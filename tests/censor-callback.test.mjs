@@ -119,6 +119,27 @@ test('dense overlaps aggregate contributors without consuming maxMatches', () =>
     assert.throws(() => checker.analyze(text), RangeError);
 });
 
+test('repeated bridges retain a dense prefix and every later unique contributor', () => {
+    const dictionary = [...Array.from({ length: 128 }, (_, index) => 'a'.repeat(index + 1)), 'x', 'a x a'];
+    const checker = new Badwords({ dictionary, mode: 'substring', normalization: 'none', maxMatches: 1 });
+    const text = 'a'.repeat(128) + ' x a'.repeat(512);
+    const { contexts, output } = capture(checker, text);
+    assert.equal(output, '*');
+    assert.deepEqual(contexts, [{ text, index: 0, end: text.length, match: text, words: dictionary }]);
+    assert.throws(() => checker.find(text), RangeError);
+});
+
+test('equal-sized and multiple-cluster bridges preserve all contributors once', () => {
+    const dictionary = ['b', 'a', 'c', 'd', 'a-b', 'c-d', 'a-b c-d'];
+    const checker = new Badwords({ dictionary, mode: 'substring', normalization: 'none' });
+    const text = 'a-b c-d; a-b c-d';
+    const { contexts, output } = capture(checker, text);
+    assert.equal(output, '*; *');
+    assert.deepEqual(contexts.map(({ index, end, words }) => ({ index, end, words })), [
+        { index: 0, end: 7, words: dictionary }, { index: 9, end: 16, words: dictionary }
+    ]);
+});
+
 test('merged callback metadata agrees with an independent all-occurrences oracle', () => {
     let state = 0x214021;
     const random = (limit) => {
