@@ -2,14 +2,26 @@ import type { NormalizedText } from './normalize.ts';
 
 export interface Entry { word: string; key: string; order: number }
 export interface Match { word: string; start: number; end: number; order: number; from: number; to: number }
+export interface CensorSpan { start: number; end: number; entries: Entry[] }
+interface CensorCluster extends CensorSpan { id: number }
 interface Node { next: Map<number, number>; fail: number; output: number; entries: Entry[] }
 function node(): Node { return { next: new Map(), fail: 0, output: -1, entries: [] }; }
+function acceptsEnd(value: NormalizedText, to: number, wholeWords: boolean): boolean {
+    return !(wholeWords && value.wordCharacters[to])
+        && !(to < value.text.length && value.ends[to - 1] > value.starts[to]);
+}
+function acceptsStart(value: NormalizedText, from: number, wholeWords: boolean): boolean {
+    return !(from > 0 && value.ends[from - 1] > value.starts[from])
+        && !(wholeWords && value.wordCharacters[from - 1]);
+}
 
 /** A cached Aho–Corasick automaton; suffix outputs use links instead of copies. */
 export class Matcher {
     readonly #nodes: Node[] = [node()];
+    readonly #entryCount: number;
 
     constructor(entries: readonly Entry[]) {
+        this.#entryCount = entries.length;
         for (const entry of entries) {
             let state = 0;
             for (let index = 0; index < entry.key.length; index++) {
@@ -50,8 +62,7 @@ export class Matcher {
             if (eligibleEnd && !eligibleEnd(index + 1)) continue;
             // Every suffix shares this right edge; reject it once before
             // traversing potentially many suffix outputs on a benign token.
-            if ((wholeWords && value.wordCharacters[index + 1])
-                || (index + 1 < value.text.length && value.ends[index] > value.starts[index + 1])) continue;
+            if (!acceptsEnd(value, index + 1, wholeWords)) continue;
             let output = state;
             let covered = false;
             while (output !== -1) {
@@ -59,9 +70,7 @@ export class Matcher {
                     const from = index + 1 - entry.key.length;
                     const to = index + 1;
                     // Reject partial source graphemes and compatibility expansions.
-                    if ((from > 0 && value.ends[from - 1] > value.starts[from])
-                        || (to < value.text.length && value.ends[to - 1] > value.starts[to])) continue;
-                    if (wholeWords && (value.wordCharacters[from - 1] || value.wordCharacters[to])) continue;
+                    if (!acceptsStart(value, from, wholeWords)) continue;
                     if (visit({ word: entry.word, start: value.starts[from], end: value.ends[index],
                         order: entry.order, from, to }) === false) return;
                     // Outputs follow decreasing key length. For censorship the
@@ -72,5 +81,82 @@ export class Matcher {
                 output = this.#nodes[output].output;
             }
         }
+    }
+
+    /** Merge coverage and contributors without allocating individual occurrences. */
+    scanCensor(value: NormalizedText, wholeWords: boolean): CensorSpan[] {
+        const spans: CensorCluster[] = [];
+        const pending: number[] = [];
+        let seen: Uint32Array | undefined;
+        let complete: Uint32Array | undefined;
+        let sequence = 0;
+        let state = 0;
+        for (let index = 0; index < value.text.length; index++) {
+            const character = value.text.charCodeAt(index);
+            while (state && !this.#nodes[state].next.has(character)) state = this.#nodes[state].fail;
+            state = this.#nodes[state].next.get(character) ?? 0;
+            const to = index + 1;
+            if (!acceptsEnd(value, to, wholeWords)) continue;
+            let output = state;
+            let span: CensorCluster | undefined;
+            pending.length = 0;
+            while (output !== -1) {
+                if (span && complete![output] === span.id) break;
+                for (const entry of this.#nodes[output].entries) {
+                    if (span && seen![entry.order] === span.id) continue;
+                    const from = to - entry.key.length;
+                    if (!acceptsStart(value, from, wholeWords)) continue;
+                    if (!span) {
+                        seen ??= new Uint32Array(this.#entryCount);
+                        complete ??= new Uint32Array(this.#nodes.length);
+                        const start = value.starts[from];
+                        const end = value.ends[index];
+                        const previous = spans[spans.length - 1];
+                        if (previous && start < previous.end) {
+                            span = previous;
+                            span.start = Math.min(start, span.start);
+                            span.end = end;
+                            // A later, longer occurrence can bridge several
+                            // formerly separate clusters. Preserve every word.
+                            while (spans.length > 1 && span.start < spans[spans.length - 2].end) {
+                                spans.pop();
+                                const older = spans.pop()!;
+                                span.start = Math.min(span.start, older.start);
+                                for (const contributor of older.entries) {
+                                    if (seen[contributor.order] !== span.id) {
+                                        seen[contributor.order] = span.id;
+                                        span.entries.push(contributor);
+                                    }
+                                }
+                                spans.push(span);
+                            }
+                        } else {
+                            span = { start, end, entries: [], id: ++sequence };
+                            spans.push(span);
+                        }
+                    }
+                    if (seen![entry.order] !== span.id) {
+                        seen![entry.order] = span.id;
+                        span.entries.push(entry);
+                    }
+                    if (complete![output] === span.id) break;
+                }
+                if (span && complete![output] === span.id) break;
+                pending.push(output);
+                output = this.#nodes[output].output;
+            }
+            if (!span) continue;
+            // A completed suffix chain only contains words already contributed
+            // to this cluster. Revisiting it cannot change coverage or metadata.
+            let finished = output === -1 || complete![output] === span.id;
+            for (let item = pending.length - 1; item >= 0 && finished; item--) {
+                const current = pending[item];
+                for (const entry of this.#nodes[current].entries) {
+                    if (seen![entry.order] !== span.id) { finished = false; break; }
+                }
+                if (finished) complete![current] = span.id;
+            }
+        }
+        return spans;
     }
 }

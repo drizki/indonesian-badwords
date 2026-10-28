@@ -33,11 +33,23 @@
         "default": "./dist/cjs/index.js"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./censor": {
+      "import": {
+        "types": "./dist/esm/censor.d.ts",
+        "default": "./dist/esm/censor.js"
+      },
+      "require": {
+        "types": "./dist/cjs/censor.d.ts",
+        "default": "./dist/cjs/censor.js"
+      }
+    }
   },
   "files": [
     "dist/cjs/index.js",
     "dist/cjs/index.d.ts",
+    "dist/cjs/censor.js",
+    "dist/cjs/censor.d.ts",
     "dist/cjs/dictionary.d.ts",
     "dist/cjs/normalize.d.ts",
     "dist/cjs/package.json",

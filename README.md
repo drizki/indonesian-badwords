@@ -114,7 +114,7 @@ These work on an instance, the default export, or as named imports.
 | `flag(text)` | Whether any word matches. |
 | `find(text)` | Occurrences as `{ word, index, end, match }`. |
 | `badwords(text)` | Unique matching dictionary words. |
-| `censor(text, replacement = '***')` | Text with matched spans replaced. |
+| `censor(text, replacement = '***')` | Text with matched spans replaced by a literal string or callback result. |
 | `filter(text)` | Text with matches removed and whitespace cleaned up. |
 | `analyze(text)` | Censored text, counts, words, and locations. |
 
@@ -124,6 +124,21 @@ shouldn't affect the shared default instance.
 
 Empty strings are valid. Invalid inputs throw `TypeError`; `find` and `analyze`
 throw `RangeError` if they exceed `maxMatches`.
+
+Use a callback for custom replacements, or import grapheme-safe strategies from
+the optional `censor` entry point:
+
+```ts
+import { censor } from 'indonesian-badwords';
+import { mask, grawlix } from 'indonesian-badwords/censor';
+
+censor('dasar g0bl0k!', mask({ keepFirst: 1 })); // 'dasar g*****!'
+censor('goblok', grawlix({ symbols: '@#$' }));
+censor('goblok', ({ match, words }) => `[${words.join(',')}:${match}]`);
+```
+
+Strategies count original graphemes and always mask at least one, including short
+matches. See [callback and strategy options](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#custom-censorship).
 
 ## Documentation
 

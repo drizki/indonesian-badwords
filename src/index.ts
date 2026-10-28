@@ -20,6 +20,18 @@ export interface BadwordLocation {
     match: string;
 }
 
+/** One merged source span passed to a censorship callback. */
+export interface CensorContext {
+    readonly text: string;
+    readonly index: number;
+    readonly end: number;
+    readonly match: string;
+    /** Unique contributing dictionary words, in dictionary insertion order. */
+    readonly words: readonly string[];
+}
+export type CensorCallback = (context: CensorContext) => string;
+export type CensorReplacement = string | CensorCallback;
+
 export interface AnalysisResult {
     text: string;
     /** Nonempty whitespace-separated tokens, not linguistic word segmentation. */
@@ -320,6 +332,16 @@ export class Badwords {
             this.#normalization === 'standard' ? 'gi' : 'g');
     }
 
+    #compileMatcher(): Matcher {
+        if (!this.#matcher) {
+            const entries = [...this.#dictionary].map((word, order) => ({ word, order,
+                key: this.#ignoreRepeatedLetters ? normalize(word, 'none', true).text : word }));
+            this.#maxKeyLength = entries.reduce((maximum, entry) => Math.max(maximum, entry.key.length), 0);
+            this.#matcher = new Matcher(entries);
+        }
+        return this.#matcher;
+    }
+
     #scan(text: string, visit: (match: Match) => boolean | void, spansOnly = false, skipNative = false): void {
         validateText(text);
         if (!text.length || !this.#dictionary.size) return;
@@ -338,13 +360,7 @@ export class Badwords {
             }
             return;
         }
-        if (!this.#matcher) {
-            const entries = [...this.#dictionary].map((word, order) => ({ word, order,
-                key: this.#ignoreRepeatedLetters ? normalize(word, 'none', true).text : word }));
-            this.#maxKeyLength = entries.reduce((maximum, entry) => Math.max(maximum, entry.key.length), 0);
-            this.#matcher = new Matcher(entries);
-        }
-        this.#matcher.scan(this.#normalizeInput(text), this.#mode === 'word', visit, spansOnly);
+        this.#compileMatcher().scan(this.#normalizeInput(text), this.#mode === 'word', visit, spansOnly);
     }
 
     #normalizeInput(text: string): NormalizedText {
@@ -443,8 +459,28 @@ export class Badwords {
         this.#scan(text, ({ word }) => { found.add(word); return found.size < this.#dictionary.size; });
         return [...this.#dictionary].filter((word) => found.has(word));
     }
-    /** Replace overlapping spans once and adjacent occurrences separately. */
-    censor(text: string, replacement = '***'): string {
+    #censorCallback(text: string, replacement: CensorCallback): string {
+        validateText(text);
+        if (!text.length || !this.#dictionary.size || this.#longWord(text)) return text;
+        const spans = this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word');
+        const pieces: string[] = [];
+        let index = 0;
+        for (const span of spans) {
+            const words = Object.freeze(span.entries.sort((a, b) => a.order - b.order).map((entry) => entry.word));
+            const context: CensorContext = Object.freeze({ text, index: span.start, end: span.end,
+                match: text.slice(span.start, span.end), words });
+            const value = replacement(context);
+            if (typeof value !== 'string') throw new TypeError('censor callback must return a string');
+            pieces.push(text.slice(index, span.start), value);
+            index = span.end;
+        }
+        pieces.push(text.slice(index));
+        return pieces.join('');
+    }
+
+    /** Replace merged spans in source order; adjacent occurrences stay separate. */
+    censor(text: string, replacement: CensorReplacement = '***'): string {
+        if (typeof replacement === 'function') return this.#censorCallback(text, replacement);
         validateText(text);
         validateText(replacement);
         if (!text.length || !this.#dictionary.size) return text;
