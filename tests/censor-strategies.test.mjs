@@ -79,6 +79,32 @@ test('invalid strategy configuration and random output fail explicitly', () => {
     assert.throws(() => mask()({ match: 1 }), TypeError);
 });
 
+test('replacement symbols reject invisible controls, fillers, selectors and whitespace', () => {
+    const invalid = [
+        '\u200b', '\u202e', '\ufeff', '\u00ad', '\u2028', '\u2029', '\u061c',
+        '\u200e', '\u200f', '\u202a', '\u202b', '\u202c', '\u202d',
+        '\u2066', '\u2067', '\u2068', '\u2069', '\u2060', '\u034f',
+        '\ufe0f', '\u{e0100}', '\u{e0067}', '\u{e007f}', '\u200c', '\u200d',
+        '\u115f', '\u1160', '\u3164', '\uffa0', '\u115f\u1160',
+        ' ', '\t', '\n', '\r', '\u00a0', '\u2007', '\u202f', '\u3000'
+    ];
+    for (const value of invalid) {
+        const label = [...value].map(point => `U+${point.codePointAt(0).toString(16)}`).join(' ');
+        assert.throws(() => mask({ character: value }), TypeError, label);
+        assert.throws(() => grawlix({ symbols: [value] }), TypeError, label);
+        assert.throws(() => grawlix({ symbols: value }), TypeError, label);
+    }
+});
+
+test('visible bases retain complete ZWJ, flag, tag, selector and combining sequences', () => {
+    const england = '\u{1f3f4}\u{e0067}\u{e0062}\u{e0065}\u{e006e}\u{e0067}\u{e007f}';
+    for (const value of ['👩‍💻', '👨‍👩‍👧‍👦', '🇮🇩', england, '✈️', '1\ufe0f\u20e3', 'e\u0301', '한', '●']) {
+        assert.equal(mask({ character: value })(context('ab')), value + value);
+        assert.equal(grawlix({ symbols: [value], random: () => 0 })(context('ab')), value + value);
+        assert.equal(grawlix({ symbols: value, random: () => 0 })(context('ab')), value + value);
+    }
+});
+
 test('mask preserves exact grapheme edges over a deterministic generated corpus', () => {
     const segments = ['a', 'e\u0301', 'ﬃ', '👩‍💻', '🇮🇩', '\ud800'];
     const segmenter = new Intl.Segmenter('id', { granularity: 'grapheme' });

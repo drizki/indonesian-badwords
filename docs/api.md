@@ -157,10 +157,16 @@ nonempty match has at least one grapheme replaced, with `keepFirst` taking
 priority over `keepLast`. For example, keeping both ends of `ab` yields `a*`,
 and keeping any number from a one-grapheme match yields `*`.
 
-Replacement characters and each symbol must be one standalone, well-formed
-grapheme without control characters. Empty or multiple graphemes, lone
-surrogates, orphan combining marks, and incomplete regional indicators are
-invalid. Complete emoji sequences and flags are supported. Invalid options or
+Replacement characters and each symbol must be one visible standalone,
+well-formed grapheme. Control characters, line and paragraph separators, and
+graphemes made entirely of formatting, default-ignorable characters, combining
+marks, or whitespace are invalid. This includes zero-width spaces, bidi controls,
+standalone variation selectors, and invisible Hangul fillers. Empty or multiple
+graphemes, lone surrogates, orphan combining marks, and incomplete regional
+indicators are invalid too. Complete emoji sequences and flags are supported,
+including internal ZWJ, tag characters, and variation selectors with a visible
+base. To replace spans with spaces, pass a literal string to `censor`.
+Invalid options or
 non-number random output throw `TypeError`; out-of-range random output throws
 `RangeError`. Exceptions from `random` propagate. Symbol arrays are copied when
 the strategy is created.

@@ -7,7 +7,7 @@ export interface KeepOptions {
     keepLast?: number;
 }
 export interface MaskOptions extends KeepOptions {
-    /** One standalone, well-formed grapheme. Defaults to `*`. */
+    /** One visible standalone, well-formed grapheme. Defaults to `*`. */
     character?: string;
 }
 export interface GrawlixOptions extends KeepOptions {
@@ -34,10 +34,15 @@ function keepCount(value: unknown, name: string): number {
 }
 function symbol(value: unknown, name: string): string {
     if (typeof value !== 'string' || !value || /[\ud800-\udfff]/u.test(value)
-        || /[\u0000-\u001f\u007f-\u009f]/.test(value)
+        || /[\p{Cc}\p{Zl}\p{Zp}]/u.test(value)
+        // Standalone format controls and default-ignorable letters (including
+        // Hangul fillers) can pass segmentation while producing an empty mask.
+        // Complete emoji may contain ZWJ, tags or variation selectors; require
+        // a visible base, and retain the stable-boundary checks below.
+        || /^[\p{Cf}\p{M}\p{White_Space}\p{Default_Ignorable_Code_Point}]+$/u.test(value)
         || graphemes(value).length !== 1 || graphemes(value + value).length !== 2
         || graphemes(`A${value}A`).length !== 3) {
-        throw new TypeError(`${name} must be one standalone, well-formed grapheme without control characters`);
+        throw new TypeError(`${name} must be one visible standalone, well-formed grapheme without control characters`);
     }
     return value;
 }
