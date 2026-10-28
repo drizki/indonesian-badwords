@@ -9,7 +9,7 @@
 Fast Indonesian profanity filtering for JavaScript and TypeScript. Catch disguised
 spellings, censor matches, and get exact locations in the original text.
 
-- **Fast checks for chat, comments, and forms.** Early-exit detection, about 9 KB
+- **Fast checks for chat, comments, and forms.** Early-exit detection, about 10 KB
   minified and gzipped, and zero runtime dependencies. [See the benchmarks](#performance).
 - **Precise Unicode matches.** Recognizes `g0bl0k`, `ＧＯＢＬＯＫ`, and words containing
   invisible characters. Censoring preserves the surrounding text and punctuation.
@@ -51,15 +51,15 @@ flag('dasar goblok'); // true
 
 ## Performance
 
-A browser bundle with the default checker is about 9 KB minified and gzipped.
+A browser bundle with the default checker is about 10 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.72 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 22.48 µs |
-| Clean ASCII paragraph, 4,000 characters | `censor` | 5.40 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.74 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 23.74 µs |
+| Clean ASCII paragraph, 4,000 characters | `censor` | 5.39 µs |
 | Clean ASCII paragraph, 4,000 characters | `analyze` | 15.32 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 30.83 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 30.80 µs |
 
 Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
 call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
