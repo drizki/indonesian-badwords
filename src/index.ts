@@ -1,9 +1,10 @@
 import { dictionary as defaultDictionary } from './dictionary.ts';
 import { Matcher, type Match } from './matcher.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './exceptions.ts';
-import { canonicalSearchText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
+import { isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
     type Normalization, type NormalizedText } from './normalize.ts';
-import { canonicalCandidatePattern, prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
+import { prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
+import { UnicodeMatcher, UnicodeView } from './unicode.ts';
 
 declare const __BADWORDS_PRESET_PATTERNS__: NativePatterns | undefined;
 const presetPatterns = typeof __BADWORDS_PRESET_PATTERNS__ === 'undefined' ? undefined : __BADWORDS_PRESET_PATTERNS__;
@@ -121,8 +122,7 @@ interface NativeMatcher {
     patterns: NativePatterns;
     potential?: RegExp;
     bangPotential?: RegExp;
-    canonicalLiteral?: RegExp | null;
-    canonicalFolding?: RegExp | null;
+    unicode?: UnicodeMatcher;
 }
 
 const ASCII_TEXT = /^[\x00-\x7f]*$/;
@@ -130,7 +130,6 @@ const ASCII_TEXT = /^[\x00-\x7f]*$/;
 // require the normalization engine and its original-source span mapping.
 const ASCII_WORD = /^[A-Za-z0-9]+$/;
 const WORD_TOKENS = /[a-z0-9]+/gi;
-const FOLDING_CHARACTERS = /[0-9@$(|!]/;
 let internalBang: RegExp | undefined;
 let bareEmoji: RegExp | undefined;
 const emojiDelimiters = new Map<number, boolean>();
@@ -231,19 +230,12 @@ export class Badwords {
             && text.length > this.#maxWordLength && ASCII_WORD.test(text);
     }
 
-    #canonicalSearch(text: string, native: NativeMatcher): typeof CLEAN | undefined {
-        const canonical = canonicalSearchText(text);
-        const folding = FOLDING_CHARACTERS.test(canonical);
-        const key = folding ? 'canonicalFolding' : 'canonicalLiteral';
-        if (native[key] === undefined) native[key] = canonicalCandidatePattern(native.patterns, folding) ?? null;
-        const pattern = native[key];
-        // The canonical text precedes ASCII substitutions. Aliases include
-        // every possible fold and protected literal bang. Final composition
-        // cannot create an ASCII key; boundaries only remove occurrences.
-        return pattern && !pattern.test(canonical) ? CLEAN : undefined;
+    #canonicalSearch(text: string, native: NativeMatcher): typeof CLEAN | UnicodeView | undefined {
+        native.unicode ??= new UnicodeMatcher(native.patterns, () => this.#compileMatcher());
+        return native.unicode.search(text);
     }
 
-    #nativeFor(text: string, censorship = false, literal?: string): NativeMatcher | typeof CLEAN | undefined {
+    #nativeFor(text: string, censorship = false, literal?: string): NativeMatcher | typeof CLEAN | UnicodeView | undefined {
         if (this.#mode !== 'word' || this.#ignoreRepeatedLetters) return;
         if (this.#native === undefined) {
             // Keep custom/adversarial dictionaries on the automaton. A bounded
@@ -370,6 +362,7 @@ export class Badwords {
         if (this.#longWord(text)) return;
         const native = skipNative ? undefined : this.#nativeFor(text);
         if (native === CLEAN) return;
+        if (native instanceof UnicodeView) { native.scan(visit, accept); return; }
         if (native) {
             const pattern = this.#pattern(native);
             let occurrence: RegExpExecArray | null;
@@ -461,6 +454,11 @@ export class Badwords {
         const value = this.#normalization === 'standard' ? text.toLowerCase() : text;
         const native = this.#nativeFor(text, false, value);
         if (native === CLEAN) return false;
+        if (native instanceof UnicodeView) {
+            let found = false;
+            native.scan(() => { found = true; return false; });
+            return found;
+        }
         if (native) {
             // Lexical Set lookups stop at the first matched token and avoid
             // compiling the full dictionary search regex for boolean checks.
@@ -496,9 +494,15 @@ export class Badwords {
         const native = this.#nativeFor(text);
         if (native === CLEAN) return text;
         const spans = native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word', accept);
-        if (native) this.#scan(text, ({ word, start, end, order }) => {
-            spans.push({ start, end, entries: [{ word, key: word, order }] });
-        }, false, false, accept);
+        if (native) {
+            const collect = ({ word, start, end, order }: Match) => {
+                spans.push({ start, end, entries: [{ word, key: word, order }] });
+            };
+            // Unicode views reject multipart candidates before acceptance.
+            // Their unique simple whole-word matches cannot overlap.
+            if (native instanceof UnicodeView) native.scan(collect, accept);
+            else this.#scan(text, collect, false, false, accept);
+        }
         const pieces: string[] = [];
         let index = 0;
         for (const span of spans) {
@@ -524,6 +528,11 @@ export class Badwords {
         if (this.#longWord(text)) return text;
         const native = accept ? undefined : this.#nativeFor(text, true);
         if (native === CLEAN) return text;
+        if (native instanceof UnicodeView) {
+            const spans: Array<{ start: number; end: number }> = [];
+            native.scan((match) => { mergeSpan(spans, match); });
+            return replaceSpans(text, spans, replacement);
+        }
         if (native) {
             // Native replacement strings interpret $&, $1, $` and $'. Escape
             // dollars once so the public replacement remains entirely literal.

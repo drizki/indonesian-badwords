@@ -49,6 +49,20 @@ export class Matcher {
         }
     }
 
+    /** Enumerate every explicit term beginning at one native candidate position. */
+    scanAt(text: string, start: number, visit: (entry: Entry, end: number) => boolean | void): boolean {
+        let state = 0;
+        for (let index = start; index < text.length; index++) {
+            const next = this.#nodes[state].next.get(text.charCodeAt(index));
+            if (next === undefined) break;
+            state = next;
+            for (const entry of this.#nodes[state].entries) {
+                if (visit(entry, index + 1) === false) return false;
+            }
+        }
+        return true;
+    }
+
     /** Return false from a visitor to stop without allocating more occurrences. */
     scan(value: NormalizedText, wholeWords: boolean, visit: (match: Match) => boolean | void,
         spansOnly = false, eligibleEnd?: (end: number) => boolean,
