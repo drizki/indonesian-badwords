@@ -12,6 +12,7 @@ npm test          # builds, then runs all regression tests
 npm pack          # prepack builds a clean installable tarball
 npm run test:package -- package.tgz
 npm run benchmark # informational synthetic runtime/memory measurements
+npm run benchmark:compare # compare with pinned Indonesian libraries (downloads references)
 ```
 
 The build generates TypeScript declarations and one bundled CommonJS runtime,
@@ -26,6 +27,14 @@ Node16, and Bundler resolution. Package checks also cover browser bundling.
 The corpus has 80 hand-authored examples with balanced clean and flagged default
 cases. These check expected behavior; they do not measure real-world precision
 or recall. Engine tests also cover Unicode spans, boundaries, overlaps, and limits.
+
+Benchmark output is newline-delimited JSON. The comparison installs pinned reference
+packages in a temporary directory with lifecycle scripts disabled, then removes them.
+It checks expected booleans before timing, rotates 257 input variants, and reports
+different outputs separately. Run `npm run benchmark:compare -- --quick` for a smoke
+check; use the full run for measurements. Dictionaries and policies differ, so these
+synthetic timings do not rank detection accuracy. Both commands report their runtime,
+workloads, warmup, sampling, and memory scope.
 
 ## Configure npm once
 

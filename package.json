@@ -1,7 +1,23 @@
 {
   "name": "indonesian-badwords",
   "version": "2.0.0",
-  "description": "Detect and censor Bahasa Indonesia profanity in strings",
+  "description": "Fast Indonesian profanity filter with TypeScript, Unicode-aware matching, and zero runtime dependencies",
+  "keywords": [
+    "indonesian",
+    "bahasa-indonesia",
+    "profanity",
+    "profanity-filter",
+    "badwords",
+    "kata-kasar",
+    "censorship",
+    "text-moderation",
+    "unicode",
+    "typescript"
+  ],
+  "homepage": "https://github.com/drizki/indonesian-badwords#readme",
+  "bugs": {
+    "url": "https://github.com/drizki/indonesian-badwords/issues"
+  },
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -35,6 +51,7 @@
     "test:unit": "node --test",
     "test:package": "node scripts/verify-package.mjs",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "benchmark:compare": "npm run build && node scripts/benchmark-compare.mjs",
     "prepack": "npm run build",
     "prepublishOnly": "npm test"
   },

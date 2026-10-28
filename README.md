@@ -1,9 +1,22 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/drizki/indonesian-badwords/main/assets/readme-banner.svg" alt="Indonesian Badwords. Fast checks. Exact spans. A Bahasa Indonesia profanity checker with TypeScript, ESM, CommonJS, and zero runtime dependencies." width="1440" />
+</p>
+
 # Indonesian Badwords
 
-[![CI](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml/badge.svg)](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml) [![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg)
+[![npm](https://img.shields.io/npm/v/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) [![CI](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml/badge.svg)](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml) [![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) [![MIT license](https://img.shields.io/npm/l/indonesian-badwords.svg)](https://github.com/drizki/indonesian-badwords/blob/main/LICENSE)
 
-Check Indonesian text for profanity, find matches, or replace them. Includes
-TypeScript types, ESM and CommonJS, with no runtime dependencies.
+Fast Indonesian profanity filtering for JavaScript and TypeScript. Catch disguised
+spellings, censor matches, and get exact locations in the original text.
+
+- **Fast checks for chat, comments, and forms.** Early-exit detection, about 9 KB
+  minified and gzipped, and zero runtime dependencies. [See the benchmarks](#performance).
+- **Precise Unicode matches.** Recognizes `g0bl0k`, `ＧＯＢＬＯＫ`, and words containing
+  invisible characters. Censoring preserves the surrounding text and punctuation.
+- **Your moderation policy.** Choose the default or expanded dictionary, supply
+  your own words, and keep separate checker instances for different applications.
+
+Includes TypeScript declarations, ESM, and CommonJS. Runs in Node.js and browser bundles.
 
 ## Install
 
@@ -40,17 +53,23 @@ flag('dasar goblok'); // true
 
 A browser bundle with the default checker is about 9 KB minified and gzipped.
 
-| Operation | Input length | Median time |
-| --- | ---: | ---: |
-| `flag` | 280 characters | 1.74 µs |
-| `flag` | 4,000 characters | 19.86 µs |
-| `censor` | 4,000 characters | 5.04 µs |
-| `analyze` | 4,000 characters | 12.56 µs |
+| Workload | Operation | Median per call |
+| --- | --- | ---: |
+| Clean ASCII chat, 280 characters | `flag` | 1.67 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 22.79 µs |
+| Clean ASCII paragraph, 4,000 characters | `censor` | 5.41 µs |
+| Clean ASCII paragraph, 4,000 characters | `analyze` | 15.02 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 892.99 µs |
 
-Measured with the default dictionary on synthetic clean Indonesian ASCII text,
-using Node.js 24.22.1 and 151 calls per case after warmup. Times exclude import
-and first-call setup. Results vary with input, hardware, and runtime.
-Run `npm run benchmark` for local measurements.
+Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
+call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
+These are medians of per-call batch averages; import, setup, input generation,
+and correctness checks are excluded. Results vary with input, hardware, and runtime.
+
+Run `npm run benchmark` for 50 self-checking workloads, including cold calls,
+match positions, Unicode, custom dictionaries, and memory. Run
+`npm run benchmark:compare` to compare with pinned Indonesian libraries; different
+detection outputs are reported separately from timings.
 
 ## Choose a dictionary
 
