@@ -291,5 +291,5 @@ if (process.argv[1] && await realpath(process.argv[1]).catch(() => undefined) ==
     const expected = registrySource(registry);
     if (process.argv.includes('--write')) await writeFile(path, expected);
     else assert.equal(await readFile(path, 'utf8'), expected, 'Registry types are stale; run npm run catalog:generate');
-    console.log(`Validated catalog: ${metadata.length} surface forms; selector registry matches public types.`);
+    console.error(`Validated catalog: ${metadata.length} surface forms; selector registry matches public types.`);
 }
