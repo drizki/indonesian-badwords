@@ -2,6 +2,64 @@
 
 [Back to the README](../README.md)
 
+Use `new Badwords()` for an independent checker, or the named functions for a
+shared default instance. All text methods use the same matching policy.
+
+- [Constructor options](#constructor-options) and [methods](#methods)
+- [Instances and dictionaries](#instances-and-dictionaries)
+- [Results and errors](#results-and-errors)
+- [Matching and normalization](#matching)
+- [Scoped exceptions](#scoped-exceptions)
+- [Custom censorship](#custom-censorship)
+- [Bounded evasion](#bounded-evasion)
+- [Bounded fuzzy matching](#bounded-fuzzy-matching)
+
+## Constructor options
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const checker = new Badwords({ mode: 'word' });
+checker.flag('dasar g0bl0k!'); // true
+```
+
+`new Badwords(options?)` accepts a `BadwordsOptions` object:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `dictionary` | `dictionary` export | Readonly string array of terms to match. An empty array detects nothing. |
+| `allowPhrases` | No exceptions | Readonly string array of literal phrases whose contained matches are exempt. See [scoped exceptions](#scoped-exceptions). |
+| `mode` | `'word'` | `'word'` checks whole words; `'substring'` also checks fragments. |
+| `normalization` | `'standard'` | Unicode normalization and substitutions. `'none'` keeps exact spelling and case. |
+| `ignoreRepeatedLetters` | `false` | Collapse repeated letters in dictionary keys and input. Incompatible with bounded evasion. |
+| `maxMatches` | `10_000` | Maximum accepted occurrences for `find` and `analyze`; positive safe integer or `Infinity`. |
+| `evasion` | Disabled | Policy created by the optional [`boundedEvasion`](#bounded-evasion) helper. |
+| `fuzzy` | Disabled | Policy created by the optional [`boundedFuzzy`](#bounded-fuzzy-matching) helper. |
+
+Compile a checker once and reuse it across messages. Optional policies have
+their own finite work limits, independent of `maxMatches`.
+
+## Methods
+
+`text` is a string. `options` is an optional `CheckOptions` object containing
+per-call `ignoreRanges`. `replacement` is a string or synchronous callback.
+
+| Method | Returns | Behavior |
+| --- | --- | --- |
+| `flag(text, options?)` | `boolean` | Whether any accepted occurrence exists; stops at the first match. |
+| `find(text, options?)` | `BadwordLocation[]` | Every accepted occurrence, including overlaps. |
+| `badwords(text, options?)` | `string[]` | Unique matching dictionary terms, in dictionary insertion order. |
+| `censor(text, replacement?, options?)` | `string` | Replace matching spans; default replacement is `'***'`. |
+| `filter(text, options?)` | `string` | Remove matching spans, collapse whitespace, and trim. |
+| `analyze(text, options?)` | `AnalysisResult` | Original text, censorship, counts, unique terms, and locations. |
+| `addWords(words)` | `void` | Add a string or readonly string array to this checker. |
+| `removeWords(words)` | `void` | Remove a string or readonly string array from this checker. |
+| `dict` | `string[]` | A normalized dictionary snapshot; changing the array does not change the checker. |
+
+All methods above are also named exports except the `dict` property. Named
+functions and the default export use the same instance. See
+[instance ownership](#instances-and-dictionaries) before changing its dictionary.
+
 ## Instances and dictionaries
 
 ESM and CommonJS share the same class, functions, and default instance within one
@@ -26,7 +84,19 @@ region, and editorial severity. `indonesian-badwords/catalog` provides source
 claims and policy explanations. Both are separate from the root runtime; they
 do not change the three existing lists.
 
-With `Badwords` imported as shown in the README, you can supply your own list:
+Use the default checker for conservative matching, or opt in to the expanded
+list when your application also needs words with common literal uses:
+
+```ts
+import { Badwords, expandedDictionary } from 'indonesian-badwords';
+
+const conservative = new Badwords();
+const expanded = new Badwords({ dictionary: expandedDictionary });
+conservative.flag('anjing peliharaan'); // false
+expanded.flag('anjing peliharaan');     // true
+```
+
+You can also supply your own list:
 
 ```ts
 const custom = new Badwords({ dictionary: ['customterm'] });
@@ -38,6 +108,43 @@ const snapshot = custom.dict; // a copy; changing it does not mutate the checker
 Entries are trimmed, normalized using the configured settings, and deduplicated.
 Blank entries are ignored. Invalid types throw `TypeError` before any mutation.
 `addWords` and `removeWords` are also named exports that change the shared default.
+
+## Results and errors
+
+`find(text)` returns all occurrences. `analyze(text)` returns:
+
+| Field | Meaning |
+| --- | --- |
+| `text` | Original input. |
+| `words` | Number of nonempty whitespace-separated tokens. |
+| `censored` | Input with matched spans replaced by `***`. |
+| `badwords` | Unique matching terms, in dictionary insertion order. |
+| `count` | Number of unique matching terms. |
+| `occurrenceCount` | Number of occurrences. |
+| `locations` | All occurrences as `{ word, index, end, match }`. |
+
+Locations are sorted by source index, then dictionary insertion order. `index`
+and exclusive `end` are JavaScript UTF-16 offsets. `match` equals
+`text.slice(index, end)`, including any invisible characters inside the span.
+
+Results include overlapping occurrences. Censorship replaces overlapping spans
+once and adjacent matches separately. Replacement strings are literal.
+`filter` removes matches, collapses whitespace, and trims the result.
+
+Empty strings return no matches, zero counts, and unchanged text. Non-string
+inputs and invalid options throw `TypeError`.
+
+`find` and `analyze` throw `RangeError` beyond 10,000 occurrences by default.
+`maxMatches` accepts a positive safe integer or `Infinity`. `flag` stops at the
+first match; `badwords`, `censor`, and `filter` aggregate results without keeping
+every occurrence in memory. These four methods have no occurrence cap. Optional
+evasion and fuzzy work limits still apply to every method.
+
+Types exported from the package root include `BadwordsOptions`, `MatchMode`,
+`Normalization`, `BadwordLocation`, `AnalysisResult`, `CensorContext`,
+`CensorCallback`, `CensorReplacement`, `CheckOptions`, `IgnoreRange`, and the
+dictionary word types. `indonesian-badwords/censor` also exports the censorship
+types, `KeepOptions`, `MaskOptions`, and `GrawlixOptions`.
 
 ## Matching
 
@@ -319,11 +426,11 @@ merges that coverage once; callbacks receive the merged span and unique terms.
 ### Resource limits
 
 All methods enforce `limits.maxInputLength` before normalization, including
-empty dictionaries. The optional scanner also enforces finite work/frontier
-budgets. A proved-negative transformation trigger or bounded literal prefilter can reuse ordinary matching
-without running that scanner. `flag` may stop after a fully accepted match;
-detailed results and censorship must complete or throw. Callbacks run only
-after a complete successful scan, so a scan-budget error invokes no callbacks.
+empty dictionaries. Additional scanning has finite work and active-state limits;
+calls that can use ordinary matching skip that extra work. `flag` may stop after
+a fully accepted match. Methods that collect or replace all matches must finish
+or throw. Callbacks run after a successful scan, so a scan-budget error invokes
+no callbacks.
 
 | Limit | Default | Unit |
 | --- | ---: | --- |
@@ -359,43 +466,6 @@ clean verdict or silently drops matches. The module also exports the
 `EvasionOptions`, `EvasionPolicy`, and `EvasionLimit` types; `EvasionPolicy` is
 available as a type from the package root too.
 
-## Results and errors
-
-`find(text)` returns all occurrences. `analyze(text)` returns:
-
-| Field | Meaning |
-| --- | --- |
-| `text` | Original input. |
-| `words` | Nonempty whitespace-separated tokens. |
-| `censored` | Input with matched spans replaced by `***`. |
-| `badwords` | Unique matching terms, in dictionary insertion order. |
-| `count` | Number of unique matching terms. |
-| `occurrenceCount` | Number of occurrences. |
-| `locations` | All occurrences as `{ word, index, end, match }`. |
-
-Locations are sorted by source index, then dictionary insertion order. `index`
-and exclusive `end` are JavaScript UTF-16 offsets. `match` equals
-`text.slice(index, end)`, including any invisible characters inside the span.
-
-Results include overlapping occurrences. Censorship replaces overlapping spans
-once and adjacent matches separately. Replacement strings are literal.
-`filter` removes matches, collapses whitespace, and trims the result.
-
-Empty strings return no matches, zero counts, and unchanged text. Non-string
-inputs and invalid options throw `TypeError`.
-
-`find` and `analyze` throw `RangeError` beyond 10,000 occurrences by default.
-`maxMatches` accepts a positive safe integer or `Infinity`. `flag` stops at the
-first match; `badwords` and `censor` stream results without keeping every
-occurrence in memory. These three methods have no occurrence cap.
-
-Types exported from the package root include `BadwordsOptions`, `MatchMode`,
-`Normalization`, `BadwordLocation`, `AnalysisResult`, `CensorContext`,
-`CensorCallback`, `CensorReplacement`, `CheckOptions`, `IgnoreRange`, and the dictionary word types. The optional
-entry point also exports the censorship types, `KeepOptions`, `MaskOptions`, and
-`GrawlixOptions`.
-
-
 ## Bounded fuzzy matching
 
 `indonesian-badwords/fuzzy` exports `boundedFuzzy`, `FuzzyLimitError`, and the
@@ -428,7 +498,7 @@ three disabled, only exact spelling is accepted.
 
 `maxEdits` defaults to 1 and accepts integers from 0 through 64. Dictionary keys
 must consist only of Unicode letters, numbers and marks, contain at least one
-letter, and have 5–64 scalars by default. Set `minLength`/`maxLength` to change
+letter, and have 5 to 64 scalars by default. Set `minLength`/`maxLength` to change
 those positive, ordered bounds. Other dictionary entries retain exact matching.
 Candidate spellings may consist entirely of numbers or marks. Empty source
 spans never match. With `ignoreRepeatedLetters: true`, fuzzy eligibility and

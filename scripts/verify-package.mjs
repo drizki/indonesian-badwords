@@ -21,12 +21,12 @@ const files = new Set(run('tar', ['-tzf', archivePath]).trim().split(/\r?\n/)
     .map((path) => path.replace(/^package\//, '')));
 const manifest = JSON.parse(run('tar', ['-xOf', archivePath, 'package/package.json']));
 assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0, 'Library must have zero runtime dependencies');
-for (const required of ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES', 'dist/cjs/package.json']) {
+for (const required of ['package.json', 'README.md', 'README.id.md', 'LICENSE', 'THIRD_PARTY_NOTICES', 'dist/cjs/package.json']) {
     assert.ok(files.has(required), `Missing ${required} in packed package`);
 }
 for (const path of files) {
     if (path.endsWith('/')) continue;
-    assert.ok(path.startsWith('dist/') || ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES'].includes(path),
+    assert.ok(path.startsWith('dist/') || ['package.json', 'README.md', 'README.id.md', 'LICENSE', 'THIRD_PARTY_NOTICES'].includes(path),
         `Unexpected published file: ${path}`);
 }
 function verifyTargets(value) {

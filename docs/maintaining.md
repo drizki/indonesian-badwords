@@ -2,6 +2,13 @@
 
 [Back to the README](../README.md)
 
+- [Development](#development)
+- [Validate a package](#validate-a-package)
+- [Dictionary maintenance](#dictionary-maintenance)
+- [Configure npm once](#configure-npm-once)
+- [Prepare a release PR](#prepare-a-release-pr)
+- [Publish the merged version](#publish-the-merged-version)
+
 ## Development
 
 Use Node.js 22 or newer:
@@ -9,20 +16,37 @@ Use Node.js 22 or newer:
 ```bash
 npm ci
 npm test          # builds, then runs all regression tests
-npm pack          # prepack builds a clean installable tarball
-npm run test:package -- package.tgz
-npm run benchmark # informational synthetic runtime/memory measurements
-npm run benchmark:compare # compare with pinned Indonesian libraries (downloads references)
 ```
 
-The build generates TypeScript declarations and one bundled CommonJS runtime,
-then creates an ESM facade. Both module formats use the same class and singleton. Browser bundlers can
-convert the CommonJS code; raw browser imports need a CDN that performs that conversion. Browser apps need ES2022 support and
-`Intl.Segmenter`.
+The build generates TypeScript declarations and a bundled CommonJS runtime for
+each of the six public entrypoints, then creates their ESM facades. Within each
+entrypoint, both formats share the same exported identities; root imports share
+the same class and default instance. Optional scanners and data remain separate.
+Browser bundlers can convert the CommonJS code; raw browser imports need a CDN
+that performs that conversion. Browser apps need ES2022 and `Intl.Segmenter`.
+
+See [performance and benchmarks](performance.md) for workload descriptions,
+measurements, and commands. Update both README languages together when changing
+features, examples, requirements, or performance facts.
+
+## Validate a package
+
+`npm pack` runs a clean build and returns a versioned tarball filename. Pass that
+filename to the package checks:
+
+```bash
+package_file=$(npm pack --json | node -p "JSON.parse(require('node:fs').readFileSync(0, 'utf8'))[0].filename")
+npm run test:package -- "$package_file"
+```
 
 CI checks Node 22, 24, and 26. It tests the same tarball with ESM/CommonJS consumers,
 TypeScript 5.9.3, 6.0.3, and the build compiler (7.0.2), using strict NodeNext,
 Node16, and Bundler resolution. Package checks also cover browser bundling.
+
+The package includes both READMEs; detailed guides live in the repository. README
+links use public GitHub URLs so they work from the npm package page too.
+
+## Dictionary maintenance
 
 Reviewed catalog data lives in `data/catalog.json`, with stable selector IDs in
 `data/selector-registry.json`. Edit the source claims and matching variants
@@ -35,14 +59,6 @@ metadata and rich catalog bundles. The default engine never imports either.
 The corpus has 80 hand-authored examples with balanced clean and flagged default
 cases. These check expected behavior; they do not measure real-world precision
 or recall. Engine tests also cover Unicode spans, boundaries, overlaps, and limits.
-
-Benchmark output is newline-delimited JSON. The comparison installs pinned reference
-packages in a temporary directory with lifecycle scripts disabled, then removes them.
-It checks expected booleans before timing, rotates 257 input variants, and reports
-different outputs separately. Run `npm run benchmark:compare -- --quick` for a smoke
-check; use the full run for measurements. Dictionaries and policies differ, so these
-synthetic timings do not rank detection accuracy. Both commands report their runtime,
-workloads, warmup, sampling, and memory scope.
 
 ## Configure npm once
 
