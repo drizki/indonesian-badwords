@@ -56,11 +56,13 @@ that connection.
 
 ## Publish a release candidate
 
+Release candidates are optional. Stable releases can publish directly.
+
 Commit the release-ready changes, then run from a clean `main` checkout:
 
 ```bash
-# First v2 release candidate: bumps both manifests and creates a commit and tag
-npm version 2.0.0-rc.1 --message "chore(release): %s"
+# Candidate for the next compatible feature release
+npm version preminor --preid rc --message "chore(release): %s"
 git push origin main --follow-tags
 ```
 
@@ -71,12 +73,19 @@ Prereleases publish to `next`. Testers install them with
 ## Publish a stable release
 
 ```bash
-npm version 2.0.0 --message "chore(release): %s"
+npm version patch --message "chore(release): %s"
 git push origin main --follow-tags
 ```
 
-Stable versions publish to `latest`. For later compatible releases, use
-`npm version patch` or `npm version minor` with the same commit message format.
+Stable versions publish to `latest`. Use `patch` for compatible fixes and
+optimizations, `minor` for compatible features, and `major` for incompatible API
+or behavior changes. To promote a candidate, specify its intended stable version
+instead of using `patch`.
+
+Call out dictionary and default-policy changes in release notes. New default
+vocabulary belongs in a minor release; changing a documented matching contract
+or result shape requires a major release. Every increment must pass the release
+checks independently.
 
 The pushed tag must match both manifests, and its commit must be on `main`.
 The workflow builds one tarball, waits for runtime and TypeScript checks, and

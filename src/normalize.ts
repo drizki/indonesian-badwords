@@ -147,6 +147,16 @@ function simpleCanonical(text: string): string | undefined {
     return simpleCanonicalPattern().test(canonical) ? canonical : undefined;
 }
 
+/** Whether one source atom belongs to the existing inexpensive Unicode path. */
+export function isSimpleUnicodeAtom(character: string): boolean {
+    return simpleCanonical(character) !== undefined;
+}
+
+/** The pre-substitution text, without allocating original-source span maps. */
+export function canonicalSearchText(text: string): string {
+    return text.normalize('NFKD').replace(ignorablePattern(), '').normalize('NFKC').toLowerCase();
+}
+
 function normalizeSimpleUnicode(text: string, ignoreRepeatedLetters: boolean,
     literalBangs?: true | ReadonlySet<number>): NormalizedText | undefined {
     const canonical = simpleCanonical(text);

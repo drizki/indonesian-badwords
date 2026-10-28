@@ -1,7 +1,8 @@
 import { dictionary as defaultDictionary } from './dictionary.ts';
 import { Matcher, type Match } from './matcher.ts';
-import { normalize, normalizeKey, trimDictionaryWord, type Normalization, type NormalizedText } from './normalize.ts';
-import { prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
+import { canonicalSearchText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
+    type Normalization, type NormalizedText } from './normalize.ts';
+import { canonicalCandidatePattern, prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
 
 declare const __BADWORDS_PRESET_PATTERNS__: NativePatterns | undefined;
 const presetPatterns = typeof __BADWORDS_PRESET_PATTERNS__ === 'undefined' ? undefined : __BADWORDS_PRESET_PATTERNS__;
@@ -95,6 +96,8 @@ interface NativeMatcher {
     patterns: NativePatterns;
     potential?: RegExp;
     bangPotential?: RegExp;
+    canonicalLiteral?: RegExp | null;
+    canonicalFolding?: RegExp | null;
 }
 
 const ASCII_TEXT = /^[\x00-\x7f]*$/;
@@ -102,6 +105,7 @@ const ASCII_TEXT = /^[\x00-\x7f]*$/;
 // require the normalization engine and its original-source span mapping.
 const ASCII_WORD = /^[A-Za-z0-9]+$/;
 const WORD_TOKENS = /[a-z0-9]+/gi;
+const FOLDING_CHARACTERS = /[0-9@$(|!]/;
 let internalBang: RegExp | undefined;
 let bareEmoji: RegExp | undefined;
 const emojiDelimiters = new Map<number, boolean>();
@@ -200,6 +204,18 @@ export class Badwords {
             && text.length > this.#maxWordLength && ASCII_WORD.test(text);
     }
 
+    #canonicalSearch(text: string, native: NativeMatcher): typeof CLEAN | undefined {
+        const canonical = canonicalSearchText(text);
+        const folding = FOLDING_CHARACTERS.test(canonical);
+        const key = folding ? 'canonicalFolding' : 'canonicalLiteral';
+        if (native[key] === undefined) native[key] = canonicalCandidatePattern(native.patterns, folding) ?? null;
+        const pattern = native[key];
+        // The canonical text precedes ASCII substitutions. Aliases include
+        // every possible fold and protected literal bang. Final composition
+        // cannot create an ASCII key; boundaries only remove occurrences.
+        return pattern && !pattern.test(canonical) ? CLEAN : undefined;
+    }
+
     #nativeFor(text: string, censorship = false, literal?: string): NativeMatcher | typeof CLEAN | undefined {
         if (this.#mode !== 'word' || this.#ignoreRepeatedLetters) return;
         if (this.#native === undefined) {
@@ -254,7 +270,13 @@ export class Badwords {
                 // Common bare pictographs need no temporary string or Unicode
                 // classification; modifiers immediately after these ranges do.
                 if (!((point >= 0x1f300 && point <= 0x1f3fa) || (point >= 0x1f400 && point <= 0x1f64f))
-                    && !emojiDelimiter(String.fromCodePoint(point))) return;
+                    && !emojiDelimiter(String.fromCodePoint(point))) {
+                    // Keep already-inexpensive fullwidth/control/symbol paths.
+                    if (this.#normalization === 'standard' && !isSimpleUnicodeAtom(String.fromCodePoint(point))) {
+                        return this.#canonicalSearch(text, native);
+                    }
+                    return;
+                }
                 native.hazards.lastIndex += point > 0xffff ? 1 : 0;
                 continue;
             }
