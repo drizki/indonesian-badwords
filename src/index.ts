@@ -1,7 +1,8 @@
 import { dictionary as defaultDictionary } from './dictionary.ts';
 import { Matcher, type Match } from './matcher.ts';
+import type { EvasionCompiler, EvasionPolicy, EvasionRuntime } from './evasion-types.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './exceptions.ts';
-import { isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
+import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
     type Normalization, type NormalizedText } from './normalize.ts';
 import { prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
 import { UnicodeMatcher, UnicodeView } from './unicode.ts';
@@ -12,6 +13,7 @@ const presetPatterns = typeof __BADWORDS_PRESET_PATTERNS__ === 'undefined' ? und
 export { dictionary, contextualDictionary, expandedDictionary } from './dictionary.ts';
 export type { DictionaryWord, ContextualDictionaryWord, ExpandedDictionaryWord } from './dictionary.ts';
 export type { Normalization } from './normalize.ts';
+export type { EvasionPolicy } from './evasion-types.ts';
 
 /** One occurrence with exclusive end and UTF-16 offsets into the original input. */
 export interface BadwordLocation {
@@ -60,6 +62,8 @@ export interface AnalysisResult {
 
 export type MatchMode = 'substring' | 'word';
 export interface BadwordsOptions {
+    /** Explicit bounded transformations from the optional /evasion module. */
+    evasion?: EvasionPolicy;
     dictionary?: readonly string[];
     /** Literal whole-word phrases exempt only occurrences fully contained inside them. */
     allowPhrases?: readonly string[];
@@ -149,7 +153,9 @@ function emojiDelimiter(character: string): boolean {
 
 /** An isolated dictionary matcher. It does not infer intent or context. */
 export class Badwords {
-    readonly #dictionary = new Set<string>();
+    #dictionary = new Set<string>();
+    readonly #evasionCompiler: EvasionCompiler | undefined;
+    #evasion: EvasionRuntime | undefined;
     readonly #mode: MatchMode;
     readonly #normalization: Normalization;
     readonly #ignoreRepeatedLetters: boolean;
@@ -176,6 +182,16 @@ export class Badwords {
         if (options.dictionary !== undefined && !Array.isArray(options.dictionary)) {
             throw new TypeError('dictionary must be an array of strings');
         }
+        if (options.evasion !== undefined) {
+            if (ignoreRepeatedLetters) throw new TypeError('bounded evasion cannot use unlimited ignoreRepeatedLetters');
+            if (!options.evasion || typeof options.evasion !== 'object' || !Object.isFrozen(options.evasion))
+                throw new TypeError('evasion must be created by boundedEvasion()');
+            const compiler = Reflect.get(options.evasion, Symbol.for('indonesian-badwords.evasion.v1')) as EvasionCompiler | undefined;
+            if (!compiler || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
+                throw new TypeError('evasion must be created by boundedEvasion()');
+            this.#evasionCompiler = compiler;
+            compiler.checkDictionary(wordsArray(options.dictionary ?? defaultDictionary));
+        }
         this.#mode = mode;
         this.#normalization = normalization;
         this.#ignoreRepeatedLetters = ignoreRepeatedLetters;
@@ -192,12 +208,14 @@ export class Badwords {
         } else {
             this.addWords(options.dictionary);
         }
+        if (this.#evasionCompiler && !this.#evasion) this.#setEvasion(this.#dictionary, this.#preset);
     }
 
     /** A snapshot; mutating it does not change the checker. */
     get dict(): string[] { return [...this.#dictionary]; }
 
     addWords(words: string | readonly string[]): void {
+        if (this.#evasionCompiler) { this.#changeDictionary(words, true); return; }
         for (const word of wordsArray(words)) {
             // Canonical keys may themselves contain whitespace introduced by
             // compatibility normalization. A snapshot must round-trip unchanged.
@@ -213,6 +231,7 @@ export class Badwords {
         }
     }
     removeWords(words: string | readonly string[]): void {
+        if (this.#evasionCompiler) { this.#changeDictionary(words, false); return; }
         for (const word of wordsArray(words)) {
             if (this.#dictionary.delete(word)
                 || this.#dictionary.delete(trimDictionaryWord(normalizeKey(trimDictionaryWord(word), this.#normalization)))) {
@@ -221,6 +240,39 @@ export class Badwords {
                 this.#preset = false;
             }
         }
+    }
+
+    #setEvasion(words: Set<string>, preset = false): void {
+        const entries = [...words].map((word, order) => ({ word, key: word, order }));
+        this.#evasionCompiler!.checkDictionary([...words]);
+        let matcher: Matcher | undefined;
+        const runtime = this.#evasionCompiler!.compile(entries, this.#normalization, normalizeKey, limit => {
+            matcher = new Matcher(entries, limit);
+            return matcher.view();
+        }, text => foldCandidateText(canonicalSearchView(text).text)?.normalize('NFKC'));
+        this.#dictionary = words;
+        this.#matcher = matcher;
+        this.#evasion = runtime;
+        this.#maxKeyLength = entries.reduce((maximum, entry) => Math.max(maximum, entry.key.length), 0);
+        this.#maxWordLength = this.#maxKeyLength;
+        this.#native = undefined;
+        this.#preset = preset;
+    }
+
+    #changeDictionary(words: string | readonly string[], add: boolean): void {
+        const batch = wordsArray(words);
+        this.#evasionCompiler!.checkDictionary(batch);
+        const staged = new Set(this.#dictionary);
+        let changed = false;
+        for (const word of batch) {
+            if (add && staged.has(word)) continue;
+            if (!add && staged.delete(word)) { changed = true; continue; }
+            const canonical = trimDictionaryWord(normalizeKey(trimDictionaryWord(word), this.#normalization));
+            if (add) {
+                if (canonical && !staged.has(canonical)) { staged.add(canonical); changed = true; }
+            } else if (staged.delete(canonical)) changed = true;
+        }
+        if (changed) this.#setEvasion(staged);
     }
 
     #longWord(text: string): boolean {
@@ -350,15 +402,21 @@ export class Badwords {
     }
 
     #acceptance(text: string, options?: CheckOptions): MatchAcceptance | undefined {
+        if (this.#evasion) { validateText(text); this.#evasion.checkInput(text); }
         if (options === undefined && !this.#allowed) return;
         validateText(text);
         return matchAcceptance(text, options, this.#allowed);
     }
 
     #scan(text: string, visit: (match: Match) => boolean | void, spansOnly = false, skipNative = false,
-        accept?: MatchAcceptance): void {
+        accept?: MatchAcceptance, unique = false, knownEvasion?: boolean): void {
         validateText(text);
         if (!text.length || !this.#dictionary.size) return;
+        if (knownEvasion === undefined ? this.#evasion?.potential(text) : knownEvasion) {
+            this.#evasion!.scan(this.#normalizeInput(text), this.#mode === 'word', visit,
+                unique ? 'unique' : spansOnly ? 'spans' : 'all', accept);
+            return;
+        }
         if (this.#longWord(text)) return;
         const native = skipNative ? undefined : this.#nativeFor(text);
         if (native === CLEAN) return;
@@ -444,7 +502,7 @@ export class Badwords {
     flag(text: string, options?: CheckOptions): boolean {
         validateText(text);
         const accept = this.#acceptance(text, options);
-        if (accept) {
+        if (accept || this.#evasion) {
             let found = false;
             this.#scan(text, () => { found = true; return false; }, false, false, accept);
             return found;
@@ -485,21 +543,22 @@ export class Badwords {
     badwords(text: string, options?: CheckOptions): string[] {
         const accept = this.#acceptance(text, options);
         const found = new Set<string>();
-        this.#scan(text, ({ word }) => { found.add(word); return found.size < this.#dictionary.size; }, false, false, accept);
+        this.#scan(text, ({ word }) => { found.add(word); return found.size < this.#dictionary.size; }, false, false, accept, true);
         return [...this.#dictionary].filter((word) => found.has(word));
     }
     #censorCallback(text: string, replacement: CensorCallback, accept?: MatchAcceptance): string {
         validateText(text);
-        if (!text.length || !this.#dictionary.size || this.#longWord(text)) return text;
-        const native = this.#nativeFor(text);
+        const advanced = this.#evasion?.potential(text);
+        if (!text.length || !this.#dictionary.size || (!advanced && this.#longWord(text))) return text;
+        const native = advanced ? undefined : this.#nativeFor(text);
         if (native === CLEAN) return text;
-        const spans = native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word', accept);
+        const spans = advanced ? this.#evasion!.censor(this.#normalizeInput(text), this.#mode === 'word', accept)
+            : native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word', accept);
         if (native) {
             const collect = ({ word, start, end, order }: Match) => {
                 spans.push({ start, end, entries: [{ word, key: word, order }] });
             };
-            // Unicode views reject multipart candidates before acceptance.
-            // Their unique simple whole-word matches cannot overlap.
+            // Unicode views only accept independent simple whole-word matches.
             if (native instanceof UnicodeView) native.scan(collect, accept);
             else this.#scan(text, collect, false, false, accept);
         }
@@ -525,8 +584,9 @@ export class Badwords {
         validateText(text);
         validateText(replacement);
         if (!text.length || !this.#dictionary.size) return text;
-        if (this.#longWord(text)) return text;
-        const native = accept ? undefined : this.#nativeFor(text, true);
+        const advanced = this.#evasion?.potential(text);
+        if (!advanced && this.#longWord(text)) return text;
+        const native = accept || advanced ? undefined : this.#nativeFor(text, true);
         if (native === CLEAN) return text;
         if (native instanceof UnicodeView) {
             const spans: Array<{ start: number; end: number }> = [];
@@ -540,7 +600,7 @@ export class Badwords {
                 replacement.includes('$') ? replacement.split('$').join('$$') : replacement);
         }
         const spans: Array<{ start: number; end: number }> = [];
-        this.#scan(text, (match) => { mergeSpan(spans, match); }, true, !accept, accept);
+        this.#scan(text, (match) => { mergeSpan(spans, match); }, true, !accept, accept, false, advanced);
         return replaceSpans(text, spans, replacement);
     }
     filter(text: string, options?: CheckOptions): string { return this.censor(text, '', options).replace(/\s+/gu, ' ').trim(); }

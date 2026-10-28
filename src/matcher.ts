@@ -1,16 +1,23 @@
 import type { NormalizedText } from './normalize.ts';
+import type { TrieLimit } from './evasion-types.ts';
 
 export interface Entry { word: string; key: string; order: number }
 export interface Match { word: string; start: number; end: number; order: number; from: number; to: number }
 export interface CensorSpan { start: number; end: number; entries: Entry[] }
 interface CensorCluster { start: number; end: number; entries: Set<Entry>; id: number }
 interface Node { next: Map<number, number>; fail: number; output: number; entries: Entry[] }
+export interface MatcherNode {
+    readonly next: ReadonlyMap<number, number>;
+    readonly entries: readonly Entry[];
+    readonly fail: number;
+    readonly output: number;
+}
 function node(): Node { return { next: new Map(), fail: 0, output: -1, entries: [] }; }
-function acceptsEnd(value: NormalizedText, to: number, wholeWords: boolean): boolean {
+export function acceptsEnd(value: NormalizedText, to: number, wholeWords: boolean): boolean {
     return !(wholeWords && value.wordCharacters[to])
         && !(to < value.text.length && value.ends[to - 1] > value.starts[to]);
 }
-function acceptsStart(value: NormalizedText, from: number, wholeWords: boolean): boolean {
+export function acceptsStart(value: NormalizedText, from: number, wholeWords: boolean): boolean {
     return !(from > 0 && value.ends[from - 1] > value.starts[from])
         && !(wholeWords && value.wordCharacters[from - 1]);
 }
@@ -19,13 +26,14 @@ function acceptsStart(value: NormalizedText, from: number, wholeWords: boolean):
 export class Matcher {
     readonly #nodes: Node[] = [node()];
 
-    constructor(entries: readonly Entry[]) {
+    constructor(entries: readonly Entry[], limit?: TrieLimit) {
         for (const entry of entries) {
             let state = 0;
             for (let index = 0; index < entry.key.length; index++) {
                 const character = entry.key.charCodeAt(index);
                 let next = this.#nodes[state].next.get(character);
                 if (next === undefined) {
+                    if (limit && this.#nodes.length >= limit.maximum) limit.exceeded(this.#nodes.length + 1);
                     next = this.#nodes.length;
                     this.#nodes[state].next.set(character, next);
                     this.#nodes.push(node());
@@ -62,6 +70,7 @@ export class Matcher {
         }
         return true;
     }
+    view(): readonly MatcherNode[] { return this.#nodes; }
 
     /** Return false from a visitor to stop without allocating more occurrences. */
     scan(value: NormalizedText, wholeWords: boolean, visit: (match: Match) => boolean | void,

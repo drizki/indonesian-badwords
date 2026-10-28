@@ -101,6 +101,21 @@ for (const replacement of ['mask', 'grawlix']) add(`${replacement}-graphemes-280
         { surface: '👩‍💻', word: '👩💻', offset: 5 }]
 });
 
+const bounded = { separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 },
+    repetitions: { maxExtraPerLetter: 2, maxTotal: 8 } };
+for (const length of [280, 4_000]) add(`bounded-clean-${length}-flag`, 'clean', length, 'flag', { evasion: bounded });
+for (const method of ['flag', 'censor', 'analyze']) add(`bounded-separated-280-${method}`, 'placed', 280, method, {
+    position: 'middle', surface: 'g-o-b-l-o-k',
+    terms: [{ surface: 'g-o-b-l-o', word: 'goblo', offset: 0 }, ...terms('g-o-b-l-o-k', 'goblok')], evasion: bounded
+});
+for (const method of ['flag', 'censor']) add(`bounded-lookalikes-280-${method}`, 'placed', 280, method, {
+    position: 'middle', surface: 'gοblοk', terms: terms('gοblοk', 'goblok'),
+    evasion: { confusables: { mappings: [['ο', 'o']], maxTotal: 2 } }
+});
+add('bounded-repeats-280-flag', 'placed', 280, 'flag', {
+    position: 'middle', surface: 'goooblok', terms: terms('goooblok', 'goblok'), evasion: bounded
+});
+
 function alphabeticId(number) {
     let value = '';
     do { value = String.fromCharCode(97 + number % 26) + value; number = Math.floor(number / 26); } while (number);
@@ -144,6 +159,15 @@ function locations(job, sample) {
     return found;
 }
 function replaceTerms(text, entries, replacements = '***') {
+    if (!Array.isArray(replacements)) {
+        const merged = [];
+        for (const span of [...entries].sort((a, b) => a.index - b.index || a.end - b.end)) {
+            const previous = merged.at(-1);
+            if (previous && span.index < previous.end) previous.end = Math.max(previous.end, span.end);
+            else merged.push({ index: span.index, end: span.end });
+        }
+        entries = merged;
+    }
     let result = '', index = 0;
     for (let entry = 0; entry < entries.length; entry++) {
         const term = entries[entry];
@@ -204,6 +228,12 @@ async function measure(job) {
     const api = require('../dist/cjs/index.js');
     const importUs = us(performance.now() - start);
     const options = { ...job.options };
+    let optionalSetupUs = 0;
+    if (job.evasion) {
+        const setupStart = performance.now();
+        options.evasion = require('../dist/cjs/evasion.js').boundedEvasion(job.evasion);
+        optionalSetupUs = us(performance.now() - setupStart);
+    }
     if (job.dictionary === 'expanded') options.dictionary = api.expandedDictionary;
     if (job.dictionary === 'prefixes') options.dictionary = Array.from({ length: 64 }, (_, index) => 'a'.repeat(index + 1));
     if (job.dictionary === 'bridge-prefixes') options.dictionary =
@@ -276,7 +306,7 @@ async function measure(job) {
     return { type: 'measurement', id: job.id, status: job.limited ? 'limited' : 'measured', method: job.method,
         policy: { dictionary: job.dictionary ?? 'core', dictionaryTerms: orders.size, mode: options.mode ?? 'word',
             normalization: options.normalization ?? 'standard', ignoreRepeatedLetters: options.ignoreRepeatedLetters ?? false,
-            maxMatches: options.maxMatches ?? 10_000, allowPhrases: options.allowPhrases ?? [],
+            maxMatches: options.maxMatches ?? 10_000, evasion: job.evasion ?? null, allowPhrases: options.allowPhrases ?? [],
             ignoreRanges: first.checkOptions?.ignoreRanges ?? [],
             replacement: !['censor', 'analyze'].includes(job.method) ? null
                 : job.replacement === 'mask' ? { kind: 'mask', keepFirst: 1, keepLast: 1 }
@@ -284,8 +314,8 @@ async function measure(job) {
                     : job.replacement === 'callback' ? { kind: 'callback', operation: 'format unique contributor words' } : 'literal ***' },
         input: { kind: job.kind, position: job.position ?? null, utf16Units: first.text.length, payloadUnits: job.length,
             referenceIds: 'unique per operation; generation excluded from timings' },
-        cold: { importUs, constructionUs, helperImportUs, replacementSetupUs, firstCallUs,
-            totalUs: importUs + constructionUs + helperImportUs + replacementSetupUs + firstCallUs },
+        cold: { importUs, optionalSetupUs, constructionUs, helperImportUs, replacementSetupUs, firstCallUs,
+            totalUs: importUs + optionalSetupUs + constructionUs + helperImportUs + replacementSetupUs + firstCallUs },
         warmup: { timedMs: warmupMs, calls: warmupCalls },
         timing: { samples: job.samples, batchSize, operations: job.samples * batchSize,
             medianUs: percentile(perCallUs, 0.5), p95Us: percentile(perCallUs, 0.95),
@@ -308,7 +338,7 @@ if (process.argv.includes('--worker')) {
         node: process.version, v8: process.versions.v8, platform: process.platform, architecture: process.arch, quick,
         cases: selected.length, warmupMinimumMs: quick ? 40 : 250, timedSamples: quick ? 15 : 41,
         measurements: 'Own-library synthetic workloads. Inputs are unique; input/range-fixture generation and every-result correctness checks are outside timings. Dispatch, callback execution/call-count capture, library range validation and result storage are included; no overhead subtraction, accuracy or production-throughput claim.',
-        cold: 'Fresh process root CommonJS require, explicit instance construction, optional helper require, replacement factory setup and first operation are separate. Helpers load only in mask/grawlix cases. Excludes process startup and fixture generation. One cold observation per case.',
+        cold: 'Fresh process root CommonJS require, explicit instance construction, optional helper require, replacement factory setup and first operation are separate. Censorship helpers load only in mask/grawlix cases; bounded-evasion import/factory setup is reported separately. Excludes process startup and fixture generation. One cold observation per case.',
         memory: 'Peak process RSS includes Node, library, corpus generation, collected batch results, assertions and GC. Not library-only memory.',
         limits: 'Match-limit RangeErrors are expected only for the two overlapping-prefix detail cases. All other errors, wrong results and 20-second child timeouts fail the run.',
         nodeCompileCache: Boolean(process.env.NODE_COMPILE_CACHE) }));

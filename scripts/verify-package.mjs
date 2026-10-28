@@ -21,12 +21,12 @@ const files = new Set(run('tar', ['-tzf', archivePath]).trim().split(/\r?\n/)
     .map((path) => path.replace(/^package\//, '')));
 const manifest = JSON.parse(run('tar', ['-xOf', archivePath, 'package/package.json']));
 assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0, 'Library must have zero runtime dependencies');
-for (const required of ['package.json', 'README.md', 'LICENSE', 'dist/cjs/package.json']) {
+for (const required of ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES', 'dist/cjs/package.json']) {
     assert.ok(files.has(required), `Missing ${required} in packed package`);
 }
 for (const path of files) {
     if (path.endsWith('/')) continue;
-    assert.ok(path.startsWith('dist/') || ['package.json', 'README.md', 'LICENSE'].includes(path),
+    assert.ok(path.startsWith('dist/') || ['package.json', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES'].includes(path),
         `Unexpected published file: ${path}`);
 }
 function verifyTargets(value) {
@@ -40,8 +40,12 @@ verifyTargets(manifest.exports);
 for (const field of ['main', 'module', 'types']) verifyTargets(manifest[field]);
 assert.equal(JSON.parse(run('tar', ['-xOf', archivePath, 'package/dist/cjs/package.json'])).type, 'commonjs');
 assert.deepEqual([...files].filter(path => path.endsWith('.js')).sort(),
-    ['dist/cjs/censor.js', 'dist/cjs/index.js', 'dist/esm/censor.js', 'dist/esm/index.js'],
-    'Publish the root and optional strategy runtime, each with its ESM facade');
+    ['dist/cjs/censor.js', 'dist/cjs/evasion.js', 'dist/cjs/index.js', 'dist/esm/censor.js', 'dist/esm/evasion.js', 'dist/esm/index.js'],
+    'Publish one root runtime and each optional runtime with its ESM facade');
+const evasionSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/evasion.js']);
+assert.ok(!evasionSource.includes('kontol') && !evasionSource.includes('defaultDictionary'), 'Evasion must share the supplied dictionary');
+const rootSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/index.js']);
+assert.ok(!rootSource.includes('maxExtraPerLetter') && !rootSource.includes('maxConfusables'), 'Root must not embed the optional scanner or config');
 const strategySource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/censor.js']);
 assert.ok(!strategySource.includes('kontol') && !strategySource.includes('defaultDictionary'),
     'Optional strategies must not duplicate the dictionary or root runtime');
@@ -55,9 +59,19 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import instance, * as api from 'indonesian-badwords';
 import { mask, grawlix } from 'indonesian-badwords/censor';
+import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-badwords/evasion';
 const require = createRequire(import.meta.url);
 const cjs = require('indonesian-badwords');
 const strategies = require('indonesian-badwords/censor');
+const evasions = require('indonesian-badwords/evasion');
+assert.equal(boundedEvasion, evasions.boundedEvasion);
+assert.equal(latinLookalikes, evasions.latinLookalikes);
+assert.equal(EvasionLimitError, evasions.EvasionLimitError);
+const evasion = boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 },
+    confusables: { mappings: latinLookalikes, maxTotal: 2 } });
+const evasive = new api.Badwords({ dictionary: ['goblok'], evasion });
+assert.equal(evasive.censor('g-o-b-l-o-k gοblοk', mask()), '*********** ******');
+assert.equal(evasive.flag('g-o-b-l-o-k', { ignoreRanges: [{ index: 1, end: 2 }] }), false);
 assert.equal(mask, strategies.mask);
 assert.equal(grawlix, strategies.grawlix);
 assert.equal(api.Badwords, cjs.Badwords);
@@ -118,6 +132,8 @@ try {
 const assert = require('node:assert/strict');
 const api = require('indonesian-badwords');
 const { mask, grawlix } = require('indonesian-badwords/censor');
+const { boundedEvasion } = require('indonesian-badwords/evasion');
+assert.equal(new api.Badwords({ evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).flag('g-o-b-l-o-k'), true);
 assert.equal(api.flag('dasar kontol'), true);
 assert.equal(api.default.censor('dasar kontol'), 'dasar ***');
 assert.equal(api.censor('goblok', mask({ keepLast: 1 })), '*****k');
@@ -139,6 +155,7 @@ assert.equal(api.flag('goblok', { ignoreRanges: [{ index: 0, end: 6 }] }), false
     writeFileSync(browserEntry, `
 import instance, { Badwords, find, dictionary, expandedDictionary } from 'indonesian-badwords';
 import { mask, grawlix } from 'indonesian-badwords/censor';
+import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-badwords/evasion';
 let matchLimitEnforced = false;
 try {
     new Badwords({ dictionary: ['a'], mode: 'substring', maxMatches: 2 }).find('aaa');
@@ -163,6 +180,8 @@ globalThis.browserResults = {
     grawlix: instance.censor('kontol', grawlix({ symbols: '$#', random: () => 0 })),
     scoped: new Badwords({ allowPhrases: ['Baju Bodo'] }).censor('Baju Bodo goblok bodo', mask(),
         { ignoreRanges: [{ index: 10, end: 16 }] }),
+    evasion: new Badwords({ evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 },
+        confusables: { mappings: latinLookalikes, maxTotal: 2 } }) }).censor('g-o-b-l-o-k gοblοk'),
     matchLimitEnforced
 };
 `);
@@ -204,6 +223,7 @@ globalThis.browserResults = {
         graphemes: '* * *',
         grawlix: '$$$$$$',
         scoped: 'Baju Bodo goblok ****',
+        evasion: '*** ***',
         matchLimitEnforced: true
     });
 
@@ -212,8 +232,8 @@ globalThis.browserResults = {
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\]censor\.js$/.test(path)),
-        'Default imports must not load optional strategies');
+    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion)\.js$/.test(path)),
+        'Default imports must not load optional strategies, scanner, or mappings');
     const strategyOnly = await build({
         stdin: { contents: "export { mask, grawlix } from 'indonesian-badwords/censor';", resolveDir: workspace },
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
@@ -221,6 +241,14 @@ globalThis.browserResults = {
     });
     assert.ok(Object.keys(strategyOnly.metafile.inputs).every(path => !/[/\\]index\.js$/.test(path)),
         'Optional strategies must not pull in another root runtime');
+
+    const evasionOnly = await build({
+        stdin: { contents: "export { boundedEvasion } from 'indonesian-badwords/evasion';", resolveDir: workspace },
+        bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
+        write: false, metafile: true, logLevel: 'silent'
+    });
+    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\]index\.js$/.test(path)),
+        'Optional evasion must not load a second root runtime');
 
     const types = `
 import instance, { Badwords, flag, find, analyze, dictionary, contextualDictionary, expandedDictionary,
@@ -230,6 +258,21 @@ import instance, { Badwords, flag, find, analyze, dictionary, contextualDictiona
     type CensorReplacement, type CheckOptions, type IgnoreRange } from 'indonesian-badwords';
 import { mask, grawlix, type MaskOptions, type GrawlixOptions,
     type CensorContext as StrategyContext } from 'indonesian-badwords/censor';
+import { boundedEvasion, latinLookalikes, EvasionLimitError, type EvasionPolicy, type EvasionOptions,
+    type EvasionLimit } from 'indonesian-badwords/evasion';
+const evasiveOptions: EvasionOptions = { separators: { characters: ['-'] as const, maxGap: 1, maxTotal: 8 },
+    confusables: { mappings: latinLookalikes, maxTotal: 2 } };
+const selectedEvasion: EvasionPolicy = boundedEvasion(evasiveOptions);
+new Badwords({ evasion: selectedEvasion }).find('g-o-b-l-o-k');
+const limit: EvasionLimit = new EvasionLimitError('steps', 1, 2).limit;
+// @ts-expect-error policies are opaque factory results
+new Badwords({ evasion: {} });
+// @ts-expect-error mapping targets must be strings
+boundedEvasion({ confusables: { mappings: [['а', 1]], maxTotal: 1 } });
+// @ts-expect-error transformation limits must be numeric
+boundedEvasion({ repetitions: { maxExtraPerLetter: '2', maxTotal: 3 } });
+// @ts-expect-error selected lookalikes are immutable
+latinLookalikes.push(['b', 'd']);
 const mode: MatchMode = 'substring';
 const normalization: Normalization = 'standard';
 const options: BadwordsOptions = { dictionary: ['customterm'] as const, mode,
@@ -320,6 +363,9 @@ const invalid: string = flag('kontol');
         writeFileSync(join(workspace, `consumer.${extension}`), types + (extension === 'mts' ? `
 import cjs = require('indonesian-badwords');
 import cjsStrategies = require('indonesian-badwords/censor');
+import cjsEvasion = require('indonesian-badwords/evasion');
+const policyFromImport: cjsEvasion.EvasionPolicy = selectedEvasion;
+const policyFromRequire: EvasionPolicy = cjsEvasion.boundedEvasion(evasiveOptions);
 const fromImport: cjs.Badwords = checker;
 const fromRequire: Badwords = new cjs.Badwords();
 const defaultFromImport: cjs.Badwords = instance;
@@ -347,7 +393,7 @@ new cjs.Badwords({ dictionary: ['customterm'] });
         run(process.execPath, [compiler, '-p', config], workspace);
     }
     const compilerVersion = JSON.parse(readFileSync(join(root, 'node_modules/typescript/package.json'))).version;
-    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional censorship strategies, browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
+    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional censorship/evasion modules, browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
 } finally {
     rmSync(workspace, { recursive: true, force: true });
 }

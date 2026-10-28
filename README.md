@@ -49,6 +49,26 @@ const { Badwords, flag, censor } = require('indonesian-badwords');
 flag('dasar goblok'); // true
 ```
 
+## Bounded evasion
+
+Opt in to separated letters, limited stretching, or selected lookalikes without
+loading the optional scanner into ordinary imports:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedEvasion } from 'indonesian-badwords/evasion';
+
+const checker = new Badwords({
+  evasion: boundedEvasion({
+    separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 }
+  })
+});
+checker.censor('g-o-b-l-o-k'); // '***'
+```
+
+Each transformation has explicit bounds. Original spans, scoped exceptions, and
+all checker methods follow the same policy. [Configure repeats, mappings, and resource limits](docs/api.md#bounded-evasion).
+
 ## Performance
 
 A browser bundle with the default checker is about 12 KB minified and gzipped.
@@ -67,9 +87,9 @@ call. Each case warms up for at least 250 ms, then measures 41 calibrated batche
 These are medians of per-call batch averages; import, setup, input generation,
 and correctness checks are excluded. Results vary with input, hardware, and runtime.
 
-Run `npm run benchmark` for 79 self-checking workloads, including cold calls,
+Run `npm run benchmark` for 87 self-checking workloads, including cold calls,
 match positions, Unicode, callbacks, masking, scoped exceptions, custom dictionaries,
-and memory. Run
+bounded evasion, and memory. Run
 `npm run benchmark:compare` to compare with pinned Indonesian libraries; different
 detection outputs are reported separately from timings.
 
