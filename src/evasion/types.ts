@@ -1,5 +1,5 @@
-import type { CensorSpan, Entry, Match, MatcherNode } from './matcher.ts';
-import type { Normalization, NormalizedText } from './normalize.ts';
+import type { CensorSpan, Entry, Match, MatcherNode } from '../core/matcher.ts';
+import type { Normalization, NormalizedText } from '../text/normalize.ts';
 
 declare const policyBrand: unique symbol;
 /** An immutable policy created by the optional `indonesian-badwords/evasion` module. */

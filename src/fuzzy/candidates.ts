@@ -1,5 +1,5 @@
-import type { Entry } from './matcher.ts';
-import type { FuzzyConfig } from './fuzzy-types.ts';
+import type { Entry } from '../core/matcher.ts';
+import type { FuzzyConfig } from './types.ts';
 export interface FuzzyMeter { tick(count?: number): void; candidate(): void; cells(used: number): void }
 export interface FuzzyGroup { units: readonly number[]; entries: Entry[]; composed: boolean; masks?: Map<number, number>; top: number }
 interface Bucket { q: number; threshold: number; ids: number[]; keys: Map<number, number>; starts: Uint32Array; values: Uint32Array }

@@ -1,7 +1,7 @@
-import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode } from './matcher.ts';
-import type { EvasionRuntime, TrieLimit } from './evasion-types.ts';
-import type { Normalization, NormalizedText } from './normalize.ts';
-import type { EvasionLimit } from './evasion.ts';
+import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode } from '../core/matcher.ts';
+import type { EvasionRuntime, TrieLimit } from './types.ts';
+import type { Normalization, NormalizedText } from '../text/normalize.ts';
+import type { EvasionLimit } from './policy.ts';
 
 export interface CompiledOptions {
     readonly minLength: number; readonly maxLength: number;

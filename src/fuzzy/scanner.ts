@@ -1,9 +1,9 @@
-import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode } from './matcher.ts';
-import type { EvasionCompiler, EvasionRuntime, TrieLimit } from './evasion-types.ts';
-import type { Normalization, NormalizedText } from './normalize.ts';
-import type { FuzzyConfig } from './fuzzy-types.ts';
-import type { FuzzyLimit } from './fuzzy.ts';
-import { FuzzyIndex, type FuzzyMeter } from './fuzzy-index.ts';
+import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode } from '../core/matcher.ts';
+import type { EvasionCompiler, EvasionRuntime, TrieLimit } from '../evasion/types.ts';
+import type { Normalization, NormalizedText } from '../text/normalize.ts';
+import type { FuzzyConfig } from './types.ts';
+import type { FuzzyLimit } from './policy.ts';
+import { FuzzyIndex, type FuzzyMeter } from './candidates.ts';
 
 type Fail = (limit: FuzzyLimit, maximum: number, used: number) => never;
 const ascii = (code: number) => (code >= 65 && code <= 90) || (code >= 97 && code <= 122);

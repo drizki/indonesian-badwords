@@ -1,8 +1,8 @@
-import { categoryIds, profileIds, usageRegions } from './catalog-registry.ts';
-import { freezeData } from './catalog-freeze.ts';
-import type { DictionarySelection, VariantMetadata } from './catalog-types.ts';
-export type * from './catalog-types.ts';
-export { categoryIds, profileIds, usageRegions } from './catalog-registry.ts';
+import { categoryIds, profileIds, usageRegions } from './registry.ts';
+import { freezeData } from './freeze.ts';
+import type { DictionarySelection, VariantMetadata } from './types.ts';
+export type * from './types.ts';
+export { categoryIds, profileIds, usageRegions } from './registry.ts';
 
 declare const __BADWORDS_METADATA__: readonly VariantMetadata[];
 

@@ -1,7 +1,7 @@
-import type { EvasionCompiler, EvasionRuntime } from './evasion-types.ts';
-import type { Entry, MatcherNode } from './matcher.ts';
-import type { Normalization } from './normalize.ts';
-import type { TrieLimit } from './evasion-types.ts';
+import type { EvasionCompiler, EvasionRuntime } from '../evasion/types.ts';
+import type { Entry, MatcherNode } from '../core/matcher.ts';
+import type { Normalization } from '../text/normalize.ts';
+import type { TrieLimit } from '../evasion/types.ts';
 
 declare const policyBrand: unique symbol;
 /** An immutable policy created by the optional `indonesian-badwords/fuzzy` module. */

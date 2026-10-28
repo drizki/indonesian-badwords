@@ -1,6 +1,6 @@
-import type { CategoryId, ReviewedProfileId, UsageRegionId } from './catalog-registry.ts';
+import type { CategoryId, ReviewedProfileId, UsageRegionId } from './registry.ts';
 
-export type { CategoryId, ReviewedProfileId, UsageRegionId } from './catalog-registry.ts';
+export type { CategoryId, ReviewedProfileId, UsageRegionId } from './registry.ts';
 /** Editorial register intensity, not a toxicity probability or intent score. */
 export type Severity = 1 | 2 | 3 | 4;
 export type Attestation = 'attested' | 'editorial-alias' | 'unresolved';

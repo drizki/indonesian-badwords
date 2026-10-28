@@ -1,6 +1,6 @@
-import { freezeData } from './catalog-freeze.ts';
-import type { CatalogEntry, CatalogReview, CatalogSource, SeverityRubric } from './catalog-types.ts';
-export type * from './catalog-types.ts';
+import { freezeData } from './freeze.ts';
+import type { CatalogEntry, CatalogReview, CatalogSource, SeverityRubric } from './types.ts';
+export type * from './types.ts';
 
 declare const __BADWORDS_CATALOG__: {
     readonly entries: readonly CatalogEntry[];

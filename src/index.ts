@@ -1,21 +1,21 @@
-import { dictionary as defaultDictionary } from './dictionary.ts';
-import { Matcher, type Match } from './matcher.ts';
-import type { FuzzyCompiler, FuzzyPolicy } from './fuzzy-types.ts';
-import type { EvasionCompiler, EvasionPolicy, EvasionRuntime } from './evasion-types.ts';
-import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './exceptions.ts';
+import { dictionary as defaultDictionary } from './dictionary/presets.ts';
+import { Matcher, type Match } from './core/matcher.ts';
+import type { FuzzyCompiler, FuzzyPolicy } from './fuzzy/types.ts';
+import type { EvasionCompiler, EvasionPolicy, EvasionRuntime } from './evasion/types.ts';
+import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './core/exceptions.ts';
 import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
-    type Normalization, type NormalizedText } from './normalize.ts';
-import { prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
-import { UnicodeMatcher, UnicodeView } from './unicode.ts';
+    type Normalization, type NormalizedText } from './text/normalize.ts';
+import { prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
+import { UnicodeMatcher, UnicodeView } from './text/unicode.ts';
 
 declare const __BADWORDS_PRESET_PATTERNS__: NativePatterns | undefined;
 const presetPatterns = typeof __BADWORDS_PRESET_PATTERNS__ === 'undefined' ? undefined : __BADWORDS_PRESET_PATTERNS__;
 
-export { dictionary, contextualDictionary, expandedDictionary } from './dictionary.ts';
-export type { DictionaryWord, ContextualDictionaryWord, ExpandedDictionaryWord } from './dictionary.ts';
-export type { Normalization } from './normalize.ts';
-export type { FuzzyPolicy } from './fuzzy-types.ts';
-export type { EvasionPolicy } from './evasion-types.ts';
+export { dictionary, contextualDictionary, expandedDictionary } from './dictionary/presets.ts';
+export type { DictionaryWord, ContextualDictionaryWord, ExpandedDictionaryWord } from './dictionary/presets.ts';
+export type { Normalization } from './text/normalize.ts';
+export type { FuzzyPolicy } from './fuzzy/types.ts';
+export type { EvasionPolicy } from './evasion/types.ts';
 
 /** One occurrence with exclusive end and UTF-16 offsets into the original input. */
 export interface BadwordLocation {

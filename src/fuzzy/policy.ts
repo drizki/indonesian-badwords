@@ -1,6 +1,6 @@
-import type { FuzzyConfig, FuzzyCompiler, FuzzyPolicy } from './fuzzy-types.ts';
-import { compileFuzzy } from './fuzzy-scan.ts';
-export type { FuzzyPolicy } from './fuzzy-types.ts';
+import type { FuzzyConfig, FuzzyCompiler, FuzzyPolicy } from './types.ts';
+import { compileFuzzy } from './scanner.ts';
+export type { FuzzyPolicy } from './types.ts';
 
 export type FuzzyLimit = 'input' | 'states' | 'steps' | 'compileStates' | 'dictionaryLength' | 'indexPostings' | 'candidates' | 'stateCells';
 /** A complete answer could not be produced within the selected resource budget. */

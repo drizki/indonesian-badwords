@@ -1,6 +1,6 @@
-import type { EvasionCompiler, EvasionPolicy } from './evasion-types.ts';
-import { compileEvasion, prepareEvasion, type CompiledOptions } from './evasion-scan.ts';
-export type { EvasionPolicy } from './evasion-types.ts';
+import type { EvasionCompiler, EvasionPolicy } from './types.ts';
+import { compileEvasion, prepareEvasion, type CompiledOptions } from './scanner.ts';
+export type { EvasionPolicy } from './types.ts';
 
 export type EvasionLimit = 'input' | 'states' | 'steps' | 'compileStates' | 'dictionaryLength';
 /** A complete answer could not be produced within the selected resource budget. */

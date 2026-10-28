@@ -42,7 +42,7 @@ function oracle(options = {}) {
 test('optional metadata is an exact thin projection, with frozen shared module identities', async () => {
     const { metadata: projected, registry } = await loadCatalog();
     assert.deepEqual(metadata, projected);
-    assert.equal(await readFile(new URL('../src/catalog-registry.ts', import.meta.url), 'utf8'), registrySource(registry));
+    assert.equal(await readFile(new URL('../src/dictionary/registry.ts', import.meta.url), 'utf8'), registrySource(registry));
     const require = createRequire(import.meta.url);
     const cjsMetadata = require('../dist/cjs/metadata.js');
     const cjsCatalog = require('../dist/cjs/catalog.js');

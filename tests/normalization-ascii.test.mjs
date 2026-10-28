@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { normalize, normalizeKey } from '../dist/cjs/normalize.js';
+import { normalize, normalizeKey } from '../dist/cjs/text/normalize.js';
 
 test('ASCII exact normalization preserves every character, control byte and source offset', () => {
     const text = Array.from({ length: 128 }, (_, code) => String.fromCharCode(code)).join('');
