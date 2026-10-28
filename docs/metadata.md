@@ -2,10 +2,31 @@
 
 [Back to the README](../README.md)
 
-The optional `indonesian-badwords/metadata` entry point builds dictionaries from
-reviewed lexical metadata. It does not load the detection engine or the larger
-source catalog. The root `dictionary`, `contextualDictionary`, and
-`expandedDictionary` retain their existing entries and behavior.
+Use `indonesian-badwords/metadata` to choose terms by profile, category,
+documented regional usage, or editorial severity. Selection happens during setup
+and adds no metadata lookup to each detection call. This optional entrypoint
+loads neither the detection engine nor the larger source catalog.
+
+- [Choose a dictionary](#choose-a-dictionary)
+- [Selection rules](#selection-rules)
+- [Attach metadata to matches](#attach-metadata-to-matches)
+- [What the metadata means](#what-the-metadata-means)
+- [Inspect a policy decision](#inspect-a-policy-decision)
+- [Review limits](#review-limits)
+
+## Choose a dictionary
+
+| List | Use |
+| --- | --- |
+| Root `dictionary` | Default conservative policy. |
+| Root `expandedDictionary` | Includes terms with common literal uses. |
+| `reviewedDictionary` | Entries accepted into the source-reviewed core profile. |
+| `reviewedExpandedDictionary` | Both source-reviewed profiles, including contextual terms. |
+| `selectDictionary(options)` | A subset of reviewed entries matching your selectors. |
+
+The reviewed lists are separate selections; they do not replace or change the
+root `dictionary`, `contextualDictionary`, or `expandedDictionary`. “Reviewed”
+describes the source-checking process and its [limits](#review-limits).
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
@@ -26,8 +47,7 @@ const policy = new Badwords({
 });
 ```
 
-Choose a dictionary once and reuse the checker. Selection runs during your setup;
-it adds no category or source lookup to each detection call.
+Choose a dictionary once and reuse the checker.
 
 ## Selection rules
 
@@ -59,8 +79,32 @@ getMetadata('kontol'); // frozen array of exact-spelling variant metadata
 getMetadata('KONTOL'); // []: this lookup does not normalize or detect text
 ```
 
-`metadata` includes every reviewed inventory surface, including unresolved or
-excluded ones. Each `VariantMetadata` has a stable `id`, `senseId`, `surface`,
+## Attach metadata to matches
+
+Detection returns dictionary words and original-text spans. Look up metadata
+only when you need it for display or a moderation report:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { reviewedDictionary, getMetadata } from 'indonesian-badwords/metadata';
+
+const checker = new Badwords({ dictionary: reviewedDictionary });
+const matches = checker.find('dasar g0bl0k!').map(hit => ({
+  ...hit,
+  metadata: getMetadata(hit.word),
+}));
+```
+
+Use `hit.word`, the matched dictionary spelling, rather than `hit.match`, which
+may contain obfuscation from the original text. A spelling can have several
+senses, so the lookup returns an array.
+
+## What the metadata means
+
+`metadata` contains every inventoried surface, including entries that remain
+unresolved or were excluded. Presence in the inventory does not mean an entry
+is accepted for matching: `profiles` records its accepted selections.
+Each `VariantMetadata` has a stable `id`, `senseId`, `surface`,
 `categories`, nullable `severity`, `attestation`, `registerEvidence`,
 `abusiveRegionIds`, and `profiles`. An exact lexical citation and evidence of
 coarse use are separate fields. An editorial alias is identified as derived;
@@ -108,6 +152,8 @@ the original source material.
 `getCatalogEntry(id)` and `getSource(id)` return frozen records, or `undefined`
 for unknown IDs. `getMetadata(surface)` returns a frozen array, or `[]` for an
 unknown exact spelling. All three reject non-string arguments.
+
+## Review limits
 
 AI agents checked the catalog against the cited material. There is no native
 human panel or independent corpus validation; `catalogReview` exposes those
