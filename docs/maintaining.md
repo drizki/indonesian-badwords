@@ -1,6 +1,6 @@
 # Development and releases
 
-[Back to the README](../README.md)
+[Documentation](README.md)
 
 - [Development](#development)
 - [Validate a package](#validate-a-package)
@@ -42,6 +42,15 @@ npm run test:package -- "$package_file"
 CI checks Node 22, 24, and 26. It tests the same tarball with ESM/CommonJS consumers,
 TypeScript 5.9.3, 6.0.3, and the build compiler (7.0.2), using strict NodeNext,
 Node16, and Bundler resolution. Package checks also cover browser bundling.
+
+The release-artifact job also installs the separate examples tooling and runs
+`npm run test:docs -- "$package_file"`. That command checks local Markdown links
+and anchors, README code parity, strict TypeScript, executable expected outputs,
+and capability-table results against the packed API. It then installs that same
+tarball into `examples` and runs strict framework checks, policy-isolation checks,
+production builds, and Chromium interaction tests for all four apps. See the
+[examples validation commands](../examples/README.md#validate-changes) to run these
+locally. Playwright's first installation may need `--with-deps` on Linux.
 
 The package includes both READMEs; detailed guides live in the repository. README
 links use public GitHub URLs so they work from the npm package page too.

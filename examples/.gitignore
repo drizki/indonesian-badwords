@@ -1,0 +1,5 @@
+dist/
+.policy/
+playwright-report/
+test-results/
+.svelte-kit/

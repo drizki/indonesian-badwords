@@ -1,12 +1,12 @@
 # Performance and benchmarks
 
-[Back to the README](../README.md)
+[Documentation](README.md)
 
 ## Measured snapshot
 
 These measurements were recorded for `indonesian-badwords@2.5.0` with the default
-dictionary and matching settings on Node.js 24.22.1. The documentation-only 2.5.1
-patch leaves the runtime unchanged.
+dictionary and matching settings on Node.js 24.22.1. The documentation and examples patches through 2.5.2
+leave the runtime unchanged.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |

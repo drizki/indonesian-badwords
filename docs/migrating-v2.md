@@ -1,6 +1,6 @@
 # Migrating to v2
 
-[Back to the README](../README.md)
+[Documentation](README.md)
 
 ## Update construction and imports
 
@@ -36,4 +36,4 @@ const checker = new Badwords();
 | `dict` returns a normalized copy. | Use `addWords` and `removeWords` to change a checker's dictionary. |
 
 See the [API reference](api.md) for current matching rules, optional policies, and
-result types, or the [dictionary guide](metadata.md) for source-reviewed selection.
+result types, or the [dictionary guide](guides/dictionaries.md) for source-reviewed selection.

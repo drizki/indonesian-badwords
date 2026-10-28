@@ -26,6 +26,21 @@ jobs:
           mkdir -p "$RUNNER_TEMP/npm-package"
           npm pack --pack-destination "$RUNNER_TEMP/npm-package"
           mv "$RUNNER_TEMP/npm-package/"*.tgz "$RUNNER_TEMP/npm-package/package.tgz"
+      - name: Install example tooling
+        run: npm ci --prefix examples
+      - name: Verify docs against the release artifact
+        run: npm run test:docs -- "$RUNNER_TEMP/npm-package/package.tgz"
+      - name: Install the release artifact in examples
+        run: npm install --prefix examples --no-save --ignore-scripts --package-lock=false --no-audit --no-fund "$RUNNER_TEMP/npm-package/package.tgz"
+      - name: Type-check, test policy, and build all examples
+        run: |
+          npm run check --prefix examples
+          npm run check:policy --prefix examples
+          npm run build --prefix examples
+      - name: Install the browser test runtime
+        run: npx --prefix examples playwright install --with-deps chromium
+      - name: Test all four browser apps
+        run: npm run check:browser --prefix examples
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: npm-package
