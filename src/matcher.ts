@@ -51,7 +51,8 @@ export class Matcher {
 
     /** Return false from a visitor to stop without allocating more occurrences. */
     scan(value: NormalizedText, wholeWords: boolean, visit: (match: Match) => boolean | void,
-        spansOnly = false, eligibleEnd?: (end: number) => boolean): void {
+        spansOnly = false, eligibleEnd?: (end: number) => boolean,
+        eligibleSpan?: (start: number, end: number) => boolean): void {
         let state = 0;
         for (let index = 0; index < value.text.length; index++) {
             const character = value.text.charCodeAt(index);
@@ -69,6 +70,7 @@ export class Matcher {
                     const to = index + 1;
                     // Reject partial source graphemes and compatibility expansions.
                     if (!acceptsStart(value, from, wholeWords)) continue;
+                    if (eligibleSpan && !eligibleSpan(value.starts[from], value.ends[index])) continue;
                     if (visit({ word: entry.word, start: value.starts[from], end: value.ends[index],
                         order: entry.order, from, to }) === false) return;
                     // Outputs follow decreasing key length. For censorship the
@@ -82,7 +84,8 @@ export class Matcher {
     }
 
     /** Merge coverage and contributors without allocating individual occurrences. */
-    scanCensor(value: NormalizedText, wholeWords: boolean): CensorSpan[] {
+    scanCensor(value: NormalizedText, wholeWords: boolean,
+        eligibleSpan?: (start: number, end: number) => boolean): CensorSpan[] {
         const spans: CensorCluster[] = [];
         const pending: number[] = [];
         let complete: Uint32Array | undefined;
@@ -103,6 +106,7 @@ export class Matcher {
                     if (span && span.entries.has(entry)) continue;
                     const from = to - entry.key.length;
                     if (!acceptsStart(value, from, wholeWords)) continue;
+                    if (eligibleSpan && !eligibleSpan(value.starts[from], value.ends[index])) continue;
                     if (!span) {
                         complete ??= new Uint32Array(this.#nodes.length);
                         const start = value.starts[from];

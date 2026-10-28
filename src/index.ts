@@ -1,5 +1,6 @@
 import { dictionary as defaultDictionary } from './dictionary.ts';
 import { Matcher, type Match } from './matcher.ts';
+import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './exceptions.ts';
 import { canonicalSearchText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
     type Normalization, type NormalizedText } from './normalize.ts';
 import { canonicalCandidatePattern, prepareNativePatterns, potentialPattern, type NativePatterns } from './pattern.ts';
@@ -32,6 +33,16 @@ export interface CensorContext {
 export type CensorCallback = (context: CensorContext) => string;
 export type CensorReplacement = string | CensorCallback;
 
+/** A half-open UTF-16 range in the original input, on complete grapheme boundaries. */
+export interface IgnoreRange {
+    readonly index: number;
+    readonly end: number;
+}
+export interface CheckOptions {
+    /** Ignore every occurrence intersecting these source ranges. Empty ranges are no-ops. */
+    readonly ignoreRanges?: readonly IgnoreRange[];
+}
+
 export interface AnalysisResult {
     text: string;
     /** Nonempty whitespace-separated tokens, not linguistic word segmentation. */
@@ -49,6 +60,8 @@ export interface AnalysisResult {
 export type MatchMode = 'substring' | 'word';
 export interface BadwordsOptions {
     dictionary?: readonly string[];
+    /** Literal whole-word phrases exempt only occurrences fully contained inside them. */
+    allowPhrases?: readonly string[];
     /** Defaults to whole-word matching. */
     mode?: MatchMode;
     /** Standard: NFKC, lowercase, invisible-character removal and internal leetspeak. */
@@ -142,6 +155,7 @@ export class Badwords {
     readonly #normalization: Normalization;
     readonly #ignoreRepeatedLetters: boolean;
     readonly #maxMatches: number;
+    readonly #allowed: AllowedPhrases | undefined;
     #matcher: Matcher | undefined;
     #maxKeyLength = 0;
     #maxWordLength = 0;
@@ -167,6 +181,7 @@ export class Badwords {
         this.#normalization = normalization;
         this.#ignoreRepeatedLetters = ignoreRepeatedLetters;
         this.#maxMatches = maxMatches;
+        this.#allowed = compileAllowedPhrases(options.allowPhrases, normalization);
         if (options.dictionary === undefined || (options.dictionary as readonly string[]) === defaultDictionary) {
             // The bundled, frozen lexicon is already canonical. Copy its values
             // without allocating normalization maps for every term at import.
@@ -342,7 +357,14 @@ export class Badwords {
         return this.#matcher;
     }
 
-    #scan(text: string, visit: (match: Match) => boolean | void, spansOnly = false, skipNative = false): void {
+    #acceptance(text: string, options?: CheckOptions): MatchAcceptance | undefined {
+        if (options === undefined && !this.#allowed) return;
+        validateText(text);
+        return matchAcceptance(text, options, this.#allowed);
+    }
+
+    #scan(text: string, visit: (match: Match) => boolean | void, spansOnly = false, skipNative = false,
+        accept?: MatchAcceptance): void {
         validateText(text);
         if (!text.length || !this.#dictionary.size) return;
         if (this.#longWord(text)) return;
@@ -355,12 +377,13 @@ export class Badwords {
                 native.orders ??= new Map(native.words.map((word, order) => [word, order]));
                 const start = occurrence.index;
                 const end = start + occurrence[0].length;
+                if (accept && !accept(start, end)) continue;
                 const word = this.#normalization === 'standard' ? occurrence[0].toLowerCase() : occurrence[0];
                 if (visit({ word, start, end, from: start, to: end, order: native.orders.get(word)! }) === false) break;
             }
             return;
         }
-        this.#compileMatcher().scan(this.#normalizeInput(text), this.#mode === 'word', visit, spansOnly);
+        this.#compileMatcher().scan(this.#normalizeInput(text), this.#mode === 'word', visit, spansOnly, undefined, accept);
     }
 
     #normalizeInput(text: string): NormalizedText {
@@ -425,8 +448,14 @@ export class Badwords {
     }
 
     /** True if any dictionary word matches. Empty input is clean. */
-    flag(text: string): boolean {
+    flag(text: string, options?: CheckOptions): boolean {
         validateText(text);
+        const accept = this.#acceptance(text, options);
+        if (accept) {
+            let found = false;
+            this.#scan(text, () => { found = true; return false; }, false, false, accept);
+            return found;
+        }
         if (!text.length || !this.#dictionary.size) return false;
         if (this.#longWord(text)) return false;
         const value = this.#normalization === 'standard' ? text.toLowerCase() : text;
@@ -447,27 +476,29 @@ export class Badwords {
         return found;
     }
     /** All occurrences in source order; dictionary order breaks ties. */
-    find(text: string): BadwordLocation[] {
+    find(text: string, options?: CheckOptions): BadwordLocation[] {
+        const accept = this.#acceptance(text, options);
         const matches: Match[] = [];
-        this.#scan(text, (match) => { this.#append(matches, match); });
+        this.#scan(text, (match) => { this.#append(matches, match); }, false, false, accept);
         matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
         return matches.map((match) => location(text, match));
     }
     /** Unique found dictionary words in dictionary insertion order. */
-    badwords(text: string): string[] {
+    badwords(text: string, options?: CheckOptions): string[] {
+        const accept = this.#acceptance(text, options);
         const found = new Set<string>();
-        this.#scan(text, ({ word }) => { found.add(word); return found.size < this.#dictionary.size; });
+        this.#scan(text, ({ word }) => { found.add(word); return found.size < this.#dictionary.size; }, false, false, accept);
         return [...this.#dictionary].filter((word) => found.has(word));
     }
-    #censorCallback(text: string, replacement: CensorCallback): string {
+    #censorCallback(text: string, replacement: CensorCallback, accept?: MatchAcceptance): string {
         validateText(text);
         if (!text.length || !this.#dictionary.size || this.#longWord(text)) return text;
         const native = this.#nativeFor(text);
         if (native === CLEAN) return text;
-        const spans = native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word');
+        const spans = native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word', accept);
         if (native) this.#scan(text, ({ word, start, end, order }) => {
             spans.push({ start, end, entries: [{ word, key: word, order }] });
-        });
+        }, false, false, accept);
         const pieces: string[] = [];
         let index = 0;
         for (const span of spans) {
@@ -484,13 +515,14 @@ export class Badwords {
     }
 
     /** Replace merged spans in source order; adjacent occurrences stay separate. */
-    censor(text: string, replacement: CensorReplacement = '***'): string {
-        if (typeof replacement === 'function') return this.#censorCallback(text, replacement);
+    censor(text: string, replacement: CensorReplacement = '***', options?: CheckOptions): string {
+        const accept = this.#acceptance(text, options);
+        if (typeof replacement === 'function') return this.#censorCallback(text, replacement, accept);
         validateText(text);
         validateText(replacement);
         if (!text.length || !this.#dictionary.size) return text;
         if (this.#longWord(text)) return text;
-        const native = this.#nativeFor(text, true);
+        const native = accept ? undefined : this.#nativeFor(text, true);
         if (native === CLEAN) return text;
         if (native) {
             // Native replacement strings interpret $&, $1, $` and $'. Escape
@@ -499,16 +531,17 @@ export class Badwords {
                 replacement.includes('$') ? replacement.split('$').join('$$') : replacement);
         }
         const spans: Array<{ start: number; end: number }> = [];
-        this.#scan(text, (match) => { mergeSpan(spans, match); }, true, true);
+        this.#scan(text, (match) => { mergeSpan(spans, match); }, true, !accept, accept);
         return replaceSpans(text, spans, replacement);
     }
-    filter(text: string): string { return this.censor(text, '').replace(/\s+/gu, ' ').trim(); }
+    filter(text: string, options?: CheckOptions): string { return this.censor(text, '', options).replace(/\s+/gu, ' ').trim(); }
     /** Scan once for source spans, unique words, counts and censored output. */
-    analyze(text: string): AnalysisResult {
+    analyze(text: string, options?: CheckOptions): AnalysisResult {
+        const accept = this.#acceptance(text, options);
         const matches: Match[] = [];
         const found = new Set<string>();
         const spans: Array<{ start: number; end: number }> = [];
-        this.#scan(text, (match) => { this.#append(matches, match); found.add(match.word); mergeSpan(spans, match); });
+        this.#scan(text, (match) => { this.#append(matches, match); found.add(match.word); mergeSpan(spans, match); }, false, false, accept);
         matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
         const badwords = [...this.#dictionary].filter((word) => found.has(word));
         return { text, words: text.match(/\S+/gu)?.length ?? 0, censored: replaceSpans(text, spans, '***'),
