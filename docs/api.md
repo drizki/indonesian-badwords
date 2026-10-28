@@ -509,4 +509,5 @@ candidate overlap estimates and cannot remove candidates; every candidate is
 verified. Cached bit-vector verification covers ordinary Levenshtein keys up to
 32 scalars; longer keys, OSA, and disabled edit families use bounded dynamic
 programming. These choices preserve the same edit semantics. Fuzzy spelling is
-lexical and can match benign words, so choose thresholds using your own corpus.
+lexical and can match benign words: `kontrol` is one insertion from `kontol`.
+Choose thresholds using your own corpus.

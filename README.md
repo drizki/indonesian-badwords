@@ -207,6 +207,10 @@ const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
 checker.censor('goblox'); // '***'
 ```
 
+Fuzzy matching can flag benign words: with the default dictionary, `kontrol`
+collides with `kontol` through one insertion. Evaluate the explicit policy on
+your application’s text.
+
 Configure edit families, adjacent transpositions, key lengths, evasion composition,
 and finite work limits in the [fuzzy API](docs/api.md#bounded-fuzzy-matching).
 

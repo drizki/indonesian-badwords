@@ -327,7 +327,7 @@ async function measure(job) {
     const perCallUs = samples.map((elapsed) => us(elapsed / batchSize));
     globalThis.gc?.();
     return { type: 'measurement', id: job.id, status: job.limited ? 'limited' : 'measured', method: job.method,
-        policy: { dictionary: job.dictionary ?? 'core', dictionaryTerms: orders.size, mode: options.mode ?? 'word',
+        policy: { dictionary: job.dictionary ?? (options.dictionary ? 'explicit-custom' : 'core'), dictionaryTerms: orders.size, mode: options.mode ?? 'word',
             normalization: options.normalization ?? 'standard', ignoreRepeatedLetters: options.ignoreRepeatedLetters ?? false,
             maxMatches: options.maxMatches ?? 10_000, evasion: job.evasion ?? null, fuzzy: job.fuzzy ?? null, allowPhrases: options.allowPhrases ?? [],
             ignoreRanges: first.checkOptions?.ignoreRanges ?? [],
