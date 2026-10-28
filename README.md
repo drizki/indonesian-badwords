@@ -9,7 +9,7 @@
 Fast Indonesian profanity filtering for JavaScript and TypeScript. Catch disguised
 spellings, censor matches, and get exact locations in the original text.
 
-- **Fast checks for chat, comments, and forms.** Early-exit detection, about 11 KB
+- **Fast checks for chat, comments, and forms.** Early-exit detection, about 12 KB
   minified and gzipped, and zero runtime dependencies. [See the benchmarks](#performance).
 - **Precise Unicode matches.** Recognizes `g0bl0k`, `ＧＯＢＬＯＫ`, and words containing
   invisible characters. Censoring preserves the surrounding text and punctuation.
@@ -51,23 +51,25 @@ flag('dasar goblok'); // true
 
 ## Performance
 
-A browser bundle with the default checker is about 11 KB minified and gzipped.
+A browser bundle with the default checker is about 12 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.74 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 23.74 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.71 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 22.20 µs |
 | Clean ASCII paragraph, 4,000 characters | `censor` | 5.39 µs |
-| Clean ASCII paragraph, 4,000 characters | `analyze` | 15.32 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 30.80 µs |
+| Clean ASCII paragraph, 4,000 characters | `analyze` | 14.95 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 20.68 µs |
+| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.92 µs |
 
 Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
 call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
 These are medians of per-call batch averages; import, setup, input generation,
 and correctness checks are excluded. Results vary with input, hardware, and runtime.
 
-Run `npm run benchmark` for 50 self-checking workloads, including cold calls,
-match positions, Unicode, custom dictionaries, and memory. Run
+Run `npm run benchmark` for 79 self-checking workloads, including cold calls,
+match positions, Unicode, callbacks, masking, scoped exceptions, custom dictionaries,
+and memory. Run
 `npm run benchmark:compare` to compare with pinned Indonesian libraries; different
 detection outputs are reported separately from timings.
 

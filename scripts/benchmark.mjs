@@ -31,6 +31,14 @@ for (const length of [280, 4_000]) {
     add(`clean-accent-emoji-${length}-flag`, 'clean', length, 'flag', { base: ACCENT });
 }
 add('clean-accent-emoji-4000-analyze', 'clean', 4_000, 'analyze', { base: ACCENT });
+for (const length of [280, 4_000]) for (const method of ['flag', 'censor', 'analyze']) {
+    add(`matched-accent-emoji-${length}-${method}`, 'placed', length, method, {
+        base: ACCENT, position: 'middle', surface: 'goblok', terms: terms('goblok')
+    });
+}
+for (const method of ['flag', 'censor', 'analyze']) add(`leetspeak-accent-emoji-4000-${method}`, 'placed', 4_000, method, {
+    base: ACCENT, position: 'middle', surface: 'g0bl0k', terms: terms('g0bl0k', 'goblok')
+});
 for (const method of ['flag', 'analyze']) add(`unicode-dense-4000-${method}`, 'dense', 4_000, method, {
     chunk: UNICODE, terms: [{ surface: 'ＧＯＢＬＯＫ', word: 'goblok', offset: UNICODE.indexOf('ＧＯＢＬＯＫ') },
         { surface: 'kon\u200btol', word: 'kontol', offset: UNICODE.indexOf('kon\u200btol') }]
@@ -57,6 +65,41 @@ for (const expanded of [false, true]) add(`contextual-${expanded ? 'expanded' : 
 add('literal-normalization-280', 'placed', 280, 'flag', {
     position: 'middle', surface: 'goblok', terms: terms('goblok'), options: { normalization: 'none' }
 });
+for (const length of [280, 4_000]) {
+    add(`callback-clean-${length}-censor`, 'clean', length, 'censor', { replacement: 'callback' });
+    for (const replacement of ['callback', 'mask', 'grawlix']) {
+        add(`${replacement}-matched-${length}-censor`, 'placed', length, 'censor', {
+            position: 'middle', surface: 'g0bl0k', terms: terms('g0bl0k', 'goblok'), replacement,
+            replacements: replacement === 'mask' ? ['g****k'] : ['######']
+        });
+    }
+    add(`allow-phrase-contained-${length}-censor`, 'placed', length, 'censor', {
+        position: 'middle', surface: 'Baju Bodo', terms: [], options: { allowPhrases: ['Baju Bodo'] }
+    });
+    add(`allow-phrase-outside-${length}-analyze`, 'placed', length, 'analyze', {
+        position: 'middle', surface: 'Baju Bodo goblok bodo', options: { allowPhrases: ['Baju Bodo'] },
+        terms: [{ surface: 'goblok', word: 'goblok', offset: 10 }, { surface: 'bodo', word: 'bodo', offset: 17 }]
+    });
+    for (const replacement of [undefined, 'callback']) {
+        const offset = replacement ? 10 : 0;
+        add(`ignore-range-${replacement ?? 'literal'}-${length}-censor`, 'placed', length, 'censor', {
+            position: 'middle', surface: replacement ? 'Baju Bodo goblok kontol' : 'goblok kontol', replacement,
+            options: replacement ? { allowPhrases: ['Baju Bodo'] } : undefined,
+            ignoreRanges: [{ index: offset + 1, end: offset + 2 }],
+            terms: [{ surface: 'kontol', word: 'kontol', offset: offset + 7 }]
+        });
+    }
+}
+add('callback-overlap-5000-censor', 'prefixes', 5_000, 'censor', { dictionary: 'prefixes', replacement: 'callback',
+    options: { mode: 'substring', normalization: 'none', maxMatches: 1 } });
+add('callback-bridge-16512-censor', 'bridge', 16_512, 'censor', { dictionary: 'bridge-prefixes', replacement: 'callback',
+    options: { mode: 'substring', normalization: 'none', maxMatches: 1 } });
+for (const replacement of ['mask', 'grawlix']) add(`${replacement}-graphemes-280-censor`, 'placed', 280, 'censor', {
+    dictionary: 'unicode-strategies', options: { dictionary: ['ffi', 'é', '👩‍💻'] }, replacement,
+    position: 'middle', surface: 'ﬃ e\u0301 👩‍💻', replacements: Array(3).fill(replacement === 'mask' ? '*' : '#'),
+    terms: [{ surface: 'ﬃ', word: 'ffi', offset: 0 }, { surface: 'e\u0301', word: 'é', offset: 2 },
+        { surface: '👩‍💻', word: '👩💻', offset: 5 }]
+});
 
 function alphabeticId(number) {
     let value = '';
@@ -73,6 +116,8 @@ function makeSample(job, serial) {
     if (job.kind === 'long') return { text: (reference + CLEAN.replace(/[^a-z]/gi, '').repeat(1_000)).slice(0, job.length), count: 0 };
     if (job.kind === 'prefixes') return { text: 'a'.repeat(job.length) + ' ' + reference,
         count: job.options.mode === 'word' ? 0 : 1, suffix: ' ' + reference };
+    if (job.kind === 'bridge') return { text: 'a'.repeat(128) + ' x a'.repeat((job.length - 128) / 4) + ' ' + reference,
+        count: 1, suffix: ' ' + reference };
     if (job.kind === 'clean') return { text: fill(job.length, reference, job.base), count: 0 };
     if (job.kind === 'dense') {
         const prefix = `Ref ${reference}. `;
@@ -84,10 +129,11 @@ function makeSample(job, serial) {
     const space = job.length - job.surface.length - 2;
     const before = job.position === 'start' ? 0 : job.position === 'end' ? space + 1 : Math.floor(space / 2);
     const start = before ? before + 1 : 0;
-    const left = before ? fill(before, reference) + ' ' : '';
+    const left = before ? fill(before, reference, job.base) + ' ' : '';
     const right = job.length - start - job.surface.length;
-    return { text: left + job.surface + (right ? ' ' + fill(right - 1, before ? '' : reference) : ''),
-        start, count: job.terms.length };
+    return { text: left + job.surface + (right ? ' ' + fill(right - 1, before ? '' : reference, job.base) : ''),
+        start, count: job.terms.length, ...(job.ignoreRanges ? { checkOptions: { ignoreRanges:
+            job.ignoreRanges.map(({ index, end }) => ({ index: start + index, end: start + end })) } } : {}) };
 }
 function locations(job, sample) {
     const found = [];
@@ -97,13 +143,22 @@ function locations(job, sample) {
     }
     return found;
 }
-function replaceTerms(text, entries) {
+function replaceTerms(text, entries, replacements = '***') {
     let result = '', index = 0;
-    for (const term of entries) { result += text.slice(index, term.index) + '***'; index = term.end; }
+    for (let entry = 0; entry < entries.length; entry++) {
+        const term = entries[entry];
+        result += text.slice(index, term.index) + (Array.isArray(replacements) ? replacements[entry] : replacements);
+        index = term.end;
+    }
     return result + text.slice(index);
 }
-function censored(job, sample) {
+function censored(job, sample, orders) {
     if (!sample.count) return sample.text;
+    if (job.replacement === 'callback') {
+        if (job.kind === 'prefixes' || job.kind === 'bridge') return `$[${[...orders.keys()].join('|')}]` + sample.suffix;
+        return replaceTerms(sample.text, locations(job, sample), job.terms.map(({ word }) => `$[${word}]`));
+    }
+    if (job.replacement) return replaceTerms(sample.text, locations(job, sample), job.replacements);
     if (job.kind === 'prefixes') return '***' + sample.suffix;
     if (job.kind === 'dense') {
         const entries = job.terms.map((term) => ({ index: term.offset, end: term.offset + term.surface.length }));
@@ -111,17 +166,18 @@ function censored(job, sample) {
     }
     return replaceTerms(sample.text, locations(job, sample));
 }
-function check(job, sample, result, orders, wordCount) {
+function check(job, sample, result, orders, wordCount, callbackCalls) {
+    if (job.replacement === 'callback') assert.equal(callbackCalls, sample.count, 'Expected one callback per merged span');
     if (job.limited) { assert.equal(result, LIMIT, 'Expected the detailed-match safety limit'); return; }
     if (job.method === 'flag') { assert.equal(result, sample.count > 0); return; }
-    if (job.method === 'censor') { assert.equal(result, censored(job, sample)); return; }
+    if (job.method === 'censor') { assert.equal(result, censored(job, sample, orders)); return; }
     const words = !sample.count ? [] : job.kind === 'prefixes' ? [...orders.keys()]
         : [...new Set(job.terms.map((term) => term.word))].sort((a, b) => orders.get(a) - orders.get(b));
     if (job.method === 'badwords') { assert.deepEqual(result, words); return; }
     const expected = locations(job, sample);
     if (job.method === 'find') { assert.deepEqual(result, expected); return; }
     assert.deepEqual(result, { text: sample.text, words: wordCount,
-        censored: censored(job, sample), badwords: words, count: words.length,
+        censored: censored(job, sample, orders), badwords: words, count: words.length,
         occurrenceCount: expected.length, locations: expected });
 }
 function summary(job, result) {
@@ -150,33 +206,56 @@ async function measure(job) {
     const options = { ...job.options };
     if (job.dictionary === 'expanded') options.dictionary = api.expandedDictionary;
     if (job.dictionary === 'prefixes') options.dictionary = Array.from({ length: 64 }, (_, index) => 'a'.repeat(index + 1));
+    if (job.dictionary === 'bridge-prefixes') options.dictionary =
+        [...Array.from({ length: 128 }, (_, index) => 'a'.repeat(index + 1)), 'x', 'a x a'];
     if (job.dictionary === 'large-custom') options.dictionary = Array.from({ length: 10_000 }, (_, index) => `x${alphabeticId(index)}x`);
     start = performance.now();
     const detector = new api.Badwords(options);
     const constructionUs = us(performance.now() - start);
-    const invoke = (text) => {
-        if (!job.limited) return detector[job.method](text);
-        try { detector[job.method](text); } catch (error) {
+    let replacement, helperImportUs = 0, replacementSetupUs = 0, callbackCalls = 0;
+    if (job.replacement) {
+        let strategies;
+        if (job.replacement !== 'callback') {
+            start = performance.now();
+            strategies = require('../dist/cjs/censor.js');
+            helperImportUs = us(performance.now() - start);
+        }
+        start = performance.now();
+        replacement = job.replacement === 'callback' ? ({ words }) => { callbackCalls++; return `$[${words.join('|')}]`; }
+            : job.replacement === 'mask' ? strategies.mask({ keepFirst: 1, keepLast: 1 })
+                : strategies.grawlix({ symbols: '@#$%', random: () => 0.25 });
+        replacementSetupUs = us(performance.now() - start);
+    }
+    const operation = job.replacement || job.ignoreRanges
+        ? (sample) => detector.censor(sample.text, replacement, sample.checkOptions)
+        : (sample) => detector[job.method](sample.text);
+    const invoke = job.limited ? (sample) => {
+        try { operation(sample); } catch (error) {
             if (error instanceof RangeError && /Match limit exceeded/.test(error.message)) return LIMIT;
             throw error;
         }
         assert.fail('Expected a match-limit RangeError');
-    };
+    } : operation;
     start = performance.now();
-    let result = invoke(first.text);
+    let result = invoke(first);
     const firstCallUs = us(performance.now() - start);
     const orders = new Map(detector.dict.map((word, index) => [word, index]));
-    check(job, first, result, orders, wordCount);
+    check(job, first, result, orders, wordCount, callbackCalls);
     globalThis.gc?.();
     const readyHeapMiB = process.memoryUsage().heapUsed / 1_048_576;
     const maxBatch = Math.max(1, Math.min(16_384, Math.floor(2_000_000 / first.text.length)));
     function batch(count) {
         const inputs = Array.from({ length: count }, sample);
         const results = new Array(count);
+        const calls = job.replacement === 'callback' ? new Array(count) : undefined;
         const begin = performance.now();
-        for (let index = 0; index < count; index++) results[index] = invoke(inputs[index].text);
+        if (calls) for (let index = 0; index < count; index++) {
+            const before = callbackCalls;
+            results[index] = invoke(inputs[index]);
+            calls[index] = callbackCalls - before;
+        } else for (let index = 0; index < count; index++) results[index] = invoke(inputs[index]);
         const elapsedMs = performance.now() - begin;
-        for (let index = 0; index < count; index++) check(job, inputs[index], results[index], orders, wordCount);
+        for (let index = 0; index < count; index++) check(job, inputs[index], results[index], orders, wordCount, calls?.[index]);
         result = results.at(-1);
         return elapsedMs;
     }
@@ -197,16 +276,23 @@ async function measure(job) {
     return { type: 'measurement', id: job.id, status: job.limited ? 'limited' : 'measured', method: job.method,
         policy: { dictionary: job.dictionary ?? 'core', dictionaryTerms: orders.size, mode: options.mode ?? 'word',
             normalization: options.normalization ?? 'standard', ignoreRepeatedLetters: options.ignoreRepeatedLetters ?? false,
-            maxMatches: 10_000 },
+            maxMatches: options.maxMatches ?? 10_000, allowPhrases: options.allowPhrases ?? [],
+            ignoreRanges: first.checkOptions?.ignoreRanges ?? [],
+            replacement: !['censor', 'analyze'].includes(job.method) ? null
+                : job.replacement === 'mask' ? { kind: 'mask', keepFirst: 1, keepLast: 1 }
+                : job.replacement === 'grawlix' ? { kind: 'grawlix', symbols: '@#$%', random: 'constant 0.25' }
+                    : job.replacement === 'callback' ? { kind: 'callback', operation: 'format unique contributor words' } : 'literal ***' },
         input: { kind: job.kind, position: job.position ?? null, utf16Units: first.text.length, payloadUnits: job.length,
             referenceIds: 'unique per operation; generation excluded from timings' },
-        cold: { importUs, constructionUs, firstCallUs, totalUs: importUs + constructionUs + firstCallUs },
+        cold: { importUs, constructionUs, helperImportUs, replacementSetupUs, firstCallUs,
+            totalUs: importUs + constructionUs + helperImportUs + replacementSetupUs + firstCallUs },
         warmup: { timedMs: warmupMs, calls: warmupCalls },
         timing: { samples: job.samples, batchSize, operations: job.samples * batchSize,
             medianUs: percentile(perCallUs, 0.5), p95Us: percentile(perCallUs, 0.95),
             medianBatchMs: percentile(samples, 0.5), targetBatchMs: job.targetBatchMs,
             statistic: 'per-operation batch means; p95 is not individual-request tail latency' },
-        correctness: { checkedEveryResult: true, distinctInputs: serial, result: summary(job, result) },
+        correctness: { checkedEveryResult: true, distinctInputs: serial, result: summary(job, result),
+            ...(job.replacement === 'callback' ? { callbacksPerOperation: first.count } : {}) },
         memory: { baselineHeapMiB, readyHeapMiB, endingHeapMiB: process.memoryUsage().heapUsed / 1_048_576,
             maxRssMiB: process.resourceUsage().maxRSS / 1_024, heapLimitMiB: 256 } };
 }
@@ -221,8 +307,8 @@ if (process.argv.includes('--worker')) {
     console.log(JSON.stringify({ type: 'environment', libraryVersion: JSON.parse(readFileSync(new URL('../package.json', import.meta.url))).version,
         node: process.version, v8: process.versions.v8, platform: process.platform, architecture: process.arch, quick,
         cases: selected.length, warmupMinimumMs: quick ? 40 : 250, timedSamples: quick ? 15 : 41,
-        measurements: 'Own-library synthetic workloads. Inputs are unique; generation and every-result correctness checks are outside timings. Dispatch/result storage are included; no overhead subtraction, accuracy or production-throughput claim.',
-        cold: 'Fresh process CommonJS require, explicit instance construction and first operation; excludes process startup and fixture generation. One cold observation per case.',
+        measurements: 'Own-library synthetic workloads. Inputs are unique; input/range-fixture generation and every-result correctness checks are outside timings. Dispatch, callback execution/call-count capture, library range validation and result storage are included; no overhead subtraction, accuracy or production-throughput claim.',
+        cold: 'Fresh process root CommonJS require, explicit instance construction, optional helper require, replacement factory setup and first operation are separate. Helpers load only in mask/grawlix cases. Excludes process startup and fixture generation. One cold observation per case.',
         memory: 'Peak process RSS includes Node, library, corpus generation, collected batch results, assertions and GC. Not library-only memory.',
         limits: 'Match-limit RangeErrors are expected only for the two overlapping-prefix detail cases. All other errors, wrong results and 20-second child timeouts fail the run.',
         nodeCompileCache: Boolean(process.env.NODE_COMPILE_CACHE) }));

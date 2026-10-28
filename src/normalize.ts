@@ -14,6 +14,7 @@ let letterRegex: RegExp | undefined;
 let ignorableRegex: RegExp | undefined;
 let simpleSourceRegex: RegExp | undefined;
 let simpleCanonicalRegex: RegExp | undefined;
+let caseChangeRegex: RegExp | undefined;
 
 // Pattern strings defer Unicode property parsing until Unicode work is needed.
 // A regex literal inside a getter is still parsed when the module is loaded.
@@ -155,6 +156,85 @@ export function isSimpleUnicodeAtom(character: string): boolean {
 /** The pre-substitution text, without allocating original-source span maps. */
 export function canonicalSearchText(text: string): string {
     return text.normalize('NFKD').replace(ignorablePattern(), '').normalize('NFKC').toLowerCase();
+}
+
+/** Stable sources need no decomposition or source maps for candidate discovery. */
+export function canonicalSearchView(text: string): { text: string; identity: boolean } {
+    const identity = text.normalize('NFKC') === text && text.replace(ignorablePattern(), '') === text;
+    return { text: identity ? text.toLowerCase() : canonicalSearchText(text), identity };
+}
+
+export function previousCodePoint(text: string, index: number): number {
+    index--;
+    if (index > 0 && text.charCodeAt(index) >= 0xdc00 && text.charCodeAt(index) <= 0xdfff
+        && text.charCodeAt(index - 1) >= 0xd800 && text.charCodeAt(index - 1) <= 0xdbff) index--;
+    return index;
+}
+
+export function wordAt(text: string, index: number): boolean {
+    if (index < 0 || index >= text.length) return false;
+    const code = text.charCodeAt(index);
+    return code < 128 ? Boolean(ASCII_FLAGS[code] & 1)
+        : wordPattern().test(String.fromCodePoint(text.codePointAt(index)!));
+}
+
+function joinedAt(text: string, index: number): boolean {
+    if (wordAt(text, index)) return true;
+    const code = text.charCodeAt(index);
+    return code !== 33 && Boolean(ASCII_FLAGS[code] & 8)
+        && wordAt(text, previousCodePoint(text, index)) && wordAt(text, index + 1);
+}
+
+const CANDIDATE_SUBSTITUTIONS = /[0-9@$(|!]/g;
+/** Inspect only substitution-containing runs; internal bangs retain dictionary-dependent handling. */
+export function foldCandidateText(text: string): string | undefined {
+    CANDIDATE_SUBSTITUTIONS.lastIndex = 0;
+    const pieces: string[] = [];
+    let copied = 0;
+    let occurrence: RegExpExecArray | null;
+    while ((occurrence = CANDIDATE_SUBSTITUTIONS.exec(text)) !== null) {
+        const at = occurrence.index;
+        if (occurrence[0] === '!') {
+            if (wordAt(text, previousCodePoint(text, at)) && wordAt(text, at + 1)) return;
+            continue;
+        }
+        if (!joinedAt(text, at)) continue;
+        let start = at;
+        while (start > 0) {
+            const previous = previousCodePoint(text, start);
+            if (!joinedAt(text, previous)) break;
+            start = previous;
+        }
+        let end = at + 1;
+        while (end < text.length && joinedAt(text, end)) end += text.codePointAt(end)! > 0xffff ? 2 : 1;
+        let hasLetter = false;
+        for (let index = start; index < end; index += text.codePointAt(index)! > 0xffff ? 2 : 1) {
+            const code = text.charCodeAt(index);
+            if (code < 128 ? ASCII_FLAGS[code] & 2
+                : letterPattern().test(String.fromCodePoint(text.codePointAt(index)!))) {
+                hasLetter = true;
+                break;
+            }
+        }
+        if (hasLetter) {
+            const value = text.slice(start, end).replace(/[0-9@$(|]/g, character => SUBSTITUTIONS[character]);
+            pieces.push(text.slice(copied, start), value);
+            copied = end;
+        }
+        CANDIDATE_SUBSTITUTIONS.lastIndex = end;
+    }
+    return copied ? pieces.join('') + text.slice(copied) : text;
+}
+
+/** Check changing non-ASCII case mappings without walking ordinary lowercase text. */
+export function caseWidthStable(text: string): boolean {
+    const pattern = caseChangeRegex ??= new RegExp('(?=[^\\x00-\\x7f])(?:\\p{Uppercase}|\\p{Lt})', 'gu');
+    pattern.lastIndex = 0;
+    let occurrence: RegExpExecArray | null;
+    while ((occurrence = pattern.exec(text)) !== null) {
+        if (occurrence[0].toLowerCase().length !== occurrence[0].length) return false;
+    }
+    return true;
 }
 
 function normalizeSimpleUnicode(text: string, ignoreRepeatedLetters: boolean,
@@ -362,13 +442,17 @@ export function normalizeLiteral(text: string, normalization: Normalization): No
     return result;
 }
 
-/** Source-only boundaries; constructed only for explicitly supplied ranges. */
+/** Original source boundaries, deferring segmentation until a non-ASCII edge needs it. */
 export function sourceBoundaryChecker(text: string): (index: number) => boolean {
-    if (ASCII.test(text)) {
-        return (index) => !(text.charCodeAt(index - 1) === 13 && text.charCodeAt(index) === 10);
-    }
-    const segments = graphemes(text);
-    return (index) => index === text.length || segments.containing(index)?.index === index;
+    let segments: Intl.Segments | undefined;
+    return (index) => {
+        if (index === 0 || index === text.length) return true;
+        const left = text.charCodeAt(index - 1), right = text.charCodeAt(index);
+        // Adjacent ASCII scalars break under UAX29, except CR × LF.
+        if (left < 128 && right < 128) return left !== 13 || right !== 10;
+        segments ??= graphemes(text);
+        return segments.containing(index)?.index === index;
+    };
 }
 
 /** Dictionary keys do not need source provenance. */

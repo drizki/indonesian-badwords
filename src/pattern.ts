@@ -74,10 +74,10 @@ export function prepareNativePatterns(words: readonly string[]): NativePatterns 
 }
 
 /** A reject-only search: omit word and grapheme boundaries to keep a superset. */
-export function canonicalCandidatePattern(prepared: NativePatterns, folding: boolean): RegExp | undefined {
+export function canonicalCandidatePattern(prepared: NativePatterns, folding: boolean, global = false): RegExp | undefined {
     const literal = [prepared.complex, prepared.simple].filter(Boolean).join('|');
     const source = folding ? literal.replace(/[abcegiostz]/g, (letter) => ALIASES[letter]) : literal;
-    return source.length <= 65_536 ? new RegExp(source, 'u') : undefined;
+    return source.length <= 65_536 ? new RegExp(source, global ? 'gu' : 'u') : undefined;
 }
 
 /** A negative result proves that ASCII folding cannot create a dictionary occurrence. */
