@@ -462,7 +462,12 @@ export class Badwords {
     #censorCallback(text: string, replacement: CensorCallback): string {
         validateText(text);
         if (!text.length || !this.#dictionary.size || this.#longWord(text)) return text;
-        const spans = this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word');
+        const native = this.#nativeFor(text);
+        if (native === CLEAN) return text;
+        const spans = native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word');
+        if (native) this.#scan(text, ({ word, start, end, order }) => {
+            spans.push({ start, end, entries: [{ word, key: word, order }] });
+        });
         const pieces: string[] = [];
         let index = 0;
         for (const span of spans) {

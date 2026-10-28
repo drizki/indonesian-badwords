@@ -75,6 +75,23 @@ test('callbacks are a per-call snapshot and errors propagate in source order', (
     assert.equal(censor('goblok!', () => '$& $1 $$'), '$& $1 $$!');
 });
 
+test('callback spans stay consistent across literal, transformed and mutated dictionaries', () => {
+    const checker = new Badwords({ dictionary: ['kontol', 'goblok'] });
+    const text = '😀 GOBLOK, kontol.';
+    assert.deepEqual(capture(checker, text).contexts, [
+        { text, index: 3, end: 9, match: 'GOBLOK', words: ['goblok'] },
+        { text, index: 11, end: 17, match: 'kontol', words: ['kontol'] }
+    ]);
+    const clean = 'café 👩‍💻 terima kasih 0123456789';
+    assert.equal(checker.censor(clean, () => assert.fail('clean callback')), clean);
+    assert.equal(checker.censor('g0bl0k', () => '*'), '*');
+    checker.addWords("goblok'kontol");
+    assert.deepEqual(capture(checker, "goblok'kontol").contexts[0].words,
+        ['kontol', 'goblok', "goblok'kontol"]);
+    checker.removeWords('goblok');
+    assert.deepEqual(capture(checker, 'GOBLOK, kontol.').contexts.map(({ words }) => words), [['kontol']]);
+});
+
 test('invalid callback returns throw and clean/empty text never invokes callbacks', () => {
     for (const result of [undefined, null, false, 1, 1n, Symbol('x'), () => 'x', {}, [], Promise.resolve('x'), new String('x')]) {
         assert.throws(() => censor('goblok', () => result), /callback must return a string/);
@@ -142,6 +159,7 @@ test('optional strategies retain ESM/CommonJS identity and import lazily', async
         Intl.Segmenter = class { constructor() { calls++; throw Error('eager segmenter'); } };
         const api = require('./dist/cjs/index.js');
         if (!api.flag('goblok') || api.censor('goblok') !== '***') throw Error('root behavior');
+        if (api.censor('GOBLOK', ({ match }) => match.toLowerCase()) !== 'goblok') throw Error('callback behavior');
         if (Object.keys(require.cache).some(path => path.endsWith('/censor.js'))) throw Error('root loaded strategies');
         require('./dist/cjs/censor.js');
         if (calls) throw Error('import eagerly created Intl.Segmenter');
