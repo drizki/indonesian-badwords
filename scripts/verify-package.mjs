@@ -40,7 +40,11 @@ verifyTargets(manifest.exports);
 for (const field of ['main', 'module', 'types']) verifyTargets(manifest[field]);
 assert.equal(JSON.parse(run('tar', ['-xOf', archivePath, 'package/dist/cjs/package.json'])).type, 'commonjs');
 assert.deepEqual([...files].filter(path => path.endsWith('.js')).sort(),
-    ['dist/cjs/index.js', 'dist/esm/index.js'], 'Publish one bundled runtime and its ESM facade');
+    ['dist/cjs/censor.js', 'dist/cjs/index.js', 'dist/esm/censor.js', 'dist/esm/index.js'],
+    'Publish the root and optional strategy runtime, each with its ESM facade');
+const strategySource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/censor.js']);
+assert.ok(!strategySource.includes('kontol') && !strategySource.includes('defaultDictionary'),
+    'Optional strategies must not duplicate the dictionary or root runtime');
 
 const workspace = mkdtempSync(join(tmpdir(), 'indonesian-badwords-consumer-'));
 try {
@@ -50,7 +54,12 @@ try {
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import instance, * as api from 'indonesian-badwords';
-const cjs = createRequire(import.meta.url)('indonesian-badwords');
+import { mask, grawlix } from 'indonesian-badwords/censor';
+const require = createRequire(import.meta.url);
+const cjs = require('indonesian-badwords');
+const strategies = require('indonesian-badwords/censor');
+assert.equal(mask, strategies.mask);
+assert.equal(grawlix, strategies.grawlix);
 assert.equal(api.Badwords, cjs.Badwords);
 assert.equal(instance, cjs.default);
 assert.equal(api.flag, cjs.flag);
@@ -59,6 +68,12 @@ assert.ok(new api.Badwords() instanceof cjs.Badwords);
 assert.ok(new cjs.Badwords() instanceof api.Badwords);
 assert.equal(api.flag('dasar kontol'), true);
 assert.equal(instance.censor('dasar kontol'), 'dasar ***');
+assert.equal(api.censor('dasar g0bl0k!', mask({ keepFirst: 1 })), 'dasar g*****!');
+assert.equal(api.censor('kontol', grawlix({ symbols: '$#', random: () => 0 })), '$$$$$$');
+assert.equal(api.censor('😀 k0nt0l!', context => {
+    assert.deepEqual(context, { text: '😀 k0nt0l!', index: 3, end: 9, match: 'k0nt0l', words: ['kontol'] });
+    return '$&';
+}), '😀 $&!');
 assert.equal(api.flag('pantai'), false);
 assert.deepEqual(api.find('😀 k0nt0l!'), [
     { word: 'kontol', index: 3, end: 9, match: 'k0nt0l' }
@@ -95,8 +110,11 @@ try {
     writeFileSync(join(workspace, 'consumer.cjs'), `
 const assert = require('node:assert/strict');
 const api = require('indonesian-badwords');
+const { mask, grawlix } = require('indonesian-badwords/censor');
 assert.equal(api.flag('dasar kontol'), true);
 assert.equal(api.default.censor('dasar kontol'), 'dasar ***');
+assert.equal(api.censor('goblok', mask({ keepLast: 1 })), '*****k');
+assert.equal(api.censor('goblok', grawlix({ symbols: '#', random: () => 0 })), '######');
 assert.deepEqual(api.find('k0nt0l'), [{ word: 'kontol', index: 0, end: 6, match: 'k0nt0l' }]);
 assert.equal(api.analyze('kontol kontol').occurrenceCount, 2);
 assert.equal(new api.Badwords({ dictionary: api.expandedDictionary }).flag('anjing'), true);
@@ -110,6 +128,7 @@ assert.equal(new api.Badwords({ dictionary: ['customterm'] }).flag('customterm')
     const browserEntry = join(workspace, 'consumer.browser.mjs');
     writeFileSync(browserEntry, `
 import instance, { Badwords, find, dictionary, expandedDictionary } from 'indonesian-badwords';
+import { mask, grawlix } from 'indonesian-badwords/censor';
 let matchLimitEnforced = false;
 try {
     new Badwords({ dictionary: ['a'], mode: 'substring', maxMatches: 2 }).find('aaa');
@@ -127,6 +146,11 @@ globalThis.browserResults = {
     expandedContextual: new Badwords({ dictionary: expandedDictionary }).flag('anjing'),
     frozenPresets: Object.isFrozen(dictionary) && Object.isFrozen(expandedDictionary),
     occurrences: instance.analyze('kontol kontol').occurrenceCount,
+    callback: instance.censor('😀 k0nt0l!', ({ index, end, match, words }) =>
+        String(index) + ':' + end + ':' + match + ':' + words.join(',')),
+    mask: instance.censor('g0bl0k!', mask({ keepFirst: 1 })),
+    graphemes: new Badwords({ dictionary: ['ffi', '👩‍💻', 'é'] }).censor('ﬃ 👩‍💻 e\\u0301', mask()),
+    grawlix: instance.censor('kontol', grawlix({ symbols: '$#', random: () => 0 })),
     matchLimitEnforced
 };
 `);
@@ -163,14 +187,36 @@ globalThis.browserResults = {
         expandedContextual: true,
         frozenPresets: true,
         occurrences: 2,
+        callback: '😀 3:9:k0nt0l:kontol!',
+        mask: 'g*****!',
+        graphemes: '* * *',
+        grawlix: '$$$$$$',
         matchLimitEnforced: true
     });
+
+    const rootOnly = await build({
+        stdin: { contents: "export { flag, censor } from 'indonesian-badwords';", resolveDir: workspace },
+        bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
+        write: false, metafile: true, logLevel: 'silent'
+    });
+    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\]censor\.js$/.test(path)),
+        'Default imports must not load optional strategies');
+    const strategyOnly = await build({
+        stdin: { contents: "export { mask, grawlix } from 'indonesian-badwords/censor';", resolveDir: workspace },
+        bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
+        write: false, metafile: true, logLevel: 'silent'
+    });
+    assert.ok(Object.keys(strategyOnly.metafile.inputs).every(path => !/[/\\]index\.js$/.test(path)),
+        'Optional strategies must not pull in another root runtime');
 
     const types = `
 import instance, { Badwords, flag, find, analyze, dictionary, contextualDictionary, expandedDictionary,
     type AnalysisResult, type BadwordLocation, type BadwordsOptions, type MatchMode,
     type Normalization, type DictionaryWord, type ContextualDictionaryWord,
-    type ExpandedDictionaryWord } from 'indonesian-badwords';
+    type ExpandedDictionaryWord, type CensorContext, type CensorCallback,
+    type CensorReplacement } from 'indonesian-badwords';
+import { mask, grawlix, type MaskOptions, type GrawlixOptions,
+    type CensorContext as StrategyContext } from 'indonesian-badwords/censor';
 const mode: MatchMode = 'substring';
 const normalization: Normalization = 'standard';
 const options: BadwordsOptions = { dictionary: ['customterm'] as const, mode,
@@ -196,6 +242,31 @@ for (const location of matches) {
     const original: string = location.match;
 }
 const censored: string = instance.censor('kontol');
+const callback: CensorCallback = (context: CensorContext) => {
+    const strategyContext: StrategyContext = context;
+    const source: string = context.text.slice(context.index, context.end);
+    const original: string = context.match;
+    const words: readonly string[] = context.words;
+    // @ts-expect-error callback words are immutable
+    context.words.push('changed');
+    // @ts-expect-error callback coordinates are immutable
+    context.index = 0;
+    return source;
+};
+const replacement: CensorReplacement = callback;
+const callbackResult: string = checker.censor('customterm', replacement);
+const maskOptions: MaskOptions = { keepFirst: 1, keepLast: 1, character: '*' };
+const grawlixOptions: GrawlixOptions = { symbols: ['$', '#'] as const, random: () => 0 };
+instance.censor('kontol', mask(maskOptions));
+instance.censor('kontol', grawlix(grawlixOptions));
+// @ts-expect-error callback replacements must return strings
+instance.censor('kontol', () => 1);
+// @ts-expect-error async callback replacements are unsupported
+instance.censor('kontol', async () => 'x');
+// @ts-expect-error keep counts are numbers
+mask({ keepFirst: '1' });
+// @ts-expect-error random must return a number
+grawlix({ random: () => '0' });
 checker.addWords(['added'] as const);
 checker.removeWords(['added'] as const);
 // @ts-expect-error invalid matching mode
@@ -216,10 +287,14 @@ const invalid: string = flag('kontol');
     for (const extension of ['mts', 'cts', 'ts']) {
         writeFileSync(join(workspace, `consumer.${extension}`), types + (extension === 'mts' ? `
 import cjs = require('indonesian-badwords');
+import cjsStrategies = require('indonesian-badwords/censor');
 const fromImport: cjs.Badwords = checker;
 const fromRequire: Badwords = new cjs.Badwords();
 const defaultFromImport: cjs.Badwords = instance;
 const defaultFromRequire: Badwords = cjs.default;
+const callbackFromImport: cjs.CensorCallback = callback;
+const callbackFromRequire: CensorCallback = cjsStrategies.mask();
+const optionsFromImport: cjsStrategies.MaskOptions = maskOptions;
 ` : extension === 'cts' ? `
 import cjs = require('indonesian-badwords');
 const required: boolean = cjs.flag('kontol');
@@ -240,7 +315,7 @@ new cjs.Badwords({ dictionary: ['customterm'] });
         run(process.execPath, [compiler, '-p', config], workspace);
     }
     const compilerVersion = JSON.parse(readFileSync(join(root, 'node_modules/typescript/package.json'))).version;
-    console.log(`Verified packed files, shared ESM/CommonJS runtime identity and state, browser ES2022 bundle without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
+    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional censorship strategies, browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
 } finally {
     rmSync(workspace, { recursive: true, force: true });
 }

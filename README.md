@@ -9,7 +9,7 @@
 Fast Indonesian profanity filtering for JavaScript and TypeScript. Catch disguised
 spellings, censor matches, and get exact locations in the original text.
 
-- **Fast checks for chat, comments, and forms.** Early-exit detection, about 9 KB
+- **Fast checks for chat, comments, and forms.** Early-exit detection, about 10 KB
   minified and gzipped, and zero runtime dependencies. [See the benchmarks](#performance).
 - **Precise Unicode matches.** Recognizes `g0bl0k`, `ＧＯＢＬＯＫ`, and words containing
   invisible characters. Censoring preserves the surrounding text and punctuation.
@@ -51,15 +51,15 @@ flag('dasar goblok'); // true
 
 ## Performance
 
-A browser bundle with the default checker is about 9 KB minified and gzipped.
+A browser bundle with the default checker is about 10 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.72 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 22.48 µs |
-| Clean ASCII paragraph, 4,000 characters | `censor` | 5.40 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.74 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 23.74 µs |
+| Clean ASCII paragraph, 4,000 characters | `censor` | 5.39 µs |
 | Clean ASCII paragraph, 4,000 characters | `analyze` | 15.32 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 30.83 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 30.80 µs |
 
 Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
 call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
@@ -114,7 +114,7 @@ These work on an instance, the default export, or as named imports.
 | `flag(text)` | Whether any word matches. |
 | `find(text)` | Occurrences as `{ word, index, end, match }`. |
 | `badwords(text)` | Unique matching dictionary words. |
-| `censor(text, replacement = '***')` | Text with matched spans replaced. |
+| `censor(text, replacement = '***')` | Text with matched spans replaced by a literal string or callback result. |
 | `filter(text)` | Text with matches removed and whitespace cleaned up. |
 | `analyze(text)` | Censored text, counts, words, and locations. |
 
@@ -124,6 +124,21 @@ shouldn't affect the shared default instance.
 
 Empty strings are valid. Invalid inputs throw `TypeError`; `find` and `analyze`
 throw `RangeError` if they exceed `maxMatches`.
+
+Use a callback for custom replacements, or import grapheme-safe strategies from
+the optional `censor` entry point:
+
+```ts
+import { censor } from 'indonesian-badwords';
+import { mask, grawlix } from 'indonesian-badwords/censor';
+
+censor('dasar g0bl0k!', mask({ keepFirst: 1 })); // 'dasar g*****!'
+censor('goblok', grawlix({ symbols: '@#$' }));
+censor('goblok', ({ match, words }) => `[${words.join(',')}:${match}]`);
+```
+
+Strategies count original graphemes and always mask at least one, including short
+matches. See [callback and strategy options](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#custom-censorship).
 
 ## Documentation
 

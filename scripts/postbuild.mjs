@@ -24,34 +24,45 @@ await build({
     logLevel: 'silent'
 });
 
-// Both entry points must expose the same classes, functions, and dictionary
-// state. An ESM facade over the one CommonJS implementation avoids loading a
-// second copy when an application mixes import and require.
-const api = require('../dist/cjs/index.js');
-const names = Object.keys(api).filter((name) => name !== 'default' && name !== '__esModule');
-for (const name of names) {
-    if (!/^[A-Za-z_$][\w$]*$/u.test(name)) {
-        throw new Error(`Cannot generate ESM facade for export ${JSON.stringify(name)}`);
-    }
-}
-const hasDefault = Object.hasOwn(api, 'default');
+// The optional strategies bundle imports only types from the root. Keep its
+// segmentation and random-symbol machinery outside the default runtime.
+await build({
+    entryPoints: [fileURLToPath(new URL('../src/censor.ts', import.meta.url))],
+    outfile: fileURLToPath(new URL('../dist/cjs/censor.js', import.meta.url)),
+    bundle: true,
+    format: 'cjs',
+    platform: 'neutral',
+    target: 'es2022',
+    minify: true,
+    logLevel: 'silent'
+});
+
+// Each ESM facade aliases its CommonJS implementation. Runtime objects and
+// declaration identities are shared when consumers mix import and require.
 const directory = new URL('../dist/esm/', import.meta.url);
 await mkdir(directory, { recursive: true });
-await writeFile(new URL('index.js', directory), [
-    '// Generated facade: the CommonJS module owns all runtime state.',
-    "import api from '../cjs/index.js';",
-    ...names.map((name) => `export const ${name} = api.${name};`),
-    ...(hasDefault ? ['export default api.default;'] : []),
-    ''
-].join('\n'));
-
-// Re-export one declaration identity as well. Compiling the class twice gives
-// its private fields different brands in ESM and CommonJS TypeScript consumers.
-await writeFile(new URL('index.d.ts', directory), [
-    "export * from '../cjs/index.js';",
-    ...(hasDefault ? [
-        "declare const instance: typeof import('../cjs/index.js').default;",
-        'export default instance;'
-    ] : []),
-    ''
-].join('\n'));
+for (const entry of ['index', 'censor']) {
+    const api = require(`../dist/cjs/${entry}.js`);
+    const names = Object.keys(api).filter((name) => name !== 'default' && name !== '__esModule');
+    for (const name of names) {
+        if (!/^[A-Za-z_$][\w$]*$/u.test(name)) {
+            throw new Error(`Cannot generate ESM facade for export ${JSON.stringify(name)}`);
+        }
+    }
+    const hasDefault = Object.hasOwn(api, 'default');
+    await writeFile(new URL(`${entry}.js`, directory), [
+        '// Generated facade: the CommonJS module owns all runtime state.',
+        `import api from '../cjs/${entry}.js';`,
+        ...names.map((name) => `export const ${name} = api.${name};`),
+        ...(hasDefault ? ['export default api.default;'] : []),
+        ''
+    ].join('\n'));
+    await writeFile(new URL(`${entry}.d.ts`, directory), [
+        `export * from '../cjs/${entry}.js';`,
+        ...(hasDefault ? [
+            `declare const instance: typeof import('../cjs/${entry}.js').default;`,
+            'export default instance;'
+        ] : []),
+        ''
+    ].join('\n'));
+}
