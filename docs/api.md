@@ -20,6 +20,12 @@ Contextual terms include `anjing`, `babi`, `asu`, `monyet`, `buta`, and `homo`.
 The expanded list flags these words in ordinary sentences too. Names and unrelated
 slang such as `Riyad`, `item`, `suhu`, and `sepuh` are absent from both lists.
 
+The optional [`indonesian-badwords/metadata` entry point](metadata.md) adds
+reviewed profiles and selection by lexical category, documented abusive-use
+region, and editorial severity. `indonesian-badwords/catalog` provides source
+claims and policy explanations. Both are separate from the root runtime; they
+do not change the three existing lists.
+
 With `Badwords` imported as shown in the README, you can supply your own list:
 
 ```ts

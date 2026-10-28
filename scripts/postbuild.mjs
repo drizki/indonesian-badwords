@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+import { loadCatalog } from './catalog-data.mjs';
 
 const marker = new URL('../dist/cjs/package.json', import.meta.url);
 await writeFile(marker, `${JSON.stringify({ type: 'commonjs' }, null, 2)}\n`);
@@ -24,6 +25,25 @@ await build({
     logLevel: 'silent'
 });
 
+// Rich source claims and thin selection metadata are separate optional bundles.
+const { data, metadata } = await loadCatalog();
+for (const [entry, name, value] of [
+    ['metadata', '__BADWORDS_METADATA__', metadata],
+    ['catalog', '__BADWORDS_CATALOG__', data]
+]) {
+    await build({
+        entryPoints: [fileURLToPath(new URL(`../src/${entry}.ts`, import.meta.url))],
+        outfile: fileURLToPath(new URL(`../dist/cjs/${entry}.js`, import.meta.url)),
+        bundle: true,
+        format: 'cjs',
+        platform: 'neutral',
+        target: 'es2022',
+        minify: true,
+        define: { [name]: JSON.stringify(value) },
+        logLevel: 'silent'
+    });
+}
+
 // The optional strategies bundle imports only types from the root. Keep its
 // segmentation and random-symbol machinery outside the default runtime.
 await build({
@@ -41,7 +61,7 @@ await build({
 // declaration identities are shared when consumers mix import and require.
 const directory = new URL('../dist/esm/', import.meta.url);
 await mkdir(directory, { recursive: true });
-for (const entry of ['index', 'censor']) {
+for (const entry of ['index', 'censor', 'metadata', 'catalog']) {
     const api = require(`../dist/cjs/${entry}.js`);
     const names = Object.keys(api).filter((name) => name !== 'default' && name !== '__esModule');
     for (const name of names) {
