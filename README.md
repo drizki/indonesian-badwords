@@ -9,7 +9,7 @@
 Fast Indonesian profanity filtering for JavaScript and TypeScript. Catch disguised
 spellings, censor matches, and get exact locations in the original text.
 
-- **Fast checks for chat, comments, and forms.** Early-exit detection, about 10 KB
+- **Fast checks for chat, comments, and forms.** Early-exit detection, about 11 KB
   minified and gzipped, and zero runtime dependencies. [See the benchmarks](#performance).
 - **Precise Unicode matches.** Recognizes `g0bl0k`, `ＧＯＢＬＯＫ`, and words containing
   invisible characters. Censoring preserves the surrounding text and punctuation.
