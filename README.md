@@ -75,12 +75,12 @@ A browser bundle with the default checker is about 12 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.75 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 22.98 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.77 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 24.45 µs |
 | Clean ASCII paragraph, 4,000 characters | `censor` | 5.56 µs |
-| Clean ASCII paragraph, 4,000 characters | `analyze` | 15.53 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 21.66 µs |
-| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 30.32 µs |
+| Clean ASCII paragraph, 4,000 characters | `analyze` | 16.10 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 21.79 µs |
+| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.79 µs |
 
 Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
 call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
