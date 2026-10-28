@@ -1,16 +1,46 @@
 {
   "name": "indonesian-badwords",
   "version": "1.0.1",
-  "description": "Detect Bahasa Indonesia swear/cursing words in a string",
-  "main": "src/main.js",
+  "description": "Detect and censor Bahasa Indonesia profanity in strings",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "scripts": {
-    "test": "jest"
+    "clean": "node scripts/clean.mjs",
+    "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild.mjs",
+    "test": "npm run build && node --test tests",
+    "prepublishOnly": "npm test"
   },
   "repository": "https://github.com/drizki/indonesian-badwords",
   "author": "Dwi Rizki Irawan",
   "license": "MIT",
   "private": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "devDependencies": {
-    "jest": "^28.1.0"
+    "typescript": "^7.0.2"
   }
 }

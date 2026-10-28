@@ -1,4 +1,4 @@
-[
+export const dictionary = [
     "ajig",
     "alay",
     "ancok",
@@ -209,4 +209,6 @@
     "ublag",
     "udik",
     "wingkeng"
-]
+] as const;
+
+export type DictionaryWord = (typeof dictionary)[number];

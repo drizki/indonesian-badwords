@@ -1,0 +1,70 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Verify tag
+        run: |
+          TAG="$GITHUB_REF_NAME"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag '$TAG' is not a valid release tag (expected vX.Y.Z)." >&2
+            exit 1
+          fi
+          VERSION=$(npm pkg get version | tr -d '"')
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "Tag '$TAG' does not match package.json version 'v$VERSION'." >&2
+            exit 1
+          fi
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Tag '$TAG' does not point to a commit on main." >&2
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - run: npm test
+
+      - name: Check whether this version is already published
+        id: published
+        run: |
+          NAME=$(npm pkg get name | tr -d '"')
+          VERSION=$(npm pkg get version | tr -d '"')
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish
+        if: steps.published.outputs.value == 'false'
+        run: npm publish --provenance --access public
+
+      - name: Skip
+        if: steps.published.outputs.value == 'true'
+        run: echo "This version is already published; nothing to do."

@@ -1,103 +1,142 @@
 # Indonesian Badwords
 
-![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg) 
+[![CI](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml/badge.svg)](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml) [![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg)
 
-A small JavaScript library designed for the detection, censorship, and analysis of profane words within the Indonesian language. The library is engineered for efficiency, accuracy, and flexibility, with capabilities to identify not only standard profanity but also disguised lexical variations, such as leetspeak and concatenated terms.
-
-A live demonstration is available for further examination.
+A small, zero-dependency TypeScript library for detecting, censoring, and analyzing profanity in Bahasa Indonesia. It ships ESM, CommonJS, and bundled type declarations, and handles disguised words such as leetspeak (`4nj1ng`) and concatenated terms (`bajingankontol`).
 
 ## Features
 
-This utility is distinguished by several key features. It is computationally efficient, employing a `Set` data structure to achieve O(1) average time complexity for lexical lookups. The library is equipped with an extensive dictionary containing over 200 curated terms, which includes regional dialects, contemporary internet slang, and common abbreviations. Furthermore, it incorporates functionality for leetspeak detection, enabling the identification of words with common character substitutions (e.g., `4nj1ng` is recognized as `anjing`). The `flag()` and `badwords()` methods are capable of detecting profanity within concatenated strings where standard delimiters are absent (e.g., `bajingankontol`). The dictionary is also designed to be fully customizable, allowing for the addition or removal of terms at runtime.
+- **210+ dictionary entries**, including regional dialects, internet slang, and abbreviations
+- **Leetspeak detection** via a character substitution map
+- **Concatenated-word detection** for `flag()` and `badwords()`
+- **Runtime dictionary customization** with `addWords()` / `removeWords()`
+- **Dual module support** — ESM and CommonJS from one import path
+- **First-class TypeScript** — declarations are generated from the source
+- **Zero runtime dependencies**
 
 ## Installation
 
-The package can be installed via NPM or Yarn.
-
-**NPM:**
 ```bash
 npm install indonesian-badwords
-```
-
-**Yarn:**
-```bash
+# or
 yarn add indonesian-badwords
+# or
+pnpm add indonesian-badwords
 ```
 
 ## Usage
 
-### Fundamental Usage
+### ESM / TypeScript
 
-The following examples illustrate the basic functionality of the library.
+```ts
+import badwords from 'indonesian-badwords';
 
-```javascript
-const badwords = require("indonesian-badwords");
-
-// Check for the presence of profane words
-console.log(badwords.flag("kalimat ini bersih")); // Returns: false
-console.log(badwords.flag("dasar monyet")); // Returns: true
-
-// Censor profane words
-console.log(badwords.censor("dasar monyet")); // Returns: "dasar ***"
-
-// Retrieve a list of profane words found
-console.log(badwords.badwords("dasar monyet dan babi")); // Returns: ['monyet', 'babi']
+badwords.flag('kalimat ini bersih');     // false
+badwords.flag('dasar monyet');           // true
+badwords.censor('dasar monyet');         // 'dasar ***'
+badwords.badwords('dasar monyet dan babi'); // ['monyet', 'babi']
 ```
 
-### Advanced Detection Capabilities
+Named exports are also available, which is friendlier for tree-shaking:
 
-The library is designed to automatically handle leetspeak and can identify concatenated profanities.
+```ts
+import { analyze, censor, flag } from 'indonesian-badwords';
 
-```javascript
-// Leetspeak detection and censorship
-console.log(badwords.flag("dasar 4nj1ng")); // Returns: true
-console.log(badwords.censor("dasar 4nj1ng")); // Returns: "dasar ***"
-
-// Concatenated word detection
-console.log(badwords.flag("dasarbajingankontol")); // Returns: true
-console.log(badwords.badwords("dasarbajingankontol")); // Returns: ['bajingan', 'kontol']
+flag('dasar anjing');      // true
+censor('dasar anjing');    // 'dasar ***'
+analyze('lorem anjing!');  // typed AnalysisResult object
 ```
 
-### Dictionary Customization
+### CommonJS
 
-The dictionary can be modified programmatically during runtime.
+```js
+const badwords = require('indonesian-badwords');
 
-```javascript
-const badwords = require("indonesian-badwords");
+badwords.flag('dasar monyet'); // true
+badwords.censor('dasar monyet'); // 'dasar ***'
+```
 
-// Add a new term to the dictionary
-badwords.addWords('kucel');
-console.log(badwords.flag('muka kamu kucel')); // Returns: true
+### Advanced detection
 
-// Remove an existing term from the dictionary
-badwords.removeWords('monyet');
-console.log(badwords.flag('dasar monyet')); // Returns: false
+```ts
+import badwords from 'indonesian-badwords';
+
+// Leetspeak
+badwords.flag('dasar 4nj1ng');   // true
+badwords.censor('dasar 4nj1ng'); // 'dasar ***'
+
+// Concatenated words
+badwords.flag('dasarbajingankontol'); // true
+badwords.badwords('dasarbajingankontol'); // ['bajingan', 'kontol']
+```
+
+### Dictionary customization
+
+Use a separate instance when you want an isolated dictionary:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const custom = new Badwords(['kucel']);
+
+custom.flag('muka kamu kucel'); // true
+custom.flag('dasar anjing');    // false
+```
+
+Or mutate the shared instance:
+
+```ts
+import badwords, { addWords, removeWords } from 'indonesian-badwords';
+
+addWords('kucel');
+badwords.flag('muka kamu kucel'); // true
+
+removeWords('kucel');
+badwords.flag('muka kamu kucel'); // false
 ```
 
 ## API Reference
 
-| Function | Parameter | Type | Required | Default | Return Type | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `flag` | `text` | `string` | Yes | | `boolean` | Performs a comprehensive substring search to detect profane words. |
-| `badwords` | `text` | `string` | Yes | | `string[]` | Returns an array of all dictionary-defined words found within the text. |
-| `filter` | `text` | `string` | Yes | | `string` | Removes profane words from the text, with accurate handling of leetspeak. |
-| `censor` | `text` | `string` | Yes | | `string` | Replaces profane words with a substitute string. |
-| | `replacement` | `string` | No | `***` | | Specifies the string to be used for replacement. |
-| `analyze` | `text` | `string` | Yes | | `object` | Returns a detailed analysis object of the provided text. |
-| `addWords` | `words` | `string` or `string[]` | Yes | | `void` | Appends one or more terms to the dictionary. |
-| `removeWords`| `words` | `string` or `string[]` | Yes | | `void` | Deletes one or more terms from the dictionary. |
+Every method is available on the default export, as a named export, and on `new Badwords(dictionary)`.
 
-## Testing
+| Function | Parameters | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `flag` | `text: string` | `boolean` | Substring search for any dictionary word. |
+| `badwords` | `text: string` | `string[]` | All unique dictionary words found in the text. |
+| `filter` | `text: string` | `string` | Removes bad words and cleans up whitespace. |
+| `censor` | `text: string, replacement = '***'` | `string` | Replaces whole words, preserving delimiters. |
+| `analyze` | `text: string` | `AnalysisResult` | Censored text, matches, count, and locations. |
+| `addWords` | `words: string \| string[]` | `void` | Adds words to the dictionary. |
+| `removeWords` | `words: string \| string[]` | `void` | Removes words from the dictionary. |
 
-To execute the test suite, clone the repository and run the following commands:
+`AnalysisResult` contains `text`, `words`, `censored`, `badwords`, `count`, and `locations` (`Array<{ word: string; index: number }>`).
+
+## Development
 
 ```bash
 npm install
-npm run test
+npm run build   # emits dist/esm and dist/cjs
+npm test        # builds, then runs the node:test suite
 ```
+
+The build uses only `tsc`: ESM is compiled with `NodeNext`, CommonJS with `CommonJS`, and a small post-build script writes the `dist/cjs/package.json` type marker. The published package contains only `dist/`.
+
+## Releasing
+
+Publishing is tag-driven. The tag must match the `package.json` version exactly, including the `v` prefix.
+
+```bash
+# 1. Bump the version and create the tag in one step
+npm version patch   # or: minor / major
+
+# 2. Push the commit and the tag
+git push origin main --follow-tags
+```
+
+Pushing the tag runs the `Publish` workflow, which tests the package, validates the tag, and publishes it to npm with provenance. Re-running a tag whose version is already on npm is a no-op.
 
 ## Contributing
 
-Contributions to the project are encouraged. If the dictionary is observed to be missing a significant profane term, please submit a Pull Request for consideration.
+Contributions are welcome. If a significant profane term is missing from the dictionary, please open a Pull Request.
 
 Semoga bermanfaat 😉
