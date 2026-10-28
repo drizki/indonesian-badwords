@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "Fast Indonesian profanity filter with TypeScript, Unicode-aware matching, and zero runtime dependencies",
   "keywords": [
     "indonesian",
