@@ -1,0 +1,38 @@
+{
+  "name": "indonesian-badwords-examples",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:browser": "vite --config vite.config.ts --mode browser --host 127.0.0.1",
+    "dev:react": "vite --config vite.config.ts --mode react --host 127.0.0.1",
+    "dev:vue": "vite --config vite.config.ts --mode vue --host 127.0.0.1",
+    "dev:svelte": "vite --config vite.config.ts --mode svelte --host 127.0.0.1",
+    "check": "tsc -p tsconfig.json && vue-tsc -p vue/tsconfig.json && svelte-check --workspace svelte --tsconfig ./tsconfig.json",
+    "build": "vite build --mode browser && vite build --mode react && vite build --mode vue && vite build --mode svelte",
+    "check:policy": "tsc -p tsconfig.policy.json && node checks/policy.mjs",
+    "check:browser": "playwright test"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "dependencies": {
+    "indonesian-badwords": "2.5.1"
+  },
+  "devDependencies": {
+    "vite": "8.3.5",
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitejs/plugin-vue": "6.0.10",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "vue": "3.5.44",
+    "svelte": "5.57.3",
+    "vue-tsc": "3.3.13",
+    "svelte-check": "4.7.7",
+    "@playwright/test": "1.64.1",
+    "typescript": "6.0.3",
+    "@types/node": "24.12.0"
+  }
+}

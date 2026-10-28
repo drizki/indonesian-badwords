@@ -1,0 +1,6 @@
+body { font: 16px/1.5 system-ui, sans-serif; max-width: 48rem; margin: 3rem auto; padding: 0 1rem; color: #18212b; }
+label { display: block; margin-top: 1.25rem; font-weight: 600; }
+textarea { box-sizing: border-box; display: block; width: 100%; min-height: 5rem; padding: .75rem; font: inherit; }
+pre, [data-testid="highlights"] { white-space: pre-wrap; overflow-wrap: anywhere; padding: .75rem; background: #f3f5f7; }
+mark { background: #ffe6a7; }
+[role="alert"] { color: #a21b14; }

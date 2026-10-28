@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Fast Indonesian profanity filter with TypeScript, Unicode-aware matching, and zero runtime dependencies",
   "keywords": [
     "indonesian",
@@ -126,7 +126,8 @@
     "benchmark": "npm run build && node scripts/benchmark.mjs",
     "benchmark:compare": "npm run build && node scripts/benchmark-compare.mjs",
     "prepack": "npm run build",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "test:docs": "node scripts/verify-docs.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".policy",
+    "rootDir": "."
+  },
+  "include": [
+    "shared/moderation.ts"
+  ]
+}

@@ -1,0 +1,72 @@
+name: Dictionary or matching report
+description: Report missed profanity, a false positive, or a source correction.
+title: "[Dictionary]: "
+body:
+  - type: markdown
+    attributes:
+      value: Use original or anonymized examples. Explicit terms are welcome when needed; do not include private conversations or identifying information.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Report type
+      options:
+        - Missed profanity
+        - False positive
+        - Source or metadata correction
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Installed package version
+      placeholder: e.g. 2.5.2
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: Text to reproduce
+      description: Keep the spelling, punctuation, and invisible characters needed to reproduce the result. Escape invisible characters if helpful.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Include the method, returned output, or error.
+    validations:
+      required: true
+  - type: textarea
+    id: policy
+    attributes:
+      label: Effective policy and reproduction
+      description: Include imports, constructor options, dictionary changes, method call, and per-call ignoreRanges. If unchanged, say default policy.
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: benign
+    attributes:
+      label: Nearby benign example
+      description: Give a similar sentence that should remain allowed and explain why.
+    validations:
+      required: true
+  - type: textarea
+    id: regional
+    attributes:
+      label: Language or regional context
+      description: Describe the relevant usage. Say unknown or not applicable if needed.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sources and reuse rights (optional)
+      description: Link evidence for abusive usage, distinguish observed spellings from derived aliases, and note licensing or reuse information where known.

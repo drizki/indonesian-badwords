@@ -1,6 +1,6 @@
 # Reviewed dictionaries and sources
 
-[Back to the README](../README.md)
+[Documentation](README.md)
 
 Use `indonesian-badwords/metadata` to choose terms by profile, category,
 documented regional usage, or editorial severity. Selection happens during setup
@@ -28,26 +28,8 @@ The reviewed lists are separate selections; they do not replace or change the
 root `dictionary`, `contextualDictionary`, or `expandedDictionary`. “Reviewed”
 describes the source-checking process and its [limits](#review-limits).
 
-```ts
-import { Badwords } from 'indonesian-badwords';
-import {
-  reviewedDictionary,
-  reviewedExpandedDictionary,
-  selectDictionary,
-} from 'indonesian-badwords/metadata';
-
-const reviewed = new Badwords({ dictionary: reviewedDictionary });
-const broader = new Badwords({ dictionary: reviewedExpandedDictionary });
-const policy = new Badwords({
-  dictionary: selectDictionary({
-    profiles: ['reviewed-core', 'reviewed-contextual'],
-    categories: ['sexual-vulgarity', 'identity-slur'],
-    minSeverity: 2,
-  }),
-});
-```
-
-Choose a dictionary once and reuse the checker.
+See the [dictionary guide](guides/dictionaries.md) for complete default, expanded,
+reviewed-selection, and custom-vocabulary recipes.
 
 ## Selection rules
 
@@ -110,6 +92,22 @@ Each `VariantMetadata` has a stable `id`, `senseId`, `surface`,
 coarse use are separate fields. An editorial alias is identified as derived;
 it is not presented as an observed spelling.
 
+| `VariantMetadata` field | Contract |
+| --- | --- |
+| `id`, `senseId` | Stable variant and canonical-sense IDs. |
+| `surface` | Exact matching spelling. |
+| `categories` | Readonly lexical `CategoryId` values. |
+| `severity` | `1`, `2`, `3`, `4`, or `null` when unresolved. |
+| `attestation` | `attested`, `editorial-alias`, or `unresolved`. |
+| `registerEvidence` | `attested`, `editorial-inference`, or `unverified`. |
+| `abusiveRegionIds` | Readonly region IDs supported for coarse/abusive use. |
+| `profiles` | Accepted `reviewed-core` / `reviewed-contextual` selections; empty for unaccepted entries. |
+
+`categoryIds` and `profileIds` expose frozen selector ID arrays. `usageRegions`
+exposes frozen `{ id, label, kind }` records. `metadata` is the frozen variant
+inventory. `reviewedDictionary` and `reviewedExpandedDictionary` are frozen
+spelling arrays. Every export in this paragraph comes from `/metadata`.
+
 Regions identify cited language, variety, or usage settings. They do not imply
 exclusive origin, current popularity, or a speaker's identity. A citation for a
 literal homonym does not add that region to the abusive-use filter. Unknown
@@ -152,6 +150,41 @@ the original source material.
 `getCatalogEntry(id)` and `getSource(id)` return frozen records, or `undefined`
 for unknown IDs. `getMetadata(surface)` returns a frozen array, or `[]` for an
 unknown exact spelling. All three reject non-string arguments.
+
+### Catalog records
+
+All catalog exports and nested records are frozen. `/catalog` exports `catalog`,
+`sources`, `catalogReview`, `severityRubric`, `getCatalogEntry`, and `getSource`.
+
+| Record | Fields |
+| --- | --- |
+| `CatalogEntry` | Stable `id`, display `canonical`, `canonicalNote`, `explanation`, and `variants`. |
+| `CatalogVariant` | All metadata fields plus `explanation`, `presetReason`, `severityRationale`, `registerRationale`, `notes`, evidence, literal risks, region records, and nullable `derivation`. |
+| `CatalogSource` | `id`, `title`, `url`, `alternateUrls`, `type`, nullable `license`, and `rightsNote`. |
+| `CatalogReview` | `reviewedOn`, `method: 'ai-source-review'`, `humanReviewed`, `nativeReviewed`, and `corpusValidated`. |
+| `SeverityRubric` | `version`, `levels` keyed by severity, and a scope `note`. |
+
+A variant's `literalUseRisks` are explanatory strings. `literalRiskEvidence`
+links each `riskIndex` to its supporting `claims`; `literalUseRiskCoverage`
+explains the review scope. Its separate region arrays are `abusiveRegions`,
+`literalSenseRegions`, `lexicalSenseRegions`, and `unverifiedRegionLeads`.
+Each region record has `id`, `sourceLabels`, and `evidence`. `evidence` and
+`literalSenseEvidence` retain the claim records rather than only source IDs.
+
+A `CatalogClaim` has `sourceId`, `url`, `locator`, paraphrased `statement`,
+`subjectForms`, `subjectSense`, and the following scope fields:
+
+| Field | Values |
+| --- | --- |
+| `supports` | Array drawn from `surface`, `sense`, `variant-relation`, `register`, `regional-use`, `literal-use`. |
+| `verification` | `read`, `inherited-reference`, `unavailable`. |
+| `usageScope` | `coarse-use`, `literal-use`, `lexical-sense`, `form-relation`, `unverified-lead`. |
+| `scope` | `exact-surface`, `canonical-base`, `related-form`, `record-family`, `compound`. |
+
+Optional claim fields are `attestationType`, `expandedForms`, and `method`.
+A non-null `derivation` records `baseSenseId`, nullable `baseSurface`, `operation`,
+`basis`, and `exactSurfaceAttested`. These fields explain an editorial relation;
+they do not turn an unattested alias into an observed spelling.
 
 ## Review limits
 
