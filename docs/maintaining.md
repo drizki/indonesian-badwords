@@ -111,5 +111,13 @@ publishes those same bytes with provenance. Publishing jobs queue per package.
 
 Registry errors fail the job. A rerun skips an existing version only if its
 integrity matches the tested tarball. Different bytes under the same version
-fail, and older releases cannot move a channel backwards. Rerun the failed
-workflow after a transient error; published versions are immutable.
+fail, and older releases cannot move a channel backwards. Empty or malformed
+registry responses also fail; only npm's structured `E404` proves absence.
+
+The publish helper retries once when npm reports `TLOG_CREATE_ENTRY_ERROR` with
+the specific `409` equivalent-entry transparency-log conflict tracked in
+[npm/cli#10078](https://github.com/npm/cli/issues/10078). The retry starts a fresh
+npm process, keeps provenance enabled, and repeats the registry, artifact-integrity,
+and channel-ordering checks. Changed tarball bytes abort the retry. A repeated
+conflict or any other error fails the job. Rerun the failed workflow after resolving
+the cause; published versions are immutable.
