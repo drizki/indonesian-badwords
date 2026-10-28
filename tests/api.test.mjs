@@ -13,9 +13,7 @@ import instance, {
 } from '../dist/esm/index.js';
 
 describe('flag()', () => {
-    test('rejects an empty string', () => {
-        assert.throws(() => flag(''), /empty string passed/);
-    });
+    test('accepts an empty string', () => { assert.equal(flag(''), false); });
 
     test('rejects a non-string', () => {
         assert.throws(() => flag({}), /string expected/);
@@ -26,22 +24,22 @@ describe('flag()', () => {
     });
 
     test('returns true for a bad word', () => {
-        assert.equal(flag('lorem anjing!'), true);
+        assert.equal(flag('lorem goblok!'), true);
     });
 
     test('detects leetspeak', () => {
-        assert.equal(flag('dasar 4nj1ng'), true);
+        assert.equal(flag('dasar g0bl0k'), true);
     });
 
-    test('detects concatenated words', () => {
-        assert.equal(flag('dasarbajingankontol'), true);
+    test('requires an explicit substring mode for concatenated words', () => {
+        assert.equal(flag('dasarbajingankontol'), false);
+        const substring = new Badwords({ mode: 'substring' });
+        assert.equal(substring.flag('dasarbajingankontol'), true);
     });
 });
 
 describe('badwords()', () => {
-    test('rejects an empty string', () => {
-        assert.throws(() => findBadwords(''), /empty string passed/);
-    });
+    test('accepts an empty string', () => { assert.deepEqual(findBadwords(''), []); });
 
     test('rejects a non-string', () => {
         assert.throws(() => findBadwords({}), /string expected/);
@@ -52,18 +50,18 @@ describe('badwords()', () => {
     });
 
     test('returns found words', () => {
-        assert.deepEqual(findBadwords('lorem anjing babi'), ['anjing', 'babi']);
+        assert.deepEqual(findBadwords('lorem goblok kontol'), ['goblok', 'kontol']);
     });
 
     test('returns words found in concatenated text', () => {
-        assert.deepEqual(findBadwords('dasarbajingankontol'), ['bajingan', 'kontol']);
+        assert.deepEqual(findBadwords('dasarbajingankontol'), []);
+        const substring = new Badwords({ mode: 'substring' });
+        assert.deepEqual(substring.badwords('dasarbajingankontol'), ['bajingan', 'kontol']);
     });
 });
 
 describe('censor()', () => {
-    test('rejects an empty string', () => {
-        assert.throws(() => censor(''), /empty string passed/);
-    });
+    test('accepts an empty string', () => { assert.equal(censor(''), ''); });
 
     test('rejects a non-string', () => {
         assert.throws(() => censor({}), /string expected/);
@@ -74,30 +72,28 @@ describe('censor()', () => {
     });
 
     test('replaces bad words with the default replacement', () => {
-        assert.equal(censor('lorem monyet'), 'lorem ***');
-        assert.equal(censor('lorem anjing babi!'), 'lorem *** ***!');
+        assert.equal(censor('lorem jancuk'), 'lorem ***');
+        assert.equal(censor('lorem goblok kontol!'), 'lorem *** ***!');
     });
 
     test('supports a custom replacement', () => {
-        assert.equal(censor('dasar anjing', '[removed]'), 'dasar [removed]');
+        assert.equal(censor('dasar goblok', '[removed]'), 'dasar [removed]');
     });
 
     test('censored leetspeak', () => {
-        assert.equal(censor('dasar 4nj1ng'), 'dasar ***');
+        assert.equal(censor('dasar g0bl0k'), 'dasar ***');
     });
 });
 
 describe('filter()', () => {
     test('removes bad words and cleans whitespace', () => {
-        assert.equal(filter('lorem ipsum anjing'), 'lorem ipsum');
-        assert.equal(filter('lorem ipsum babi anjing'), 'lorem ipsum');
+        assert.equal(filter('lorem ipsum goblok'), 'lorem ipsum');
+        assert.equal(filter('lorem ipsum kontol goblok'), 'lorem ipsum');
     });
 });
 
 describe('analyze()', () => {
-    test('rejects an empty string', () => {
-        assert.throws(() => analyze(''), /empty string passed/);
-    });
+    test('accepts an empty string', () => { assert.equal(analyze('').occurrenceCount, 0); });
 
     test('rejects a non-string', () => {
         assert.throws(() => analyze({}), /string expected/);
@@ -110,20 +106,22 @@ describe('analyze()', () => {
             censored: 'lorem ipsum',
             badwords: [],
             count: 0,
+            occurrenceCount: 0,
             locations: []
         });
     });
 
     test('returns locations and a censored string', () => {
-        assert.deepEqual(analyze('lorem anjing babi!'), {
-            text: 'lorem anjing babi!',
+        assert.deepEqual(analyze('lorem goblok kontol!'), {
+            text: 'lorem goblok kontol!',
             words: 3,
             censored: 'lorem *** ***!',
-            badwords: ['anjing', 'babi'],
+            badwords: ['goblok', 'kontol'],
             count: 2,
+            occurrenceCount: 2,
             locations: [
-                { word: 'anjing', index: 6 },
-                { word: 'babi', index: 13 }
+                { word: 'goblok', index: 6, end: 12, match: 'goblok' },
+                { word: 'kontol', index: 13, end: 19, match: 'kontol' }
             ]
         });
     });
@@ -131,10 +129,10 @@ describe('analyze()', () => {
 
 describe('dictionary customization', () => {
     test('a new instance starts from a custom dictionary', () => {
-        const custom = new Badwords(['kucel']);
+        const custom = new Badwords({ dictionary: ['kucel'] });
 
         assert.equal(custom.flag('muka kamu kucel'), true);
-        assert.equal(custom.flag('dasar anjing'), false);
+        assert.equal(custom.flag('dasar goblok'), false);
     });
 
     test('addWords() and removeWords() mutate the shared instance', () => {
@@ -150,8 +148,8 @@ describe('dictionary customization', () => {
     });
 
     test('the default export exposes the same API', () => {
-        assert.equal(instance.flag('dasar anjing'), true);
-        assert.equal(instance.censor('dasar anjing'), 'dasar ***');
+        assert.equal(instance.flag('dasar goblok'), true);
+        assert.equal(instance.censor('dasar goblok'), 'dasar ***');
         assert.deepEqual(instance.dict, [...instance.dict]);
     });
 });

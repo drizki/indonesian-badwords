@@ -1,11 +1,11 @@
 {
   "name": "indonesian-badwords",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Detect and censor Bahasa Indonesia profanity in strings",
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/cjs/index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -20,27 +20,41 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist/cjs/index.js",
+    "dist/cjs/index.d.ts",
+    "dist/cjs/dictionary.d.ts",
+    "dist/cjs/normalize.d.ts",
+    "dist/cjs/package.json",
+    "dist/esm"
   ],
   "sideEffects": false,
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild.mjs",
-    "test": "npm run build && node --test tests",
+    "build": "npm run clean && tsc -p tsconfig.cjs.json && node scripts/postbuild.mjs",
+    "test": "npm run build && npm run test:unit",
+    "test:unit": "node --test",
+    "test:package": "node scripts/verify-package.mjs",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "prepack": "npm run build",
     "prepublishOnly": "npm test"
   },
-  "repository": "https://github.com/drizki/indonesian-badwords",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drizki/indonesian-badwords.git"
+  },
   "author": "Dwi Rizki Irawan",
   "license": "MIT",
   "private": false,
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
   "devDependencies": {
+    "esbuild": "0.28.2",
+    "semver": "7.8.5",
     "typescript": "^7.0.2"
   }
 }

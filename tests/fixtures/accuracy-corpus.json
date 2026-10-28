@@ -1,0 +1,485 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "abuse-direct-goblok",
+      "category": "direct-insult",
+      "text": "Dasar goblok!",
+      "expected": {"matches":[{"word":"goblok","raw":"goblok","index":6,"end":12}],"censored":"Dasar ***!"}
+    },
+    {
+      "id": "abuse-direct-tolol",
+      "category": "direct-insult",
+      "text": "Kamu tolol sekali.",
+      "expected": {"matches":[{"word":"tolol","raw":"tolol","index":5,"end":10}],"censored":"Kamu *** sekali."}
+    },
+    {
+      "id": "abuse-direct-bajingan",
+      "category": "direct-insult",
+      "text": "Bajingan, kembalikan barang itu!",
+      "expected": {"matches":[{"word":"bajingan","raw":"Bajingan","index":0,"end":8}],"censored":"***, kembalikan barang itu!"}
+    },
+    {
+      "id": "abuse-direct-bangsat",
+      "category": "direct-insult",
+      "text": "Dasar bangsat!",
+      "expected": {"matches":[{"word":"bangsat","raw":"bangsat","index":6,"end":13}],"censored":"Dasar ***!"}
+    },
+    {
+      "id": "abuse-direct-brengsek",
+      "category": "direct-insult",
+      "text": "Brengsek, kamu sengaja ya?",
+      "expected": {"matches":[{"word":"brengsek","raw":"Brengsek","index":0,"end":8}],"censored":"***, kamu sengaja ya?"}
+    },
+    {
+      "id": "abuse-direct-berengsek",
+      "category": "direct-insult",
+      "text": "Kelakuanmu berengsek.",
+      "expected": {"matches":[{"word":"berengsek","raw":"berengsek","index":11,"end":20}],"censored":"Kelakuanmu ***."}
+    },
+    {
+      "id": "abuse-regional-jancuk",
+      "category": "regional-explicit",
+      "text": "Jancuk, jangan ganggu aku!",
+      "expected": {"matches":[{"word":"jancuk","raw":"Jancuk","index":0,"end":6}],"censored":"***, jangan ganggu aku!"}
+    },
+    {
+      "id": "abuse-regional-jancok",
+      "category": "regional-explicit",
+      "text": "Dasar jancok!",
+      "expected": {"matches":[{"word":"jancok","raw":"jancok","index":6,"end":12}],"censored":"Dasar ***!"}
+    },
+    {
+      "id": "abuse-explicit-ngentot",
+      "category": "explicit-language",
+      "text": "Jangan ngentot di sini.",
+      "expected": {"matches":[{"word":"ngentot","raw":"ngentot","index":7,"end":14}],"censored":"Jangan *** di sini."}
+    },
+    {
+      "id": "abuse-explicit-kontol",
+      "category": "explicit-language",
+      "text": "Dasar kontol!",
+      "expected": {"matches":[{"word":"kontol","raw":"kontol","index":6,"end":12}],"censored":"Dasar ***!"}
+    },
+    {
+      "id": "abuse-explicit-memek",
+      "category": "explicit-language",
+      "text": "Dia menulis kata memek.",
+      "expected": {"matches":[{"word":"memek","raw":"memek","index":17,"end":22}],"censored":"Dia menulis kata ***."}
+    },
+    {
+      "id": "abuse-explicit-lonte",
+      "category": "explicit-language",
+      "text": "Dasar lonte!",
+      "expected": {"matches":[{"word":"lonte","raw":"lonte","index":6,"end":11}],"censored":"Dasar ***!"}
+    },
+    {
+      "id": "abuse-direct-bahlul",
+      "category": "direct-insult",
+      "text": "Bahlul, baca petunjuknya dulu.",
+      "expected": {"matches":[{"word":"bahlul","raw":"Bahlul","index":0,"end":6}],"censored":"***, baca petunjuknya dulu."}
+    },
+    {
+      "id": "abuse-regional-pukimak",
+      "category": "regional-explicit",
+      "text": "Pukimak, berhenti mengganggu!",
+      "expected": {"matches":[{"word":"pukimak","raw":"Pukimak","index":0,"end":7}],"censored":"***, berhenti mengganggu!"}
+    },
+    {
+      "id": "abuse-regional-naskleng",
+      "category": "regional-explicit",
+      "text": "Naskleng!",
+      "expected": {"matches":[{"word":"naskleng","raw":"Naskleng","index":0,"end":8}],"censored":"***!"}
+    },
+    {
+      "id": "abuse-regional-telaso",
+      "category": "regional-explicit",
+      "text": "Telaso, sudah kubilang jangan!",
+      "expected": {"matches":[{"word":"telaso","raw":"Telaso","index":0,"end":6}],"censored":"***, sudah kubilang jangan!"}
+    },
+    {
+      "id": "chat-uppercase",
+      "category": "mixed-case",
+      "text": "Ngapain sih, dasar GOBLOK!",
+      "expected": {"matches":[{"word":"goblok","raw":"GOBLOK","index":19,"end":25}],"censored":"Ngapain sih, dasar ***!"}
+    },
+    {
+      "id": "chat-multiple-terms",
+      "category": "multiple-matches",
+      "text": "Dasar bajingan, kelakuanmu brengsek.",
+      "expected": {"matches":[{"word":"bajingan","raw":"bajingan","index":6,"end":14},{"word":"brengsek","raw":"brengsek","index":27,"end":35}],"censored":"Dasar ***, kelakuanmu ***."}
+    },
+    {
+      "id": "leet-numeric-inside",
+      "category": "leetspeak",
+      "text": "Dasar g0bl0k, baca dulu.",
+      "expected": {"matches":[{"word":"goblok","raw":"g0bl0k","index":6,"end":12}],"censored":"Dasar ***, baca dulu."}
+    },
+    {
+      "id": "leet-numeric-ngentot",
+      "category": "leetspeak",
+      "text": "Jangan ng3nt0t di sini.",
+      "expected": {"matches":[{"word":"ngentot","raw":"ng3nt0t","index":7,"end":14}],"censored":"Jangan *** di sini."}
+    },
+    {
+      "id": "leet-symbol-inside",
+      "category": "leetspeak",
+      "text": "b@jingan!",
+      "expected": {"matches":[{"word":"bajingan","raw":"b@jingan","index":0,"end":8}],"censored":"***!"}
+    },
+    {
+      "id": "leet-symbol-terminal-punctuation",
+      "category": "punctuation-regression",
+      "text": "b@col!",
+      "expected": {"matches":[{"word":"bacol","raw":"b@col","index":0,"end":5}],"censored":"***!"}
+    },
+    {
+      "id": "literal-punctuation-cukima",
+      "category": "punctuation-regression",
+      "text": "cukima!",
+      "expected": {"matches":[{"word":"cukima","raw":"cukima","index":0,"end":6}],"censored":"***!"}
+    },
+    {
+      "id": "literal-punctuation-pukima",
+      "category": "punctuation-regression",
+      "text": "pukima!",
+      "expected": {"matches":[{"word":"pukima","raw":"pukima","index":0,"end":6}],"censored":"***!"}
+    },
+    {
+      "id": "unicode-fullwidth",
+      "category": "unicode-compatibility",
+      "text": "ＧＯＢＬＯＫ!",
+      "expected": {"matches":[{"word":"goblok","raw":"ＧＯＢＬＯＫ","index":0,"end":6}],"censored":"***!"}
+    },
+    {
+      "id": "unicode-mathematical-letters",
+      "category": "unicode-compatibility",
+      "text": "𝐤𝐨𝐧𝐭𝐨𝐥!",
+      "expected": {"matches":[{"word":"kontol","raw":"𝐤𝐨𝐧𝐭𝐨𝐥","index":0,"end":12}],"censored":"***!"}
+    },
+    {
+      "id": "invisible-zero-width-space",
+      "category": "default-ignorable",
+      "text": "go​blok!",
+      "expected": {"matches":[{"word":"goblok","raw":"go​blok","index":0,"end":7}],"censored":"***!"}
+    },
+    {
+      "id": "invisible-zero-width-joiner",
+      "category": "default-ignorable",
+      "text": "ngen‍tot!",
+      "expected": {"matches":[{"word":"ngentot","raw":"ngen‍tot","index":0,"end":8}],"censored":"***!"}
+    },
+    {
+      "id": "invisible-soft-hyphen",
+      "category": "default-ignorable",
+      "text": "kon­tol!",
+      "expected": {"matches":[{"word":"kontol","raw":"kon­tol","index":0,"end":7}],"censored":"***!"}
+    },
+    {
+      "id": "invisible-word-joiner",
+      "category": "default-ignorable",
+      "text": "me⁠mek!",
+      "expected": {"matches":[{"word":"memek","raw":"me⁠mek","index":0,"end":6}],"censored":"***!"}
+    },
+    {
+      "id": "emoji-source-offset",
+      "category": "original-utf16-spans",
+      "text": "😀 Jangan bilang kontol begitu.",
+      "expected": {"matches":[{"word":"kontol","raw":"kontol","index":17,"end":23}],"censored":"😀 Jangan bilang *** begitu."}
+    },
+    {
+      "id": "chat-repeated-occurrences",
+      "category": "multiple-matches",
+      "text": "tolol, tolol, dan tolol.",
+      "expected": {"matches":[{"word":"tolol","raw":"tolol","index":0,"end":5},{"word":"tolol","raw":"tolol","index":7,"end":12},{"word":"tolol","raw":"tolol","index":18,"end":23}],"censored":"***, ***, dan ***."}
+    },
+    {
+      "id": "empty-input",
+      "category": "empty-input",
+      "text": "",
+      "expected": {"matches":[],"censored":""}
+    },
+    {
+      "id": "whitespace-input",
+      "category": "empty-input",
+      "text": " \t\n",
+      "expected": {"matches":[],"censored":" \t\n"}
+    },
+    {
+      "id": "benign-commerce-item",
+      "category": "neutral-vocabulary",
+      "text": "Ada tiga item di keranjang belanja.",
+      "expected": {"matches":[],"censored":"Ada tiga item di keranjang belanja."}
+    },
+    {
+      "id": "benign-weather-suhu",
+      "category": "neutral-vocabulary",
+      "text": "Suhu udara hari ini cukup sejuk.",
+      "expected": {"matches":[],"censored":"Suhu udara hari ini cukup sejuk."}
+    },
+    {
+      "id": "benign-child-bocah",
+      "category": "neutral-vocabulary",
+      "text": "Bocah itu bermain layang-layang.",
+      "expected": {"matches":[],"censored":"Bocah itu bermain layang-layang."}
+    },
+    {
+      "id": "benign-accessibility-buta",
+      "category": "neutral-vocabulary",
+      "text": "Ia belajar huruf Braille untuk membantu teman yang buta.",
+      "expected": {"matches":[],"censored":"Ia belajar huruf Braille untuk membantu teman yang buta."}
+    },
+    {
+      "id": "benign-medical-cacat",
+      "category": "neutral-vocabulary",
+      "text": "Dokter memeriksa cacat bawaan pada jantung.",
+      "expected": {"matches":[],"censored":"Dokter memeriksa cacat bawaan pada jantung."}
+    },
+    {
+      "id": "benign-scientific-homo",
+      "category": "neutral-vocabulary",
+      "text": "Pelajaran hari ini membahas genus Homo.",
+      "expected": {"matches":[],"censored":"Pelajaran hari ini membahas genus Homo."}
+    },
+    {
+      "id": "benign-animal-anjing",
+      "category": "contextual-vocabulary",
+      "text": "Anjing itu sedang tidur.",
+      "expected": {"matches":[],"censored":"Anjing itu sedang tidur."}
+    },
+    {
+      "id": "benign-animal-babi",
+      "category": "contextual-vocabulary",
+      "text": "Peternak memberi makan babi.",
+      "expected": {"matches":[],"censored":"Peternak memberi makan babi."}
+    },
+    {
+      "id": "benign-animal-monyet",
+      "category": "contextual-vocabulary",
+      "text": "Monyet hidup di hutan.",
+      "expected": {"matches":[],"censored":"Monyet hidup di hutan."}
+    },
+    {
+      "id": "benign-bird-kuntul",
+      "category": "contextual-vocabulary",
+      "text": "Kuntul mencari makan di sawah.",
+      "expected": {"matches":[],"censored":"Kuntul mencari makan di sawah."}
+    },
+    {
+      "id": "benign-language-asu",
+      "category": "contextual-vocabulary",
+      "text": "Dalam bahasa Jawa, asu berarti anjing.",
+      "expected": {"matches":[],"censored":"Dalam bahasa Jawa, asu berarti anjing."}
+    },
+    {
+      "id": "benign-waste-sampah",
+      "category": "contextual-vocabulary",
+      "text": "Tolong buang sampah pada tempatnya.",
+      "expected": {"matches":[],"censored":"Tolong buang sampah pada tempatnya."}
+    },
+    {
+      "id": "benign-cooking-ngocok",
+      "category": "contextual-vocabulary",
+      "text": "Ngocok telur sampai rata sebelum digoreng.",
+      "expected": {"matches":[],"censored":"Ngocok telur sampai rata sebelum digoreng."}
+    },
+    {
+      "id": "benign-elder-sepuh",
+      "category": "neutral-vocabulary",
+      "text": "Tokoh sepuh itu menceritakan sejarah desa.",
+      "expected": {"matches":[],"censored":"Tokoh sepuh itu menceritakan sejarah desa."}
+    },
+    {
+      "id": "benign-joke-kocak",
+      "category": "neutral-vocabulary",
+      "text": "Cerita kocak itu membuat kami tertawa.",
+      "expected": {"matches":[],"censored":"Cerita kocak itu membuat kami tertawa."}
+    },
+    {
+      "id": "benign-person-riyad",
+      "category": "neutral-vocabulary",
+      "text": "Riyad sedang membaca buku di taman.",
+      "expected": {"matches":[],"censored":"Riyad sedang membaca buku di taman."}
+    },
+    {
+      "id": "benign-beach-pantai",
+      "category": "word-boundary",
+      "text": "Liburan ke pantai dan bersantai sore.",
+      "expected": {"matches":[],"censored":"Liburan ke pantai dan bersantai sore."}
+    },
+    {
+      "id": "benign-academic-intelektual",
+      "category": "word-boundary",
+      "text": "Diskusi intelektual itu terbuka untuk umum.",
+      "expected": {"matches":[],"censored":"Diskusi intelektual itu terbuka untuk umum."}
+    },
+    {
+      "id": "benign-drink-bajigur",
+      "category": "word-boundary",
+      "text": "Kami minum bajigur hangat sore ini.",
+      "expected": {"matches":[],"censored":"Kami minum bajigur hangat sore ini."}
+    },
+    {
+      "id": "benign-sport-taekwondo",
+      "category": "word-boundary",
+      "text": "Latihan taekwondo dimulai pagi hari.",
+      "expected": {"matches":[],"censored":"Latihan taekwondo dimulai pagi hari."}
+    },
+    {
+      "id": "benign-chat-thanks",
+      "category": "ordinary-chat",
+      "text": "Terima kasih, paketnya sudah sampai.",
+      "expected": {"matches":[],"censored":"Terima kasih, paketnya sudah sampai."}
+    },
+    {
+      "id": "benign-order-numbers",
+      "category": "numeric-tokens",
+      "text": "Pesanan #741 / 8481 / 7373 sudah diproses.",
+      "expected": {"matches":[],"censored":"Pesanan #741 / 8481 / 7373 sudah diproses."}
+    },
+    {
+      "id": "benign-chat-punctuation",
+      "category": "ordinary-chat",
+      "text": "Ya! Pesanannya sudah masuk.",
+      "expected": {"matches":[],"censored":"Ya! Pesanannya sudah masuk."}
+    },
+    {
+      "id": "policy-word-token",
+      "category": "word-boundary-policy",
+      "text": "Token xgoblokx harus diperlakukan sebagai satu kata.",
+      "expected": {"matches":[],"censored":"Token xgoblokx harus diperlakukan sebagai satu kata."}
+    },
+    {
+      "id": "policy-unicode-word-token",
+      "category": "word-boundary-policy",
+      "text": "Token xＧＯＢＬＯＫx harus tetap satu kata.",
+      "expected": {"matches":[],"censored":"Token xＧＯＢＬＯＫx harus tetap satu kata."}
+    },
+    {
+      "id": "benign-long-token",
+      "category": "long-benign-token",
+      "text": "pelayananmasyarakatdanpengembanganinfrastrukturpendidikanpelayananmasyarakatdanpengembanganinfrastrukturpendidikanpelayananmasyarakatdanpengembanganinfrastrukturpendidikanpelayananmasyarakatdanpengembanganinfrastrukturpendidikan",
+      "expected": {"matches":[],"censored":"pelayananmasyarakatdanpengembanganinfrastrukturpendidikanpelayananmasyarakatdanpengembanganinfrastrukturpendidikanpelayananmasyarakatdanpengembanganinfrastrukturpendidikanpelayananmasyarakatdanpengembanganinfrastrukturpendidikan"}
+    },
+    {
+      "id": "policy-inserted-periods",
+      "category": "unsupported-obfuscation-policy",
+      "text": "g.o.b.l.o.k",
+      "expected": {"matches":[],"censored":"g.o.b.l.o.k"}
+    },
+    {
+      "id": "policy-repeated-letters",
+      "category": "unsupported-obfuscation-policy",
+      "text": "gooooblok",
+      "expected": {"matches":[],"censored":"gooooblok"}
+    },
+    {
+      "id": "policy-unicode-letter-boundary",
+      "category": "unicode-boundary",
+      "text": "gobloké",
+      "expected": {"matches":[],"censored":"gobloké"}
+    },
+    {
+      "id": "policy-combining-mark-boundary",
+      "category": "unicode-boundary",
+      "text": "goblok̇",
+      "expected": {"matches":[],"censored":"goblok̇"}
+    },
+    {
+      "id": "expanded-benign-animal-anjing",
+      "category": "expanded-policy-tradeoff", "dictionary": "expanded",
+      "text": "Anjing itu sedang tidur.",
+      "expected": {"matches":[{"word":"anjing","raw":"Anjing","index":0,"end":6}],"censored":"*** itu sedang tidur."}
+    },
+    {
+      "id": "expanded-benign-animal-babi",
+      "category": "expanded-policy-tradeoff", "dictionary": "expanded",
+      "text": "Peternak memberi makan babi.",
+      "expected": {"matches":[{"word":"babi","raw":"babi","index":23,"end":27}],"censored":"Peternak memberi makan ***."}
+    },
+    {
+      "id": "expanded-benign-animal-monyet",
+      "category": "expanded-policy-tradeoff", "dictionary": "expanded",
+      "text": "Monyet hidup di hutan.",
+      "expected": {"matches":[{"word":"monyet","raw":"Monyet","index":0,"end":6}],"censored":"*** hidup di hutan."}
+    },
+    {
+      "id": "expanded-benign-waste",
+      "category": "expanded-policy-tradeoff", "dictionary": "expanded",
+      "text": "Tolong buang sampah pada tempatnya.",
+      "expected": {"matches":[{"word":"sampah","raw":"sampah","index":13,"end":19}],"censored":"Tolong buang *** pada tempatnya."}
+    },
+    {
+      "id": "expanded-benign-language",
+      "category": "expanded-policy-tradeoff", "dictionary": "expanded",
+      "text": "Dalam bahasa Jawa, asu berarti anjing.",
+      "expected": {"matches":[{"word":"asu","raw":"asu","index":19,"end":22},{"word":"anjing","raw":"anjing","index":31,"end":37}],"censored":"Dalam bahasa Jawa, *** berarti ***."}
+    },
+    {
+      "id": "expanded-numeric-tokens",
+      "category": "numeric-tokens", "dictionary": "expanded",
+      "text": "Kode 741, 8481, dan 7373.",
+      "expected": {"matches":[],"censored":"Kode 741, 8481, dan 7373."}
+    },
+    {
+      "id": "expanded-symbol-word-boundary",
+      "category": "normalized-boundary-regression", "dictionary": "expanded",
+      "text": "a$u$ila",
+      "expected": {"matches":[],"censored":"a$u$ila"}
+    },
+    {
+      "id": "expanded-uppercase-expansion",
+      "category": "normalized-boundary-regression", "dictionary": "expanded",
+      "text": "BABİ",
+      "expected": {"matches":[],"censored":"BABİ"}
+    },
+    {
+      "id": "expanded-lowercase-expansion",
+      "category": "normalized-boundary-regression", "dictionary": "expanded",
+      "text": "babi̇",
+      "expected": {"matches":[],"censored":"babi̇"}
+    },
+    {
+      "id": "substring-joined-contextual",
+      "category": "substring-policy-tradeoff", "dictionary": "expanded", "mode": "substring",
+      "text": "kamuasu",
+      "expected": {"matches":[{"word":"asu","raw":"asu","index":4,"end":7}],"censored":"kamu***"}
+    },
+    {
+      "id": "substring-benign-contextual",
+      "category": "substring-policy-tradeoff", "dictionary": "expanded", "mode": "substring",
+      "text": "asusila",
+      "expected": {"matches":[{"word":"asu","raw":"asu","index":0,"end":3}],"censored":"***sila"}
+    },
+    {
+      "id": "substring-joined-explicit",
+      "category": "substring-policy-tradeoff", "mode": "substring",
+      "text": "xkontolx",
+      "expected": {"matches":[{"word":"kontol","raw":"kontol","index":1,"end":7}],"censored":"x***x"}
+    },
+    {
+      "id": "exact-normalization-case-sensitive",
+      "category": "normalization-policy", "normalization": "none",
+      "text": "GOBLOK",
+      "expected": {"matches":[],"censored":"GOBLOK"}
+    },
+    {
+      "id": "exact-normalization-literal",
+      "category": "normalization-policy", "normalization": "none",
+      "text": "goblok",
+      "expected": {"matches":[{"word":"goblok","raw":"goblok","index":0,"end":6}],"censored":"***"}
+    },
+    {
+      "id": "repeat-collapse-opt-in-goblok",
+      "category": "repeated-letter-policy", "ignoreRepeatedLetters": true,
+      "text": "gooooblok!",
+      "expected": {"matches":[{"word":"goblok","raw":"gooooblok","index":0,"end":9}],"censored":"***!"}
+    },
+    {
+      "id": "repeat-collapse-opt-in-ngentot",
+      "category": "repeated-letter-policy", "ignoreRepeatedLetters": true,
+      "text": "ngentoooot!",
+      "expected": {"matches":[{"word":"ngentot","raw":"ngentoooot","index":0,"end":10}],"censored":"***!"}
+    }
+  ]
+}

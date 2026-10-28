@@ -2,141 +2,119 @@
 
 [![CI](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml/badge.svg)](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml) [![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) ![License MIT](https://img.shields.io/npm/l/indonesian-badwords.svg)
 
-A small, zero-dependency TypeScript library for detecting, censoring, and analyzing profanity in Bahasa Indonesia. It ships ESM, CommonJS, and bundled type declarations, and handles disguised words such as leetspeak (`4nj1ng`) and concatenated terms (`bajingankontol`).
+Check Indonesian text for profanity, find matches, or replace them. Includes
+TypeScript types, ESM and CommonJS, with no runtime dependencies.
 
-## Features
-
-- **210+ dictionary entries**, including regional dialects, internet slang, and abbreviations
-- **Leetspeak detection** via a character substitution map
-- **Concatenated-word detection** for `flag()` and `badwords()`
-- **Runtime dictionary customization** with `addWords()` / `removeWords()`
-- **Dual module support** — ESM and CommonJS from one import path
-- **First-class TypeScript** — declarations are generated from the source
-- **Zero runtime dependencies**
-
-## Installation
+## Install
 
 ```bash
 npm install indonesian-badwords
-# or
-yarn add indonesian-badwords
-# or
-pnpm add indonesian-badwords
 ```
 
-## Usage
+Requires Node.js 22+. Browser apps need a bundler, ES2022 support, and `Intl.Segmenter`.
 
-### ESM / TypeScript
+## Quick start
 
 ```ts
-import badwords from 'indonesian-badwords';
+import badwords, { flag, find, censor } from 'indonesian-badwords';
 
-badwords.flag('kalimat ini bersih');     // false
-badwords.flag('dasar monyet');           // true
-badwords.censor('dasar monyet');         // 'dasar ***'
-badwords.badwords('dasar monyet dan babi'); // ['monyet', 'babi']
+flag('terima kasih');             // false
+flag('dasar g0bl0k!');            // true
+censor('dasar g0bl0k!');          // 'dasar ***!'
+badwords.badwords('goblok goblok'); // ['goblok']
+find('dasar g0bl0k!');
+// [{ word: 'goblok', index: 6, end: 12, match: 'g0bl0k' }]
 ```
 
-Named exports are also available, which is friendlier for tree-shaking:
+Matching ignores case and recognizes spellings such as `g0bl0k`. It checks whole
+words by default and keeps the surrounding text intact.
 
-```ts
-import { analyze, censor, flag } from 'indonesian-badwords';
-
-flag('dasar anjing');      // true
-censor('dasar anjing');    // 'dasar ***'
-analyze('lorem anjing!');  // typed AnalysisResult object
-```
-
-### CommonJS
+For CommonJS:
 
 ```js
-const badwords = require('indonesian-badwords');
-
-badwords.flag('dasar monyet'); // true
-badwords.censor('dasar monyet'); // 'dasar ***'
+const { Badwords, flag, censor } = require('indonesian-badwords');
+flag('dasar goblok'); // true
 ```
 
-### Advanced detection
+## Performance
+
+A browser bundle with the default checker is about 9 KB minified and gzipped.
+
+| Operation | Input length | Median time |
+| --- | ---: | ---: |
+| `flag` | 280 characters | 1.74 µs |
+| `flag` | 4,000 characters | 19.86 µs |
+| `censor` | 4,000 characters | 5.04 µs |
+| `analyze` | 4,000 characters | 12.56 µs |
+
+Measured with the default dictionary on synthetic clean Indonesian ASCII text,
+using Node.js 24.22.1 and 151 calls per case after warmup. Times exclude import
+and first-call setup. Results vary with input, hardware, and runtime.
+Run `npm run benchmark` for local measurements.
+
+## Choose a dictionary
+
+The default has 227 profanity terms and spelling variants. Words with common
+literal uses, such as `anjing` and `babi`, are excluded. `anjing peliharaan`,
+`suhu udara`, and `buang sampah` stay clean.
+
+To include those terms, use the expanded dictionary. It adds 117 words, for 344 total:
 
 ```ts
-import badwords from 'indonesian-badwords';
+import { Badwords, expandedDictionary } from 'indonesian-badwords';
 
-// Leetspeak
-badwords.flag('dasar 4nj1ng');   // true
-badwords.censor('dasar 4nj1ng'); // 'dasar ***'
-
-// Concatenated words
-badwords.flag('dasarbajingankontol'); // true
-badwords.badwords('dasarbajingankontol'); // ['bajingan', 'kontol']
+const strict = new Badwords({ dictionary: expandedDictionary });
+strict.flag('anjing');             // true
+strict.censor('anjing peliharaan'); // '*** peliharaan'
 ```
 
-### Dictionary customization
+The expanded list also flags literal uses. Neither list determines whether
+someone means to insult another person.
 
-Use a separate instance when you want an isolated dictionary:
+## Options
 
-```ts
-import { Badwords } from 'indonesian-badwords';
+Pass options to `new Badwords(options)`:
 
-const custom = new Badwords(['kucel']);
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `dictionary` | Bundled list | Supply your own words or `expandedDictionary`. |
+| `mode` | `'word'` | Use `'substring'` to catch joined words such as `kamuasu`. |
+| `normalization` | `'standard'` | Use `'none'` for exact, case-sensitive matching. |
+| `ignoreRepeatedLetters` | `false` | Catch stretched words such as `gooooblokk`. |
+| `maxMatches` | `10000` | Set the occurrence limit for `find` and `analyze`; `Infinity` removes it. |
 
-custom.flag('muka kamu kucel'); // true
-custom.flag('dasar anjing');    // false
-```
+Substring mode can flag parts of ordinary words. Repeated-letter matching can
+also increase false positives. See [matching rules and examples](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#matching).
 
-Or mutate the shared instance:
+## Methods
 
-```ts
-import badwords, { addWords, removeWords } from 'indonesian-badwords';
+These work on an instance, the default export, or as named imports.
 
-addWords('kucel');
-badwords.flag('muka kamu kucel'); // true
+| Method | Returns |
+| --- | --- |
+| `flag(text)` | Whether any word matches. |
+| `find(text)` | Occurrences as `{ word, index, end, match }`. |
+| `badwords(text)` | Unique matching dictionary words. |
+| `censor(text, replacement = '***')` | Text with matched spans replaced. |
+| `filter(text)` | Text with matches removed and whitespace cleaned up. |
+| `analyze(text)` | Censored text, counts, words, and locations. |
 
-removeWords('kucel');
-badwords.flag('muka kamu kucel'); // false
-```
+Use `addWords` and `removeWords` to change a checker's dictionary. `dict` returns a
+copy. Create a separate `new Badwords()` when you need settings or words that
+shouldn't affect the shared default instance.
 
-## API Reference
+Empty strings are valid. Invalid inputs throw `TypeError`; `find` and `analyze`
+throw `RangeError` if they exceed `maxMatches`.
 
-Every method is available on the default export, as a named export, and on `new Badwords(dictionary)`.
+## Documentation
 
-| Function | Parameters | Returns | Description |
-| :--- | :--- | :--- | :--- |
-| `flag` | `text: string` | `boolean` | Substring search for any dictionary word. |
-| `badwords` | `text: string` | `string[]` | All unique dictionary words found in the text. |
-| `filter` | `text: string` | `string` | Removes bad words and cleans up whitespace. |
-| `censor` | `text: string, replacement = '***'` | `string` | Replaces whole words, preserving delimiters. |
-| `analyze` | `text: string` | `AnalysisResult` | Censored text, matches, count, and locations. |
-| `addWords` | `words: string \| string[]` | `void` | Adds words to the dictionary. |
-| `removeWords` | `words: string \| string[]` | `void` | Removes words from the dictionary. |
-
-`AnalysisResult` contains `text`, `words`, `censored`, `badwords`, `count`, and `locations` (`Array<{ word: string; index: number }>`).
-
-## Development
-
-```bash
-npm install
-npm run build   # emits dist/esm and dist/cjs
-npm test        # builds, then runs the node:test suite
-```
-
-The build uses only `tsc`: ESM is compiled with `NodeNext`, CommonJS with `CommonJS`, and a small post-build script writes the `dist/cjs/package.json` type marker. The published package contains only `dist/`.
-
-## Releasing
-
-Publishing is tag-driven. The tag must match the `package.json` version exactly, including the `v` prefix.
-
-```bash
-# 1. Bump the version and create the tag in one step
-npm version patch   # or: minor / major
-
-# 2. Push the commit and the tag
-git push origin main --follow-tags
-```
-
-Pushing the tag runs the `Publish` workflow, which tests the package, validates the tag, and publishes it to npm with provenance. Re-running a tag whose version is already on npm is a no-op.
+- [API, matching rules, and customization](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md)
+- [Migrating to v2](https://github.com/drizki/indonesian-badwords/blob/main/docs/migrating-v2.md)
+- [Development and npm releases](https://github.com/drizki/indonesian-badwords/blob/main/docs/maintaining.md)
 
 ## Contributing
 
-Contributions are welcome. If a significant profane term is missing from the dictionary, please open a Pull Request.
+For dictionary changes, include an abusive example and a nearby benign case.
+Open a pull request if a term is missing.
 
 Semoga bermanfaat 😉
