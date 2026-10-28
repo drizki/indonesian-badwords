@@ -44,11 +44,10 @@ for (const [entry, name, value] of [
     });
 }
 
-// The optional strategies bundle imports only types from the root. Keep its
-// segmentation and random-symbol machinery outside the default runtime.
-await build({
-    entryPoints: [fileURLToPath(new URL('../src/censor.ts', import.meta.url))],
-    outfile: fileURLToPath(new URL('../dist/cjs/censor.js', import.meta.url)),
+// Optional behavior bundles import only types from the root.
+for (const optional of ['censor', 'evasion']) await build({
+    entryPoints: [fileURLToPath(new URL(`../src/${optional}.ts`, import.meta.url))],
+    outfile: fileURLToPath(new URL(`../dist/cjs/${optional}.js`, import.meta.url)),
     bundle: true,
     format: 'cjs',
     platform: 'neutral',
@@ -61,7 +60,7 @@ await build({
 // declaration identities are shared when consumers mix import and require.
 const directory = new URL('../dist/esm/', import.meta.url);
 await mkdir(directory, { recursive: true });
-for (const entry of ['index', 'censor', 'metadata', 'catalog']) {
+for (const entry of ['index', 'censor', 'metadata', 'catalog', 'evasion']) {
     const api = require(`../dist/cjs/${entry}.js`);
     const names = Object.keys(api).filter((name) => name !== 'default' && name !== '__esModule');
     for (const name of names) {

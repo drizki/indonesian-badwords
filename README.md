@@ -49,27 +49,47 @@ const { Badwords, flag, censor } = require('indonesian-badwords');
 flag('dasar goblok'); // true
 ```
 
+## Bounded evasion
+
+Opt in to separated letters, limited stretching, or selected lookalikes without
+loading the optional scanner into ordinary imports:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedEvasion } from 'indonesian-badwords/evasion';
+
+const checker = new Badwords({
+  evasion: boundedEvasion({
+    separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 }
+  })
+});
+checker.censor('g-o-b-l-o-k'); // '***'
+```
+
+Each transformation has explicit bounds. Original spans, scoped exceptions, and
+all checker methods follow the same policy. [Configure repeats, mappings, and resource limits](docs/api.md#bounded-evasion).
+
 ## Performance
 
 A browser bundle with the default checker is about 12 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.71 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 22.20 µs |
-| Clean ASCII paragraph, 4,000 characters | `censor` | 5.39 µs |
-| Clean ASCII paragraph, 4,000 characters | `analyze` | 14.95 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 20.68 µs |
-| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.92 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.75 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 22.98 µs |
+| Clean ASCII paragraph, 4,000 characters | `censor` | 5.56 µs |
+| Clean ASCII paragraph, 4,000 characters | `analyze` | 15.53 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 21.66 µs |
+| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 30.32 µs |
 
 Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
 call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
 These are medians of per-call batch averages; import, setup, input generation,
 and correctness checks are excluded. Results vary with input, hardware, and runtime.
 
-Run `npm run benchmark` for 79 self-checking workloads, including cold calls,
+Run `npm run benchmark` for 87 self-checking workloads, including cold calls,
 match positions, Unicode, callbacks, masking, scoped exceptions, custom dictionaries,
-and memory. Run
+bounded evasion, and memory. Run
 `npm run benchmark:compare` to compare with pinned Indonesian libraries; different
 detection outputs are reported separately from timings.
 

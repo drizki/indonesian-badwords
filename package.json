@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Fast Indonesian profanity filter with TypeScript, Unicode-aware matching, and zero runtime dependencies",
   "keywords": [
     "indonesian",
@@ -63,6 +63,16 @@
         "types": "./dist/cjs/catalog.d.ts",
         "default": "./dist/cjs/catalog.js"
       }
+    },
+    "./evasion": {
+      "import": {
+        "types": "./dist/esm/evasion.d.ts",
+        "default": "./dist/esm/evasion.js"
+      },
+      "require": {
+        "types": "./dist/cjs/evasion.d.ts",
+        "default": "./dist/cjs/evasion.js"
+      }
     }
   },
   "files": [
@@ -79,7 +89,12 @@
     "dist/cjs/dictionary.d.ts",
     "dist/cjs/normalize.d.ts",
     "dist/cjs/package.json",
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs/evasion.js",
+    "dist/cjs/evasion.d.ts",
+    "dist/cjs/evasion-types.d.ts",
+    "dist/cjs/matcher.d.ts",
+    "THIRD_PARTY_NOTICES"
   ],
   "sideEffects": false,
   "scripts": {
