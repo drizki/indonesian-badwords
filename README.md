@@ -14,7 +14,7 @@ spellings, censor matches, and get exact locations in the original text.
 - **Precise Unicode matches.** Recognizes `g0bl0k`, `ＧＯＢＬＯＫ`, and words containing
   invisible characters. Censoring preserves the surrounding text and punctuation.
 - **Your moderation policy.** Choose the default or expanded dictionary, supply
-  your own words, and keep separate checker instances for different applications.
+  your own words, or select reviewed categories, regions, and severity levels.
 
 Includes TypeScript declarations, ESM, and CommonJS. Runs in Node.js and browser bundles.
 
@@ -95,7 +95,7 @@ detection outputs are reported separately from timings.
 
 ## Choose a dictionary
 
-The default has 227 profanity terms and spelling variants. Words with common
+The default dictionary has 227 terms and spelling variants. Words with common
 literal uses, such as `anjing` and `babi`, are excluded. `anjing peliharaan`,
 `suhu udara`, and `buang sampah` stay clean.
 
@@ -111,6 +111,22 @@ strict.censor('anjing peliharaan'); // '*** peliharaan'
 
 The expanded list also flags literal uses. Neither list determines whether
 someone means to insult another person.
+
+For a source-reviewed policy, import `reviewedDictionary` or
+`selectDictionary` from `indonesian-badwords/metadata`. These optional profiles
+separate uncertain entries and document ambiguous uses:
+
+```ts
+import { reviewedDictionary } from 'indonesian-badwords/metadata';
+
+const reviewed = new Badwords({ dictionary: reviewedDictionary });
+```
+
+Select by category,
+documented regional usage, or editorial severity; inspect original explanations
+and citations through the separate `indonesian-badwords/catalog` import.
+[See reviewed dictionaries and sources](docs/metadata.md). Neither optional
+entry point increases the default checker's bundle.
 
 ## Options
 

@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "Fast Indonesian profanity filter with TypeScript, Unicode-aware matching, and zero runtime dependencies",
   "keywords": [
     "indonesian",
@@ -44,6 +44,26 @@
         "default": "./dist/cjs/censor.js"
       }
     },
+    "./metadata": {
+      "import": {
+        "types": "./dist/esm/metadata.d.ts",
+        "default": "./dist/esm/metadata.js"
+      },
+      "require": {
+        "types": "./dist/cjs/metadata.d.ts",
+        "default": "./dist/cjs/metadata.js"
+      }
+    },
+    "./catalog": {
+      "import": {
+        "types": "./dist/esm/catalog.d.ts",
+        "default": "./dist/esm/catalog.js"
+      },
+      "require": {
+        "types": "./dist/cjs/catalog.d.ts",
+        "default": "./dist/cjs/catalog.js"
+      }
+    },
     "./evasion": {
       "import": {
         "types": "./dist/esm/evasion.d.ts",
@@ -60,6 +80,12 @@
     "dist/cjs/index.d.ts",
     "dist/cjs/censor.js",
     "dist/cjs/censor.d.ts",
+    "dist/cjs/metadata.js",
+    "dist/cjs/metadata.d.ts",
+    "dist/cjs/catalog.js",
+    "dist/cjs/catalog.d.ts",
+    "dist/cjs/catalog-types.d.ts",
+    "dist/cjs/catalog-registry.d.ts",
     "dist/cjs/dictionary.d.ts",
     "dist/cjs/normalize.d.ts",
     "dist/cjs/package.json",
@@ -73,7 +99,8 @@
   "sideEffects": false,
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "build": "npm run clean && tsc -p tsconfig.cjs.json && node scripts/postbuild.mjs",
+    "build": "npm run clean && node scripts/catalog-data.mjs && tsc -p tsconfig.cjs.json && node scripts/postbuild.mjs",
+    "catalog:generate": "node scripts/catalog-data.mjs --write",
     "test": "npm run build && npm run test:unit",
     "test:unit": "node --test",
     "test:package": "node scripts/verify-package.mjs",

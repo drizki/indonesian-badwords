@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "categories": [
+    {
+      "id": "insult",
+      "label": "Insult"
+    },
+    {
+      "id": "sexual-vulgarity",
+      "label": "Sexual vulgarity"
+    },
+    {
+      "id": "excretion-vulgarity",
+      "label": "Excretion vulgarity"
+    },
+    {
+      "id": "identity-slur",
+      "label": "Identity slur"
+    },
+    {
+      "id": "coarse-exclamation",
+      "label": "Coarse exclamation"
+    },
+    {
+      "id": "blasphemy",
+      "label": "Blasphemy"
+    }
+  ],
+  "regions": [
+    {
+      "id": "indonesian",
+      "label": "Indonesian",
+      "kind": "language"
+    },
+    {
+      "id": "javanese",
+      "label": "Javanese",
+      "kind": "language"
+    },
+    {
+      "id": "sundanese",
+      "label": "Sundanese",
+      "kind": "language"
+    },
+    {
+      "id": "betawi",
+      "label": "Betawi",
+      "kind": "language-variety"
+    },
+    {
+      "id": "balinese",
+      "label": "Balinese",
+      "kind": "language"
+    },
+    {
+      "id": "batak",
+      "label": "Batak",
+      "kind": "language-family"
+    },
+    {
+      "id": "bugis",
+      "label": "Bugis",
+      "kind": "language"
+    },
+    {
+      "id": "madurese",
+      "label": "Madurese",
+      "kind": "language"
+    },
+    {
+      "id": "makassar-indonesian",
+      "label": "Makassar Indonesian usage",
+      "kind": "regional-usage"
+    },
+    {
+      "id": "jambi-malay",
+      "label": "Jambi Malay",
+      "kind": "language-variety"
+    },
+    {
+      "id": "ambon-malay",
+      "label": "Ambon Malay",
+      "kind": "language-variety"
+    },
+    {
+      "id": "bengkulu-malay",
+      "label": "Bengkulu Malay",
+      "kind": "language-variety"
+    },
+    {
+      "id": "kupang-malay",
+      "label": "Kupang Malay",
+      "kind": "language-variety"
+    },
+    {
+      "id": "minangkabau",
+      "label": "Minangkabau",
+      "kind": "language"
+    },
+    {
+      "id": "medan-indonesian",
+      "label": "Medan Indonesian usage",
+      "kind": "regional-usage"
+    },
+    {
+      "id": "palembang-malay",
+      "label": "Palembang Malay",
+      "kind": "language-variety"
+    },
+    {
+      "id": "north-sumatra",
+      "label": "North Sumatra usage setting",
+      "kind": "geographic-setting"
+    },
+    {
+      "id": "bekasi",
+      "label": "Bekasi usage setting",
+      "kind": "geographic-setting"
+    },
+    {
+      "id": "surabaya",
+      "label": "Surabaya usage setting",
+      "kind": "geographic-setting"
+    },
+    {
+      "id": "banjarnegara",
+      "label": "Banjarnegara naming context",
+      "kind": "geographic-setting"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "reviewed-core",
+      "label": "Reviewed core",
+      "description": "Coarse-use spellings selected for the reviewed core profile."
+    },
+    {
+      "id": "reviewed-contextual",
+      "label": "Reviewed contextual",
+      "description": "Opt-in spellings with common literal uses. A match does not establish sense or intent."
+    }
+  ],
+  "regionPolicy": "IDs identify source-backed language/variety or explicitly observed setting. Literal-only observations may share these IDs but never contribute abusiveRegionIds. Presence in this registry does not assert profanity coverage for that language/setting. Displayed source labels and localities remain in rich claims; no exclusive origin, frequency or speaker identity is inferred.",
+  "severityPolicy": "Editorial ordinal1–4 or null; unknown is not zero or a toxicity probability.",
+  "defaultCompatibility": "Root dictionary presets are independent of the reviewed profiles."
+}

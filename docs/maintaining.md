@@ -24,6 +24,14 @@ CI checks Node 22, 24, and 26. It tests the same tarball with ESM/CommonJS consu
 TypeScript 5.9.3, 6.0.3, and the build compiler (7.0.2), using strict NodeNext,
 Node16, and Bundler resolution. Package checks also cover browser bundling.
 
+Reviewed catalog data lives in `data/catalog.json`, with stable selector IDs in
+`data/selector-registry.json`. Edit the source claims and matching variants
+together; exact lexical attestation does not establish coarse register or regional
+abusive use. Keep literal senses separate. Run `npm run catalog:generate` after
+editing registries. Every build validates claim references, selector IDs, profile
+eligibility, and the generated registry types before creating separate thin
+metadata and rich catalog bundles. The default engine never imports either.
+
 The corpus has 80 hand-authored examples with balanced clean and flagged default
 cases. These check expected behavior; they do not measure real-world precision
 or recall. Engine tests also cover Unicode spans, boundaries, overlaps, and limits.

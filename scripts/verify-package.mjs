@@ -40,8 +40,9 @@ verifyTargets(manifest.exports);
 for (const field of ['main', 'module', 'types']) verifyTargets(manifest[field]);
 assert.equal(JSON.parse(run('tar', ['-xOf', archivePath, 'package/dist/cjs/package.json'])).type, 'commonjs');
 assert.deepEqual([...files].filter(path => path.endsWith('.js')).sort(),
-    ['dist/cjs/censor.js', 'dist/cjs/evasion.js', 'dist/cjs/index.js', 'dist/esm/censor.js', 'dist/esm/evasion.js', 'dist/esm/index.js'],
-    'Publish one root runtime and each optional runtime with its ESM facade');
+    ['dist/cjs/catalog.js', 'dist/cjs/censor.js', 'dist/cjs/evasion.js', 'dist/cjs/index.js', 'dist/cjs/metadata.js',
+        'dist/esm/catalog.js', 'dist/esm/censor.js', 'dist/esm/evasion.js', 'dist/esm/index.js', 'dist/esm/metadata.js'],
+    'Publish each optional runtime with its ESM facade');
 const evasionSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/evasion.js']);
 assert.ok(!evasionSource.includes('kontol') && !evasionSource.includes('defaultDictionary'), 'Evasion must share the supplied dictionary');
 const rootSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/index.js']);
@@ -60,9 +61,24 @@ import { createRequire } from 'node:module';
 import instance, * as api from 'indonesian-badwords';
 import { mask, grawlix } from 'indonesian-badwords/censor';
 import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-badwords/evasion';
+import * as metadataApi from 'indonesian-badwords/metadata';
+import * as catalogApi from 'indonesian-badwords/catalog';
 const require = createRequire(import.meta.url);
 const cjs = require('indonesian-badwords');
 const strategies = require('indonesian-badwords/censor');
+const cjsMetadata = require('indonesian-badwords/metadata');
+const cjsCatalog = require('indonesian-badwords/catalog');
+for (const name of Object.keys(metadataApi)) assert.equal(metadataApi[name], cjsMetadata[name]);
+for (const name of Object.keys(catalogApi)) assert.equal(catalogApi[name], cjsCatalog[name]);
+assert.ok(metadataApi.reviewedDictionary.length > 0);
+assert.equal(metadataApi.metadata.length, 344);
+assert.equal(metadataApi.getMetadata('kontol')[0].surface, 'kontol');
+assert.deepEqual(metadataApi.selectDictionary({ profiles: [] }), []);
+assert.equal(new api.Badwords({ dictionary: metadataApi.reviewedDictionary }).flag('kontol'), true);
+assert.ok(catalogApi.catalog.length > 0 && catalogApi.sources.length > 0);
+assert.equal(catalogApi.catalogReview.humanReviewed, false);
+assert.ok(Object.isFrozen(metadataApi.metadata[0]));
+assert.ok(Object.isFrozen(catalogApi.catalog[0].variants));
 const evasions = require('indonesian-badwords/evasion');
 assert.equal(boundedEvasion, evasions.boundedEvasion);
 assert.equal(latinLookalikes, evasions.latinLookalikes);
@@ -72,6 +88,7 @@ const evasion = boundedEvasion({ separators: { characters: ['-'], maxGap: 1, max
 const evasive = new api.Badwords({ dictionary: ['goblok'], evasion });
 assert.equal(evasive.censor('g-o-b-l-o-k gοblοk', mask()), '*********** ******');
 assert.equal(evasive.flag('g-o-b-l-o-k', { ignoreRanges: [{ index: 1, end: 2 }] }), false);
+assert.equal(new api.Badwords({ dictionary: metadataApi.reviewedDictionary, evasion }).flag('g-o-b-l-o-k'), true);
 assert.equal(mask, strategies.mask);
 assert.equal(grawlix, strategies.grawlix);
 assert.equal(api.Badwords, cjs.Badwords);
@@ -134,6 +151,11 @@ const api = require('indonesian-badwords');
 const { mask, grawlix } = require('indonesian-badwords/censor');
 const { boundedEvasion } = require('indonesian-badwords/evasion');
 assert.equal(new api.Badwords({ evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).flag('g-o-b-l-o-k'), true);
+const metadataApi = require('indonesian-badwords/metadata');
+const catalogApi = require('indonesian-badwords/catalog');
+assert.equal(metadataApi.getMetadata('kontol')[0].surface, 'kontol');
+assert.ok(catalogApi.getCatalogEntry(metadataApi.getMetadata('kontol')[0].senseId));
+assert.deepEqual(metadataApi.selectDictionary({ profiles: [] }), []);
 assert.equal(api.flag('dasar kontol'), true);
 assert.equal(api.default.censor('dasar kontol'), 'dasar ***');
 assert.equal(api.censor('goblok', mask({ keepLast: 1 })), '*****k');
@@ -156,6 +178,8 @@ assert.equal(api.flag('goblok', { ignoreRanges: [{ index: 0, end: 6 }] }), false
 import instance, { Badwords, find, dictionary, expandedDictionary } from 'indonesian-badwords';
 import { mask, grawlix } from 'indonesian-badwords/censor';
 import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-badwords/evasion';
+import { reviewedDictionary, selectDictionary, getMetadata, usageRegions } from 'indonesian-badwords/metadata';
+import { getCatalogEntry, getSource, catalogReview } from 'indonesian-badwords/catalog';
 let matchLimitEnforced = false;
 try {
     new Badwords({ dictionary: ['a'], mode: 'substring', maxMatches: 2 }).find('aaa');
@@ -180,9 +204,16 @@ globalThis.browserResults = {
     grawlix: instance.censor('kontol', grawlix({ symbols: '$#', random: () => 0 })),
     scoped: new Badwords({ allowPhrases: ['Baju Bodo'] }).censor('Baju Bodo goblok bodo', mask(),
         { ignoreRanges: [{ index: 10, end: 16 }] }),
-    evasion: new Badwords({ evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 },
+    evasion: new Badwords({ dictionary: reviewedDictionary, evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 },
         confusables: { mappings: latinLookalikes, maxTotal: 2 } }) }).censor('g-o-b-l-o-k gοblοk'),
-    matchLimitEnforced
+    matchLimitEnforced,
+    reviewed: new Badwords({ dictionary: reviewedDictionary }).flag('kontol'),
+    emptyProfile: selectDictionary({ profiles: [] }).length,
+    exactMetadata: getMetadata('KONTOL').length,
+    reviewedSense: getCatalogEntry(getMetadata('kontol')[0].senseId).variants.some(variant => variant.surface === 'kontol'),
+    sourceLinked: Boolean(getSource(getCatalogEntry(getMetadata('kontol')[0].senseId).variants[0].evidence[0].sourceId)),
+    reviewedByAI: catalogReview.method === 'ai-source-review' && !catalogReview.humanReviewed,
+    regionIDs: usageRegions.some(region => region.id === 'javanese')
 };
 `);
     const browserBundle = await build({
@@ -224,7 +255,14 @@ globalThis.browserResults = {
         grawlix: '$$$$$$',
         scoped: 'Baju Bodo goblok ****',
         evasion: '*** ***',
-        matchLimitEnforced: true
+        matchLimitEnforced: true,
+        reviewed: true,
+        emptyProfile: 0,
+        exactMetadata: 0,
+        reviewedSense: true,
+        sourceLinked: true,
+        reviewedByAI: true,
+        regionIDs: true
     });
 
     const rootOnly = await build({
@@ -232,23 +270,41 @@ globalThis.browserResults = {
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion)\.js$/.test(path)),
-        'Default imports must not load optional strategies, scanner, or mappings');
+    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion|metadata|catalog)\.js$/.test(path)),
+        'Default imports must not load optional strategies, evasion, metadata, or rich sources');
     const strategyOnly = await build({
         stdin: { contents: "export { mask, grawlix } from 'indonesian-badwords/censor';", resolveDir: workspace },
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(strategyOnly.metafile.inputs).every(path => !/[/\\]index\.js$/.test(path)),
-        'Optional strategies must not pull in another root runtime');
+    assert.ok(Object.keys(strategyOnly.metafile.inputs).every(path => !/[/\\](?:index|evasion|metadata|catalog)\.js$/.test(path)),
+        'Optional strategies must stay independent of other runtimes');
+    for (const output of Object.values(strategyOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
+    for (const entry of ['metadata', 'catalog']) {
+        const optionalOnly = await build({
+            stdin: { contents: `export * from 'indonesian-badwords/${entry}';`, resolveDir: workspace },
+            bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
+            write: false, metafile: true, logLevel: 'silent'
+        });
+        const otherEntries = entry === 'metadata' ? /[/\\](?:index|censor|evasion|catalog)\.js$/ : /[/\\](?:index|censor|evasion|metadata)\.js$/;
+        assert.ok(Object.keys(optionalOnly.metafile.inputs).every(path => !otherEntries.test(path)),
+            `${entry} imports must stay independent of other runtimes`);
+        for (const output of Object.values(optionalOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
+        if (entry === 'metadata') {
+            assert.ok(!optionalOnly.outputFiles[0].text.includes('rightsNote')
+                && !optionalOnly.outputFiles[0].text.includes('subjectForms'),
+            'Thin metadata must not load rich source explanations or claims');
+        }
+    }
 
     const evasionOnly = await build({
         stdin: { contents: "export { boundedEvasion } from 'indonesian-badwords/evasion';", resolveDir: workspace },
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\]index\.js$/.test(path)),
-        'Optional evasion must not load a second root runtime');
+    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|metadata|catalog)\.js$/.test(path)),
+        'Optional evasion must stay independent of other runtimes');
+    for (const output of Object.values(evasionOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
 
     const types = `
 import instance, { Badwords, flag, find, analyze, dictionary, contextualDictionary, expandedDictionary,
@@ -258,6 +314,43 @@ import instance, { Badwords, flag, find, analyze, dictionary, contextualDictiona
     type CensorReplacement, type CheckOptions, type IgnoreRange } from 'indonesian-badwords';
 import { mask, grawlix, type MaskOptions, type GrawlixOptions,
     type CensorContext as StrategyContext } from 'indonesian-badwords/censor';
+import { metadata, reviewedDictionary, reviewedExpandedDictionary, selectDictionary, getMetadata,
+    categoryIds, profileIds, usageRegions, type CategoryId, type UsageRegionId,
+    type ReviewedProfileId, type Severity, type VariantMetadata, type DictionarySelection } from 'indonesian-badwords/metadata';
+import { catalog, sources, getCatalogEntry, getSource, catalogReview, severityRubric,
+    type CatalogEntry, type CatalogClaim, type CatalogSource } from 'indonesian-badwords/catalog';
+const region: UsageRegionId = 'javanese';
+const category: CategoryId = 'insult';
+const profile: ReviewedProfileId = 'reviewed-core';
+const severity: Severity = 2;
+const selection: DictionarySelection = { profiles: [profile], categories: [category], regions: [region], minSeverity: severity };
+const selected: readonly string[] = selectDictionary(selection);
+new Badwords({ dictionary: selected });
+new Badwords({ dictionary: reviewedDictionary });
+new Badwords({ dictionary: reviewedExpandedDictionary });
+const entries: readonly VariantMetadata[] = getMetadata('kontol');
+const sense: CatalogEntry | undefined = getCatalogEntry('ibw-0001');
+const source: CatalogSource | undefined = getSource('source-id');
+const reviewIsHuman: boolean = catalogReview.humanReviewed;
+const rubricLabel: string = severityRubric.levels[severity];
+// @ts-expect-error unknown category IDs must be rejected
+selectDictionary({ categories: ['misspelled'] });
+// @ts-expect-error unknown region IDs must be rejected
+selectDictionary({ regions: ['misspelled'] });
+// @ts-expect-error unknown profile IDs must be rejected
+selectDictionary({ profiles: ['expanded'] });
+// @ts-expect-error severity must be in the documented ordinal range
+selectDictionary({ minSeverity: 5 });
+// @ts-expect-error selection option names are checked
+selectDictionary({ category: 'insult' });
+// @ts-expect-error public metadata is immutable
+metadata.push(entries[0]);
+// @ts-expect-error public profile arrays are immutable
+reviewedDictionary.push('new');
+if (entries[0]) {
+    // @ts-expect-error metadata fields are immutable
+    entries[0].severity = 1;
+}
 import { boundedEvasion, latinLookalikes, EvasionLimitError, type EvasionPolicy, type EvasionOptions,
     type EvasionLimit } from 'indonesian-badwords/evasion';
 const evasiveOptions: EvasionOptions = { separators: { characters: ['-'] as const, maxGap: 1, maxTotal: 8 },
@@ -273,6 +366,7 @@ boundedEvasion({ confusables: { mappings: [['а', 1]], maxTotal: 1 } });
 boundedEvasion({ repetitions: { maxExtraPerLetter: '2', maxTotal: 3 } });
 // @ts-expect-error selected lookalikes are immutable
 latinLookalikes.push(['b', 'd']);
+new Badwords({ dictionary: reviewedDictionary, evasion: selectedEvasion });
 const mode: MatchMode = 'substring';
 const normalization: Normalization = 'standard';
 const options: BadwordsOptions = { dictionary: ['customterm'] as const, mode,
@@ -363,6 +457,8 @@ const invalid: string = flag('kontol');
         writeFileSync(join(workspace, `consumer.${extension}`), types + (extension === 'mts' ? `
 import cjs = require('indonesian-badwords');
 import cjsStrategies = require('indonesian-badwords/censor');
+import cjsMetadata = require('indonesian-badwords/metadata');
+import cjsCatalog = require('indonesian-badwords/catalog');
 import cjsEvasion = require('indonesian-badwords/evasion');
 const policyFromImport: cjsEvasion.EvasionPolicy = selectedEvasion;
 const policyFromRequire: EvasionPolicy = cjsEvasion.boundedEvasion(evasiveOptions);
@@ -373,6 +469,11 @@ const defaultFromRequire: Badwords = cjs.default;
 const callbackFromImport: cjs.CensorCallback = callback;
 const callbackFromRequire: CensorCallback = cjsStrategies.mask();
 const optionsFromImport: cjsStrategies.MaskOptions = maskOptions;
+const metadataFromImport: readonly cjsMetadata.VariantMetadata[] = entries;
+const metadataFromRequire: readonly VariantMetadata[] = cjsMetadata.metadata;
+const selectionFromImport: cjsMetadata.DictionarySelection = selection;
+const catalogFromImport: readonly cjsCatalog.CatalogEntry[] = catalog;
+const sourceFromRequire: CatalogSource | undefined = cjsCatalog.getSource('source-id');
 ` : extension === 'cts' ? `
 import cjs = require('indonesian-badwords');
 const required: boolean = cjs.flag('kontol');
@@ -393,7 +494,7 @@ new cjs.Badwords({ dictionary: ['customterm'] });
         run(process.execPath, [compiler, '-p', config], workspace);
     }
     const compilerVersion = JSON.parse(readFileSync(join(root, 'node_modules/typescript/package.json'))).version;
-    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional censorship/evasion modules, browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
+    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional strategies, bounded evasion and reviewed data, isolated browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
 } finally {
     rmSync(workspace, { recursive: true, force: true });
 }
