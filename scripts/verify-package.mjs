@@ -323,7 +323,7 @@ globalThis.browserResults = {
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|metadata|catalog)\.js$/.test(path)),
+    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|fuzzy|metadata|catalog)\.js$/.test(path)),
         'Optional evasion must stay independent of other runtimes');
     for (const output of Object.values(evasionOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
 
