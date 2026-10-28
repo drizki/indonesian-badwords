@@ -333,6 +333,44 @@ function recompose(units: Unit[]): Unit[] {
     return result;
 }
 
+/** Literal phrase matching shares Unicode provenance but never folds leetspeak or repeats. */
+export function normalizeLiteral(text: string, normalization: Normalization): NormalizedText {
+    if (ASCII.test(text)) {
+        const result = normalizeAscii(normalization === 'standard' ? text.toLowerCase() : text, 'none', false);
+        for (let index = 0; index + 1 < text.length; index++) {
+            if (text.charCodeAt(index) === 13 && text.charCodeAt(index + 1) === 10) {
+                result.starts[index + 1] = result.starts[index];
+                result.ends[index] = result.ends[index + 1];
+            }
+        }
+        return result;
+    }
+    if (normalization === 'none') return normalizeExactUnicode(text, false);
+    const result: NormalizedText = { text: '', starts: [], ends: [], wordCharacters: [] };
+    const characters: string[] = [];
+    for (const unit of recompose(unicodeUnits(text, 'standard'))) {
+        characters.push(unit.character);
+        const code = unit.character.charCodeAt(0);
+        const isWord = code < 128 ? Boolean(ASCII_FLAGS[code] & 1) : wordPattern().test(unit.character);
+        for (let offset = 0; offset < unit.character.length; offset++) {
+            result.starts.push(unit.start);
+            result.ends.push(unit.end);
+            result.wordCharacters.push(isWord);
+        }
+    }
+    result.text = characters.join('');
+    return result;
+}
+
+/** Source-only boundaries; constructed only for explicitly supplied ranges. */
+export function sourceBoundaryChecker(text: string): (index: number) => boolean {
+    if (ASCII.test(text)) {
+        return (index) => !(text.charCodeAt(index - 1) === 13 && text.charCodeAt(index) === 10);
+    }
+    const segments = graphemes(text);
+    return (index) => index === text.length || segments.containing(index)?.index === index;
+}
+
 /** Dictionary keys do not need source provenance. */
 export function normalizeKey(text: string, normalization: Normalization): string {
     if (normalization === 'none') return text;

@@ -94,6 +94,13 @@ assert.equal(new api.Badwords({ ignoreRepeatedLetters: true }).flag('gooooblok')
 const custom = new api.Badwords({ dictionary: ['customterm'] });
 assert.equal(custom.flag('customterm'), true);
 assert.equal(custom.flag('kontol'), false);
+const scoped = new api.Badwords({ dictionary: ['bodo', 'goblok'], allowPhrases: ['Baju Bodo'] });
+const scopedText = 'Baju Bodo goblok bodo';
+const checks = { ignoreRanges: [{ index: 10, end: 16 }] };
+assert.deepEqual(scoped.find(scopedText, checks), [{ word: 'bodo', index: 17, end: 21, match: 'bodo' }]);
+assert.equal(scoped.censor(scopedText, mask(), checks), 'Baju Bodo goblok ****');
+assert.equal(scoped.analyze(scopedText, checks).occurrenceCount, 1);
+assert.equal(scoped.flag(scopedText, { ignoreRanges: [{ index: 10, end: 21 }] }), false);
 const sharedWord = 'paketkontrol';
 assert.equal(api.flag(sharedWord), false);
 try {
@@ -119,6 +126,9 @@ assert.deepEqual(api.find('k0nt0l'), [{ word: 'kontol', index: 0, end: 6, match:
 assert.equal(api.analyze('kontol kontol').occurrenceCount, 2);
 assert.equal(new api.Badwords({ dictionary: api.expandedDictionary }).flag('anjing'), true);
 assert.equal(new api.Badwords({ dictionary: ['customterm'] }).flag('customterm'), true);
+const scoped = new api.Badwords({ allowPhrases: ['Baju Bodo'] });
+assert.equal(scoped.censor('Baju Bodo goblok', '*'), 'Baju Bodo *');
+assert.equal(api.flag('goblok', { ignoreRanges: [{ index: 0, end: 6 }] }), false);
 `);
     run(process.execPath, ['consumer.mjs'], workspace);
     run(process.execPath, ['consumer.cjs'], workspace);
@@ -151,6 +161,8 @@ globalThis.browserResults = {
     mask: instance.censor('g0bl0k!', mask({ keepFirst: 1 })),
     graphemes: new Badwords({ dictionary: ['ffi', '👩‍💻', 'é'] }).censor('ﬃ 👩‍💻 e\\u0301', mask()),
     grawlix: instance.censor('kontol', grawlix({ symbols: '$#', random: () => 0 })),
+    scoped: new Badwords({ allowPhrases: ['Baju Bodo'] }).censor('Baju Bodo goblok bodo', mask(),
+        { ignoreRanges: [{ index: 10, end: 16 }] }),
     matchLimitEnforced
 };
 `);
@@ -191,6 +203,7 @@ globalThis.browserResults = {
         mask: 'g*****!',
         graphemes: '* * *',
         grawlix: '$$$$$$',
+        scoped: 'Baju Bodo goblok ****',
         matchLimitEnforced: true
     });
 
@@ -214,13 +227,13 @@ import instance, { Badwords, flag, find, analyze, dictionary, contextualDictiona
     type AnalysisResult, type BadwordLocation, type BadwordsOptions, type MatchMode,
     type Normalization, type DictionaryWord, type ContextualDictionaryWord,
     type ExpandedDictionaryWord, type CensorContext, type CensorCallback,
-    type CensorReplacement } from 'indonesian-badwords';
+    type CensorReplacement, type CheckOptions, type IgnoreRange } from 'indonesian-badwords';
 import { mask, grawlix, type MaskOptions, type GrawlixOptions,
     type CensorContext as StrategyContext } from 'indonesian-badwords/censor';
 const mode: MatchMode = 'substring';
 const normalization: Normalization = 'standard';
 const options: BadwordsOptions = { dictionary: ['customterm'] as const, mode,
-    normalization, ignoreRepeatedLetters: true, maxMatches: 1_000 };
+    normalization, ignoreRepeatedLetters: true, maxMatches: 1_000, allowPhrases: ['Baju Bodo'] as const };
 const checker = new Badwords(options);
 new Badwords({ normalization: 'none', dictionary: expandedDictionary });
 new Badwords({ maxMatches: Infinity });
@@ -255,6 +268,25 @@ const callback: CensorCallback = (context: CensorContext) => {
 };
 const replacement: CensorReplacement = callback;
 const callbackResult: string = checker.censor('customterm', replacement);
+const range: IgnoreRange = { index: 0, end: 6 };
+const checks: CheckOptions = { ignoreRanges: [range] as const };
+flag('kontol', checks);
+find('kontol', checks);
+analyze('kontol', checks);
+checker.badwords('kontol', checks);
+checker.filter('kontol', checks);
+checker.censor('kontol', replacement, checks);
+checker.censor('kontol', undefined, checks);
+// @ts-expect-error source ranges are immutable
+range.index = 1;
+// @ts-expect-error check options are immutable
+checks.ignoreRanges = [];
+// @ts-expect-error source range arrays are immutable
+checks.ignoreRanges?.push(range);
+// @ts-expect-error source offsets must be numbers
+flag('kontol', { ignoreRanges: [{ index: '0', end: 6 }] });
+// @ts-expect-error allowed phrases must be strings
+new Badwords({ allowPhrases: [1] });
 const maskOptions: MaskOptions = { keepFirst: 1, keepLast: 1, character: '*' };
 const grawlixOptions: GrawlixOptions = { symbols: ['$', '#'] as const, random: () => 0 };
 instance.censor('kontol', mask(maskOptions));

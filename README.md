@@ -51,7 +51,7 @@ flag('dasar goblok'); // true
 
 ## Performance
 
-A browser bundle with the default checker is about 10 KB minified and gzipped.
+A browser bundle with the default checker is about 11 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
@@ -97,6 +97,7 @@ Pass options to `new Badwords(options)`:
 | Option | Default | Purpose |
 | --- | --- | --- |
 | `dictionary` | Bundled list | Supply your own words or `expandedDictionary`. |
+| `allowPhrases` | `[]` | Exempt only occurrences inside known literal phrases. |
 | `mode` | `'word'` | Use `'substring'` to catch joined words such as `kamuasu`. |
 | `normalization` | `'standard'` | Use `'none'` for exact, case-sensitive matching. |
 | `ignoreRepeatedLetters` | `false` | Catch stretched words such as `gooooblokk`. |
@@ -117,6 +118,23 @@ These work on an instance, the default export, or as named imports.
 | `censor(text, replacement = '***')` | Text with matched spans replaced by a literal string or callback result. |
 | `filter(text)` | Text with matches removed and whitespace cleaned up. |
 | `analyze(text)` | Censored text, counts, words, and locations. |
+
+Allow a known phrase without exempting the whole message:
+
+```ts
+const checker = new Badwords({ allowPhrases: ['Baju Bodo'] });
+checker.censor('Baju Bodo goblok bodo'); // 'Baju Bodo *** ***'
+
+const text = 'bodo goblok';
+const options = { ignoreRanges: [{ index: 0, end: 4 }] } as const;
+checker.censor(text, '[removed]', options); // 'bodo [removed]'
+```
+
+Every text method accepts per-call `CheckOptions` as its second argument;
+`censor` accepts them as the third. Ranges use original half-open UTF-16 offsets
+on complete grapheme boundaries. Any intersecting occurrence is ignored.
+Phrases use literal normalization without leetspeak or repeat guessing. See
+[scoped exception rules](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#scoped-exceptions).
 
 Use `addWords` and `removeWords` to change a checker's dictionary. `dict` returns a
 copy. Create a separate `new Badwords()` when you need settings or words that
