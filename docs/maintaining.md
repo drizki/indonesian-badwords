@@ -54,33 +54,43 @@ See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 If npm shows Pending validation, publish within the displayed deadline to validate
 that connection.
 
-## Publish a release candidate
+## Prepare a release PR
 
-Release candidates are optional. Stable releases can publish directly.
-
-Commit the release-ready changes, then run from a clean `main` checkout:
-
-```bash
-# Candidate for the next compatible feature release
-npm version preminor --preid rc --message "chore(release): %s"
-git push origin main --follow-tags
-```
-
-Prereleases publish to `next`. Testers install them with
-`npm install indonesian-badwords@next`. For another candidate, run
-`npm version prerelease --preid rc --message "chore(release): %s"`, then push.
-
-## Publish a stable release
+Track each releasable change in an issue and link it from a focused PR. Include
+the version bump in that PR, without creating a tag:
 
 ```bash
-npm version patch --message "chore(release): %s"
-git push origin main --follow-tags
+npm version minor --no-git-tag-version
 ```
 
-Stable versions publish to `latest`. Use `patch` for compatible fixes and
-optimizations, `minor` for compatible features, and `major` for incompatible API
-or behavior changes. To promote a candidate, specify its intended stable version
-instead of using `patch`.
+Use `patch` for compatible fixes and optimizations, `minor` for compatible
+features, and `major` for incompatible API or behavior changes. Commit both
+manifests with a Conventional Commit. Record the relevant tests, package checks,
+performance measurements, and independent review in the PR.
+
+`main` requires an up-to-date PR and all six CI checks: release artifact,
+Node 22/24/26, and TypeScript 5.9.3/6.0.3. Resolve review findings before enabling
+squash auto-merge. Administrator pushes are subject to the same protection.
+
+## Publish the merged version
+
+After the PR merges, verify that CI passed for the exact merged commit. From a
+clean, current `main` checkout, tag its manifest version:
+
+```bash
+git switch main
+git pull --ff-only origin main
+version=$(node -p "require('./package.json').version")
+git tag -a "v$version" -m "Release v$version"
+git push origin "v$version"
+```
+
+Stable versions publish to `latest`. Release candidates are optional: use
+`npm version preminor --preid rc --no-git-tag-version` in the release PR, or
+`npm version prerelease --preid rc --no-git-tag-version` for another candidate.
+Their tags publish to `next`; testers install with
+`npm install indonesian-badwords@next`. To promote a candidate, set its intended
+stable version explicitly in a new PR.
 
 Call out dictionary and default-policy changes in release notes. New default
 vocabulary belongs in a minor release; changing a documented matching contract
