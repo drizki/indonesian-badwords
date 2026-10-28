@@ -65,13 +65,7 @@ jobs:
         with:
           name: npm-package
           path: ${{ runner.temp }}/npm-package
-      - name: Check registry version, artifact integrity, and channel ordering
-        id: preflight
+      - name: Publish with npm trusted publishing
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: node scripts/release.mjs preflight "$RUNNER_TEMP/npm-package/package.tgz"
-      - name: Publish with npm trusted publishing
-        if: steps.preflight.outputs.publish == 'true'
-        env:
-          DIST_TAG: ${{ needs.release.outputs.channel }}
-        run: npm publish "$RUNNER_TEMP/npm-package/package.tgz" --ignore-scripts --tag "$DIST_TAG" --provenance --access public
+        run: node scripts/release.mjs publish "$RUNNER_TEMP/npm-package/package.tgz"
