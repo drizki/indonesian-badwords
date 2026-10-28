@@ -31,6 +31,14 @@ for (const length of [280, 4_000]) {
     add(`clean-accent-emoji-${length}-flag`, 'clean', length, 'flag', { base: ACCENT });
 }
 add('clean-accent-emoji-4000-analyze', 'clean', 4_000, 'analyze', { base: ACCENT });
+for (const length of [280, 4_000]) for (const method of ['flag', 'censor', 'analyze']) {
+    add(`matched-accent-emoji-${length}-${method}`, 'placed', length, method, {
+        base: ACCENT, position: 'middle', surface: 'goblok', terms: terms('goblok')
+    });
+}
+for (const method of ['flag', 'censor', 'analyze']) add(`leetspeak-accent-emoji-4000-${method}`, 'placed', 4_000, method, {
+    base: ACCENT, position: 'middle', surface: 'g0bl0k', terms: terms('g0bl0k', 'goblok')
+});
 for (const method of ['flag', 'analyze']) add(`unicode-dense-4000-${method}`, 'dense', 4_000, method, {
     chunk: UNICODE, terms: [{ surface: 'ＧＯＢＬＯＫ', word: 'goblok', offset: UNICODE.indexOf('ＧＯＢＬＯＫ') },
         { surface: 'kon\u200btol', word: 'kontol', offset: UNICODE.indexOf('kon\u200btol') }]
@@ -121,9 +129,9 @@ function makeSample(job, serial) {
     const space = job.length - job.surface.length - 2;
     const before = job.position === 'start' ? 0 : job.position === 'end' ? space + 1 : Math.floor(space / 2);
     const start = before ? before + 1 : 0;
-    const left = before ? fill(before, reference) + ' ' : '';
+    const left = before ? fill(before, reference, job.base) + ' ' : '';
     const right = job.length - start - job.surface.length;
-    return { text: left + job.surface + (right ? ' ' + fill(right - 1, before ? '' : reference) : ''),
+    return { text: left + job.surface + (right ? ' ' + fill(right - 1, before ? '' : reference, job.base) : ''),
         start, count: job.terms.length, ...(job.ignoreRanges ? { checkOptions: { ignoreRanges:
             job.ignoreRanges.map(({ index, end }) => ({ index: start + index, end: start + end })) } } : {}) };
 }
