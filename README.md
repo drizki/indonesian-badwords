@@ -66,8 +66,9 @@ call. Each case warms up for at least 250 ms, then measures 41 calibrated batche
 These are medians of per-call batch averages; import, setup, input generation,
 and correctness checks are excluded. Results vary with input, hardware, and runtime.
 
-Run `npm run benchmark` for 50 self-checking workloads, including cold calls,
-match positions, Unicode, custom dictionaries, and memory. Run
+Run `npm run benchmark` for 70 self-checking workloads, including cold calls,
+match positions, Unicode, callbacks, masking, scoped exceptions, custom dictionaries,
+and memory. Run
 `npm run benchmark:compare` to compare with pinned Indonesian libraries; different
 detection outputs are reported separately from timings.
 
