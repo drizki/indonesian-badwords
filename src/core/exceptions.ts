@@ -1,6 +1,6 @@
-import type { CheckOptions, IgnoreRange } from './index.ts';
+import type { CheckOptions, IgnoreRange } from '../index.ts';
 import { Matcher } from './matcher.ts';
-import { normalizeLiteral, sourceBoundaryChecker, trimDictionaryWord, type Normalization } from './normalize.ts';
+import { normalizeLiteral, sourceBoundaryChecker, trimDictionaryWord, type Normalization } from '../text/normalize.ts';
 
 export type MatchAcceptance = (start: number, end: number) => boolean;
 

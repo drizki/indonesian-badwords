@@ -75,21 +75,21 @@ A browser bundle with the default checker is about 12 KB minified and gzipped.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.75 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 22.98 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.77 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 24.45 µs |
 | Clean ASCII paragraph, 4,000 characters | `censor` | 5.56 µs |
-| Clean ASCII paragraph, 4,000 characters | `analyze` | 15.53 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 21.66 µs |
-| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 30.32 µs |
+| Clean ASCII paragraph, 4,000 characters | `analyze` | 16.10 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 21.79 µs |
+| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.79 µs |
 
 Node.js 24.22.1, default dictionary, synthetic inputs with a unique reference per
 call. Each case warms up for at least 250 ms, then measures 41 calibrated batches.
 These are medians of per-call batch averages; import, setup, input generation,
 and correctness checks are excluded. Results vary with input, hardware, and runtime.
 
-Run `npm run benchmark` for 87 self-checking workloads, including cold calls,
+Run `npm run benchmark` for 104 self-checking workloads, including cold calls,
 match positions, Unicode, callbacks, masking, scoped exceptions, custom dictionaries,
-bounded evasion, and memory. Run
+bounded evasion, fuzzy edits/composition, and memory. Run
 `npm run benchmark:compare` to compare with pinned Indonesian libraries; different
 detection outputs are reported separately from timings.
 
@@ -195,6 +195,24 @@ censor('goblok', ({ match, words }) => `[${words.join(',')}:${match}]`);
 
 Strategies count original graphemes and always mask at least one, including short
 matches. See [callback and strategy options](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#custom-censorship).
+
+## Bounded spelling edits
+
+Import the optional fuzzy policy when spelling errors should count as matches:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedFuzzy } from 'indonesian-badwords/fuzzy';
+const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
+checker.censor('goblox'); // '***'
+```
+
+Fuzzy matching can flag benign words: with the default dictionary, `kontrol`
+collides with `kontol` through one insertion. Evaluate the explicit policy on
+your application’s text.
+
+Configure edit families, adjacent transpositions, key lengths, evasion composition,
+and finite work limits in the [fuzzy API](docs/api.md#bounded-fuzzy-matching).
 
 ## Documentation
 

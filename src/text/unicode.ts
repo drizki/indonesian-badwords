@@ -1,8 +1,8 @@
-import type { MatchAcceptance } from './exceptions.ts';
-import type { Entry, Match, Matcher } from './matcher.ts';
+import type { MatchAcceptance } from '../core/exceptions.ts';
+import type { Entry, Match, Matcher } from '../core/matcher.ts';
 import { canonicalSearchView, caseWidthStable, foldCandidateText, previousCodePoint,
     sourceBoundaryChecker, wordAt } from './normalize.ts';
-import { canonicalCandidatePattern, type NativePatterns } from './pattern.ts';
+import { canonicalCandidatePattern, type NativePatterns } from '../core/pattern.ts';
 
 /** Bounded candidate patterns share the same lazily compiled dictionary automaton. */
 export class UnicodeMatcher {

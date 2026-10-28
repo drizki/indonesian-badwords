@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Fast Indonesian profanity filter with TypeScript, Unicode-aware matching, and zero runtime dependencies",
   "keywords": [
     "indonesian",
@@ -73,6 +73,16 @@
         "types": "./dist/cjs/evasion.d.ts",
         "default": "./dist/cjs/evasion.js"
       }
+    },
+    "./fuzzy": {
+      "import": {
+        "types": "./dist/esm/fuzzy.d.ts",
+        "default": "./dist/esm/fuzzy.js"
+      },
+      "require": {
+        "types": "./dist/cjs/fuzzy.d.ts",
+        "default": "./dist/cjs/fuzzy.js"
+      }
     }
   },
   "files": [
@@ -84,17 +94,25 @@
     "dist/cjs/metadata.d.ts",
     "dist/cjs/catalog.js",
     "dist/cjs/catalog.d.ts",
-    "dist/cjs/catalog-types.d.ts",
-    "dist/cjs/catalog-registry.d.ts",
-    "dist/cjs/dictionary.d.ts",
-    "dist/cjs/normalize.d.ts",
+    "dist/cjs/dictionary/types.d.ts",
+    "dist/cjs/dictionary/registry.d.ts",
+    "dist/cjs/dictionary/presets.d.ts",
+    "dist/cjs/text/normalize.d.ts",
     "dist/cjs/package.json",
     "dist/esm",
     "dist/cjs/evasion.js",
     "dist/cjs/evasion.d.ts",
-    "dist/cjs/evasion-types.d.ts",
-    "dist/cjs/matcher.d.ts",
-    "THIRD_PARTY_NOTICES"
+    "dist/cjs/evasion/types.d.ts",
+    "dist/cjs/core/matcher.d.ts",
+    "THIRD_PARTY_NOTICES",
+    "dist/cjs/fuzzy.js",
+    "dist/cjs/fuzzy.d.ts",
+    "dist/cjs/fuzzy/types.d.ts",
+    "dist/cjs/censor/strategies.d.ts",
+    "dist/cjs/dictionary/metadata.d.ts",
+    "dist/cjs/dictionary/catalog.d.ts",
+    "dist/cjs/evasion/policy.d.ts",
+    "dist/cjs/fuzzy/policy.d.ts"
   ],
   "sideEffects": false,
   "scripts": {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
-import { normalize } from '../dist/cjs/normalize.js';
+import { normalize } from '../dist/cjs/text/normalize.js';
 
 test('simple Unicode substitutions preserve emoji and original fullwidth source spans', () => {
     assert.deepEqual(normalize('😀 Ｂ＠ＢＩ\u200b!', 'standard'), {
@@ -48,7 +48,7 @@ test('exact Unicode repeats preserve complete supplementary letters and emoji gr
 });
 
 test('ASCII defers Unicode regexes and bounded Unicode defers the grapheme segmenter', () => {
-    const modulePath = fileURLToPath(new URL('../dist/cjs/normalize.js', import.meta.url));
+    const modulePath = fileURLToPath(new URL('../dist/cjs/text/normalize.js', import.meta.url));
     const child = spawnSync(process.execPath, ['-e', `
         const assert = require('node:assert/strict');
         const NativeSegmenter = Intl.Segmenter;

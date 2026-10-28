@@ -40,13 +40,15 @@ verifyTargets(manifest.exports);
 for (const field of ['main', 'module', 'types']) verifyTargets(manifest[field]);
 assert.equal(JSON.parse(run('tar', ['-xOf', archivePath, 'package/dist/cjs/package.json'])).type, 'commonjs');
 assert.deepEqual([...files].filter(path => path.endsWith('.js')).sort(),
-    ['dist/cjs/catalog.js', 'dist/cjs/censor.js', 'dist/cjs/evasion.js', 'dist/cjs/index.js', 'dist/cjs/metadata.js',
-        'dist/esm/catalog.js', 'dist/esm/censor.js', 'dist/esm/evasion.js', 'dist/esm/index.js', 'dist/esm/metadata.js'],
+    ['dist/cjs/catalog.js', 'dist/cjs/censor.js', 'dist/cjs/evasion.js', 'dist/cjs/fuzzy.js', 'dist/cjs/index.js', 'dist/cjs/metadata.js',
+        'dist/esm/catalog.js', 'dist/esm/censor.js', 'dist/esm/evasion.js', 'dist/esm/fuzzy.js', 'dist/esm/index.js', 'dist/esm/metadata.js'],
     'Publish each optional runtime with its ESM facade');
 const evasionSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/evasion.js']);
 assert.ok(!evasionSource.includes('kontol') && !evasionSource.includes('defaultDictionary'), 'Evasion must share the supplied dictionary');
+const fuzzySource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/fuzzy.js']);
+assert.ok(!fuzzySource.includes('kontol') && !fuzzySource.includes('defaultDictionary'), 'Fuzzy must share the supplied dictionary');
 const rootSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/index.js']);
-assert.ok(!rootSource.includes('maxExtraPerLetter') && !rootSource.includes('maxConfusables'), 'Root must not embed the optional scanner or config');
+assert.ok(!rootSource.includes('maxExtraPerLetter') && !rootSource.includes('maxConfusables') && !rootSource.includes('maxIndexPostings'), 'Root must not embed the optional scanner or config');
 const strategySource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/censor.js']);
 assert.ok(!strategySource.includes('kontol') && !strategySource.includes('defaultDictionary'),
     'Optional strategies must not duplicate the dictionary or root runtime');
@@ -61,6 +63,7 @@ import { createRequire } from 'node:module';
 import instance, * as api from 'indonesian-badwords';
 import { mask, grawlix } from 'indonesian-badwords/censor';
 import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-badwords/evasion';
+import { boundedFuzzy, FuzzyLimitError } from 'indonesian-badwords/fuzzy';
 import * as metadataApi from 'indonesian-badwords/metadata';
 import * as catalogApi from 'indonesian-badwords/catalog';
 const require = createRequire(import.meta.url);
@@ -83,6 +86,11 @@ const evasions = require('indonesian-badwords/evasion');
 assert.equal(boundedEvasion, evasions.boundedEvasion);
 assert.equal(latinLookalikes, evasions.latinLookalikes);
 assert.equal(EvasionLimitError, evasions.EvasionLimitError);
+const fuzzies = require('indonesian-badwords/fuzzy');
+assert.equal(boundedFuzzy, fuzzies.boundedFuzzy);
+assert.equal(FuzzyLimitError, fuzzies.FuzzyLimitError);
+assert.equal(new api.Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() }).censor('goblox'), '***');
+assert.equal(new api.Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy(), evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).censor('g-o-b-l-o-x'), '***');
 const evasion = boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 },
     confusables: { mappings: latinLookalikes, maxTotal: 2 } });
 const evasive = new api.Badwords({ dictionary: ['goblok'], evasion });
@@ -150,6 +158,8 @@ const assert = require('node:assert/strict');
 const api = require('indonesian-badwords');
 const { mask, grawlix } = require('indonesian-badwords/censor');
 const { boundedEvasion } = require('indonesian-badwords/evasion');
+const { boundedFuzzy } = require('indonesian-badwords/fuzzy');
+assert.equal(new api.Badwords({ fuzzy: boundedFuzzy() }).flag('goblox'), true);
 assert.equal(new api.Badwords({ evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).flag('g-o-b-l-o-k'), true);
 const metadataApi = require('indonesian-badwords/metadata');
 const catalogApi = require('indonesian-badwords/catalog');
@@ -178,6 +188,7 @@ assert.equal(api.flag('goblok', { ignoreRanges: [{ index: 0, end: 6 }] }), false
 import instance, { Badwords, find, dictionary, expandedDictionary } from 'indonesian-badwords';
 import { mask, grawlix } from 'indonesian-badwords/censor';
 import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-badwords/evasion';
+import { boundedFuzzy, FuzzyLimitError } from 'indonesian-badwords/fuzzy';
 import { reviewedDictionary, selectDictionary, getMetadata, usageRegions } from 'indonesian-badwords/metadata';
 import { getCatalogEntry, getSource, catalogReview } from 'indonesian-badwords/catalog';
 let matchLimitEnforced = false;
@@ -206,6 +217,7 @@ globalThis.browserResults = {
         { ignoreRanges: [{ index: 10, end: 16 }] }),
     evasion: new Badwords({ dictionary: reviewedDictionary, evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 },
         confusables: { mappings: latinLookalikes, maxTotal: 2 } }) }).censor('g-o-b-l-o-k gοblοk'),
+    fuzzy: new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy(), evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).censor('g-o-b-l-o-x'),
     matchLimitEnforced,
     reviewed: new Badwords({ dictionary: reviewedDictionary }).flag('kontol'),
     emptyProfile: selectDictionary({ profiles: [] }).length,
@@ -255,6 +267,7 @@ globalThis.browserResults = {
         grawlix: '$$$$$$',
         scoped: 'Baju Bodo goblok ****',
         evasion: '*** ***',
+        fuzzy: '***',
         matchLimitEnforced: true,
         reviewed: true,
         emptyProfile: 0,
@@ -270,14 +283,14 @@ globalThis.browserResults = {
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion|metadata|catalog)\.js$/.test(path)),
+    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion|fuzzy|metadata|catalog)\.js$/.test(path)),
         'Default imports must not load optional strategies, evasion, metadata, or rich sources');
     const strategyOnly = await build({
         stdin: { contents: "export { mask, grawlix } from 'indonesian-badwords/censor';", resolveDir: workspace },
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(strategyOnly.metafile.inputs).every(path => !/[/\\](?:index|evasion|metadata|catalog)\.js$/.test(path)),
+    assert.ok(Object.keys(strategyOnly.metafile.inputs).every(path => !/[/\\](?:index|evasion|fuzzy|metadata|catalog)\.js$/.test(path)),
         'Optional strategies must stay independent of other runtimes');
     for (const output of Object.values(strategyOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
     for (const entry of ['metadata', 'catalog']) {
@@ -286,7 +299,7 @@ globalThis.browserResults = {
             bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
             write: false, metafile: true, logLevel: 'silent'
         });
-        const otherEntries = entry === 'metadata' ? /[/\\](?:index|censor|evasion|catalog)\.js$/ : /[/\\](?:index|censor|evasion|metadata)\.js$/;
+        const otherEntries = entry === 'metadata' ? /[/\\](?:index|censor|evasion|fuzzy|catalog)\.js$/ : /[/\\](?:index|censor|evasion|fuzzy|metadata)\.js$/;
         assert.ok(Object.keys(optionalOnly.metafile.inputs).every(path => !otherEntries.test(path)),
             `${entry} imports must stay independent of other runtimes`);
         for (const output of Object.values(optionalOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
@@ -297,12 +310,20 @@ globalThis.browserResults = {
         }
     }
 
+    const fuzzyOnly = await build({
+        stdin: { contents: "export { boundedFuzzy } from 'indonesian-badwords/fuzzy';", resolveDir: workspace },
+        bundle: true, platform: 'browser', target: 'es2022', format: 'esm', write: false, metafile: true, logLevel: 'silent'
+    });
+    assert.ok(Object.keys(fuzzyOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|evasion|metadata|catalog)\.js$/.test(path)),
+        'Optional fuzzy must stay independent of other runtimes');
+    for (const output of Object.values(fuzzyOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
+
     const evasionOnly = await build({
         stdin: { contents: "export { boundedEvasion } from 'indonesian-badwords/evasion';", resolveDir: workspace },
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|metadata|catalog)\.js$/.test(path)),
+    assert.ok(Object.keys(evasionOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|fuzzy|metadata|catalog)\.js$/.test(path)),
         'Optional evasion must stay independent of other runtimes');
     for (const output of Object.values(evasionOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
 
@@ -353,6 +374,18 @@ if (entries[0]) {
 }
 import { boundedEvasion, latinLookalikes, EvasionLimitError, type EvasionPolicy, type EvasionOptions,
     type EvasionLimit } from 'indonesian-badwords/evasion';
+import { boundedFuzzy, FuzzyLimitError, type FuzzyOptions, type FuzzyLimit, type FuzzyPolicy } from 'indonesian-badwords/fuzzy';
+const fuzzyOptions: FuzzyOptions = { model: 'osa', maxEdits: 1, insertions: false, limits: { maxStateCells: 100000 } };
+const fuzzyPolicy: FuzzyPolicy = boundedFuzzy(fuzzyOptions);
+const rootFuzzy: import('indonesian-badwords').FuzzyPolicy = fuzzyPolicy;
+new Badwords({ fuzzy: rootFuzzy, evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 4 } }) });
+const fuzzyLimit: FuzzyLimit = new FuzzyLimitError('candidates', 10, 11).limit;
+// @ts-expect-error fuzzy policies are opaque
+new Badwords({ fuzzy: {} });
+// @ts-expect-error full Damerau is not OSA
+boundedFuzzy({ model: 'damerau' });
+// @ts-expect-error unknown fuzzy options must be rejected
+boundedFuzzy({ distance: 1 });
 const evasiveOptions: EvasionOptions = { separators: { characters: ['-'] as const, maxGap: 1, maxTotal: 8 },
     confusables: { mappings: latinLookalikes, maxTotal: 2 } };
 const selectedEvasion: EvasionPolicy = boundedEvasion(evasiveOptions);
@@ -494,7 +527,7 @@ new cjs.Badwords({ dictionary: ['customterm'] });
         run(process.execPath, [compiler, '-p', config], workspace);
     }
     const compilerVersion = JSON.parse(readFileSync(join(root, 'node_modules/typescript/package.json'))).version;
-    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional strategies, bounded evasion and reviewed data, isolated browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
+    console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional strategies, bounded evasion/fuzzy composition and reviewed data, isolated browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
 } finally {
     rmSync(workspace, { recursive: true, force: true });
 }

@@ -1,5 +1,5 @@
-import type { CensorCallback, CensorContext } from './index.ts';
-export type { CensorCallback, CensorContext, CensorReplacement } from './index.ts';
+import type { CensorCallback, CensorContext } from '../index.ts';
+export type { CensorCallback, CensorContext, CensorReplacement } from '../index.ts';
 
 /** Counts of original graphemes to preserve; first takes priority when clamped. */
 export interface KeepOptions {

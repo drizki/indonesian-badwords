@@ -7,8 +7,16 @@ import { loadCatalog } from './catalog-data.mjs';
 const marker = new URL('../dist/cjs/package.json', import.meta.url);
 await writeFile(marker, `${JSON.stringify({ type: 'commonjs' }, null, 2)}\n`);
 const require = createRequire(import.meta.url);
-const { dictionary } = require('../dist/cjs/dictionary.js');
-const { prepareNativePatterns } = require('../dist/cjs/pattern.js');
+const { dictionary } = require('../dist/cjs/dictionary/presets.js');
+const { prepareNativePatterns } = require('../dist/cjs/core/pattern.js');
+const entries = {
+    index: 'index',
+    censor: 'censor/strategies',
+    metadata: 'dictionary/metadata',
+    catalog: 'dictionary/catalog',
+    evasion: 'evasion/policy',
+    fuzzy: 'fuzzy/policy'
+};
 
 // Publish one compact runtime. tsc's individual modules remain available in the
 // workspace for internal tests, but are not duplicated in the npm package.
@@ -32,7 +40,7 @@ for (const [entry, name, value] of [
     ['catalog', '__BADWORDS_CATALOG__', data]
 ]) {
     await build({
-        entryPoints: [fileURLToPath(new URL(`../src/${entry}.ts`, import.meta.url))],
+        entryPoints: [fileURLToPath(new URL(`../src/${entries[entry]}.ts`, import.meta.url))],
         outfile: fileURLToPath(new URL(`../dist/cjs/${entry}.js`, import.meta.url)),
         bundle: true,
         format: 'cjs',
@@ -45,8 +53,8 @@ for (const [entry, name, value] of [
 }
 
 // Optional behavior bundles import only types from the root.
-for (const optional of ['censor', 'evasion']) await build({
-    entryPoints: [fileURLToPath(new URL(`../src/${optional}.ts`, import.meta.url))],
+for (const optional of ['censor', 'evasion', 'fuzzy']) await build({
+    entryPoints: [fileURLToPath(new URL(`../src/${entries[optional]}.ts`, import.meta.url))],
     outfile: fileURLToPath(new URL(`../dist/cjs/${optional}.js`, import.meta.url)),
     bundle: true,
     format: 'cjs',
@@ -60,7 +68,7 @@ for (const optional of ['censor', 'evasion']) await build({
 // declaration identities are shared when consumers mix import and require.
 const directory = new URL('../dist/esm/', import.meta.url);
 await mkdir(directory, { recursive: true });
-for (const entry of ['index', 'censor', 'metadata', 'catalog', 'evasion']) {
+for (const [entry, source] of Object.entries(entries)) {
     const api = require(`../dist/cjs/${entry}.js`);
     const names = Object.keys(api).filter((name) => name !== 'default' && name !== '__esModule');
     for (const name of names) {
@@ -69,6 +77,10 @@ for (const entry of ['index', 'censor', 'metadata', 'catalog', 'evasion']) {
         }
     }
     const hasDefault = Object.hasOwn(api, 'default');
+    if (source !== entry) {
+        await writeFile(new URL(`../dist/cjs/${entry}.d.ts`, import.meta.url),
+            `export * from './${source}.js';\n`);
+    }
     await writeFile(new URL(`${entry}.js`, directory), [
         '// Generated facade: the CommonJS module owns all runtime state.',
         `import api from '../cjs/${entry}.js';`,

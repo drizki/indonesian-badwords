@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { Badwords } from '../dist/esm/index.js';
 
 const require = createRequire(import.meta.url);
-const { canonicalCandidatePattern, prepareNativePatterns } = require('../dist/cjs/pattern.js');
+const { canonicalCandidatePattern, prepareNativePatterns } = require('../dist/cjs/core/pattern.js');
 
 function paired(dictionary, options = {}) {
     // This unused non-ASCII key selects the general scanner as an oracle.

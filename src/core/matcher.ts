@@ -1,5 +1,5 @@
-import type { NormalizedText } from './normalize.ts';
-import type { TrieLimit } from './evasion-types.ts';
+import type { NormalizedText } from '../text/normalize.ts';
+import type { TrieLimit } from '../evasion/types.ts';
 
 export interface Entry { word: string; key: string; order: number }
 export interface Match { word: string; start: number; end: number; order: number; from: number; to: number }
