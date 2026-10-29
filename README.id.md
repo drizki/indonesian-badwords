@@ -218,5 +218,3 @@ Panduan teknis tersedia dalam bahasa Inggris.
 Ada kata kasar yang lolos atau teks biasa yang ikut ditandai? Buka issue dengan contoh teks, hasil yang diharapkan, dan contoh serupa yang seharusnya aman. Untuk menambah entri kamus, sertakan sumber yang menunjukkan penggunaan kasarnya. Gunakan [form laporan kamus](https://github.com/drizki/indonesian-badwords/issues/new?template=dictionary-report.yml) dan baca [panduan kontribusi](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md).
 
 Semoga bermanfaat 😉
-
-Badge status ditampilkan dengan [shieldcn](https://shieldcn.dev) (MIT).

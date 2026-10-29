@@ -216,5 +216,3 @@ Optional policies have their own costs. Run `npm run benchmark` from the reposit
 Missing a word or getting a false positive? Open an issue with the example, the result you expected, and a similar benign case. For dictionary additions, include sources showing the abusive usage. Use the [dictionary report form](https://github.com/drizki/indonesian-badwords/issues/new?template=dictionary-report.yml) and the [contribution guide](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md).
 
 Semoga bermanfaat 😉
-
-Status badges are rendered by [shieldcn](https://shieldcn.dev) (MIT).
