@@ -58,7 +58,7 @@ function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
 
 decide('terima kasih'); // => 'allow'
 decide('dasar g0bl0k!'); // => 'mask'
-decide('dasar cibai'); // => 'review'
+decide('dasar gebleg'); // => 'review'
 ```
 
 ## Guides

@@ -100,7 +100,7 @@ function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
 
 decide('terima kasih'); // => 'allow'
 decide('dasar g0bl0k!'); // => 'mask'
-decide('dasar cibai'); // => 'review'
+decide('dasar gebleg'); // => 'review'
 ```
 
 [Definisi score dan level](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md#the-score)

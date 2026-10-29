@@ -191,7 +191,7 @@ test('score bands do not overlap even with many matches', () => {
 });
 
 test('unrated-only input has a null score that never reads as clean', () => {
-    const result = classify(find('dasar cibai'));
+    const result = classify(find('dasar gebleg'));
     assert.deepEqual([result.occurrences.length, result.score, result.level], [1, null, 'unrated']);
     assert.ok(result.summary.unrated + result.summary.unclassified > 0);
 });

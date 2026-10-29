@@ -168,7 +168,7 @@ which tells you how many matches the score could not rate:
 import { find } from 'indonesian-badwords';
 import { classify } from 'indonesian-badwords/metadata';
 
-const result = classify(find('dasar cibai'));
+const result = classify(find('dasar gebleg'));
 result.level; // => 'unrated'
 result.score; // => null
 result.summary.unrated + result.summary.unclassified; // => 1
