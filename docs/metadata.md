@@ -109,7 +109,7 @@ result.level; // => 'strong'
 
 | Result field | Contract |
 | --- | --- |
-| `occurrences` | Each input location with all its fields passed through unchanged (it is spread, so fields added to locations later flow through), plus the fields below. |
+| `occurrences` | Each input location with all its fields passed through (it is spread, so fields added to locations later flow through), plus the fields below. The classification fields take precedence: an input field with the same name (`severity`, `classified`, `categories`, ...) is overwritten. |
 | `occurrences[].classified` | `false` when the matched `word` has no catalog entry, such as a custom dictionary word. Such occurrences get empty arrays and `severity: null`; nothing is guessed. |
 | `occurrences[].variantIds`, `senseIds` | IDs of every catalog variant of the spelling and their canonical senses. |
 | `occurrences[].categories`, `regionIds`, `profiles` | Unions over the spelling's variants, in registry order. |
@@ -142,22 +142,44 @@ Let `max` be the highest occurrence severity and `n` the number of occurrences
 that have a severity (`unclassified` and `unrated` occurrences are not counted).
 
 ```text
-score = 0                                         when n = 0
-score = base[max] + min(20, n - 1)                otherwise
+score = 0       when there are no occurrences
+score = null    when occurrences exist but none has a severity
+score = base[max] + min(cap[max], n - 1)    otherwise
 
 base = { 1: 15, 2: 35, 3: 60, 4: 80 }
+cap  = { 1: 19, 2: 19, 3: 19, 4: 20 }
 ```
 
-The score is an integer from 0 to 100. The first rated occurrence sets the
-anchor for its severity; each further rated occurrence adds 1 point, up to 20.
-Adding an occurrence never lowers the score, and the order of occurrences does
-not matter. The maximum, 100, needs a severity 4 word and at least 21 rated
-occurrences.
+A non-null score is an integer from 0 to 100. The first rated occurrence sets
+the anchor for its severity; each further rated occurrence adds 1 point, up to the
+cap. The bonus can never lift a score into the next level, so the bands are
+disjoint: mild 15-34, moderate 35-59, strong 60-79, extreme 80-100. Adding an
+occurrence never lowers the score (a `null` score becoming a number counts as an
+increase), and the order of occurrences does not matter. The maximum, 100, needs a
+severity 4 word and at least 21 rated occurrences.
+
+`score` is `null`, not `0`, when occurrences exist but none has a severity (custom
+words or unresolved catalog entries): a clean-looking 0 would hide a real match.
+With mixed input the score comes from the rated occurrences alone. Do not gate on
+`score` alone. Gate on `level` together with `summary.unrated + summary.unclassified`,
+which tells you how many matches the score could not rate:
+
+```ts
+import { find } from 'indonesian-badwords';
+import { classify } from 'indonesian-badwords/metadata';
+
+const result = classify(find('dasar cibai'));
+result.level; // => 'unrated'
+result.score; // => null
+result.summary.unrated + result.summary.unclassified; // => 1
+const needsReview = result.level !== 'none' && (result.score === null || result.score >= 35 || result.summary.unrated + result.summary.unclassified > 0);
+needsReview; // => true
+```
 
 | `level` | When |
 | --- | --- |
 | `none` | There are no occurrences. |
-| `unrated` | Occurrences exist but none has a severity (custom words or unresolved catalog entries). The score is 0. |
+| `unrated` | Occurrences exist but none has a severity (custom words or unresolved catalog entries). The score is `null`. |
 | `mild`, `moderate`, `strong`, `extreme` | `maxSeverity` is 1, 2, 3, or 4, per the [severity rubric](#what-the-metadata-means). |
 
 ## What the metadata means

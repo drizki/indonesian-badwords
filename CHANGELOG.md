@@ -7,7 +7,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-- Adds `classify()` to `indonesian-badwords/metadata`: it joins variant and sense IDs, categories, severity, regions, and profiles to `find()` or `analyze()` matches and returns a summary, a deterministic 0-100 editorial register-intensity `score`, and a `level`. Custom words are reported as unclassified. The root import size is unchanged.
+- Adds `classify()` to `indonesian-badwords/metadata`: it joins variant and sense IDs, categories, severity, regions, and profiles to `find()` or `analyze()` matches and returns a summary, a deterministic 0-100 editorial register-intensity `score` (`null` when matches exist but none has a severity), and a `level`. Custom words are reported as unclassified. The root import size is unchanged.
 
 ## [2.5.3] - 2026-10-29
 

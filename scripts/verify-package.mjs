@@ -367,7 +367,7 @@ const occurrenceIndex: number | undefined = occurrence?.index;
 const occurrenceSeverity: Severity | null | undefined = occurrence?.severity;
 const classifiedSummary: ClassificationSummary = classified.summary;
 const classifiedLevel: ClassificationLevel = fromAnalysis.level;
-const classifiedScore: number = classified.score;
+const classifiedScore: number | null = classified.score;
 // @ts-expect-error classification levels are a closed set
 const badLevel: ClassificationLevel = 'severe';
 // @ts-expect-error classification results are immutable

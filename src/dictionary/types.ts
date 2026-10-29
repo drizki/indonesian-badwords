@@ -146,7 +146,10 @@ export interface ClassificationSummary {
 export interface ClassificationResult<T extends ClassifiableLocation = ClassifiableLocation> {
     readonly occurrences: readonly ClassifiedOccurrence<T>[];
     readonly summary: ClassificationSummary;
-    /** Integer 0-100 editorial register intensity of the matched words; not a toxicity probability. */
-    readonly score: number;
+    /**
+     * Integer 0-100 editorial register intensity of the matched words; not a toxicity
+     * probability. 0 with no occurrences; null when occurrences exist but none has a severity.
+     */
+    readonly score: number | null;
     readonly level: ClassificationLevel;
 }
