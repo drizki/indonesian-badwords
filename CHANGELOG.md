@@ -7,7 +7,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-- Catalog metadata only, pending native review (#35): resolves 26 severities and 18 category sets where fetched sources allow, adds `identity-slur` to `monyet` (reported racist use), records keep/guard/remove recommendations and literal-use risks for the default terms that are only contextual or unaccepted, and leaves unsupported values `null`. `dictionary`, `contextualDictionary` and `expandedDictionary` are unchanged.
+- Catalog metadata, pending native review (#35): resolves 26 severities and 18 category sets where fetched sources allow, proposes `identity-slur` for `homo` (dictionary-labelled offensive), records keep/guard/remove recommendations and literal-use risks for the default terms that are only contextual or unaccepted, and leaves unsupported values `null`. `dictionary`, `contextualDictionary` and `expandedDictionary` are unchanged, but `selectDictionary` results change where severity or category filters apply (for example, the `minSeverity: 1` selection grows).
 
 ## [2.5.3] - 2026-10-29
 
