@@ -79,6 +79,37 @@ also have work quotas. A limit error means the check did not finish, so do not
 convert it to `false`. Detailed occurrence caps can throw `RangeError` too.
 [Errors and limits](../api.md#results-and-errors) distinguish those cases.
 
+## Act on how a word matched
+
+Every occurrence from `find` and `analyze` carries a `via` that says how it
+matched, so you can treat kinds differently without scanning again. This
+censors exact, normalized and leetspeak matches and queues fuzzy ones for review:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedFuzzy } from 'indonesian-badwords/fuzzy';
+
+const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
+const review: string[] = [];
+
+const output = checker.censor('goblok g0bl0k goblox', (context, detail) => {
+  const kinds = detail.occurrences(context).map(({ via }) => via.kind);
+  if (kinds.every((kind) => kind === 'fuzzy')) {
+    review.push(context.match);
+    return context.match;
+  }
+  return '***';
+});
+output; // => '*** *** goblox'
+review; // => ['goblox']
+
+checker.find('goblox')[0].via; // => { kind: 'fuzzy', edits: 1, model: 'levenshtein' }
+```
+
+A merged span can have several contributors, so `detail.occurrences(context)`
+lists each with its own `via`. Detail is computed only when you ask for it. See
+the [result shape](../api.md#how-an-occurrence-matched).
+
 ## Add spelling tolerance deliberately
 
 The default checker recognizes `g0bl0k`. [Evasion](evasion.md) adds configured

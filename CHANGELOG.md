@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- Each occurrence from `find()` and `analyze().locations` now reports how it matched in `via` (`exact`, `normalized`, `leetspeak`, `evasion` with transform counts, or `fuzzy` with edit count and model), and censor callbacks receive a second `detail` argument whose `occurrences(context)` lists the contributing occurrences. Existing fields are unchanged; `flag`, `badwords` and string `censor` pay nothing.
+
 ## [2.5.3] - 2026-10-29
 
 - Combined evasion and fuzzy scans, and fuzzy substring mode, now complete within the default step budget: projections are pruned soundly, one-edit signatures are hashed in linear time, and insertion edits no longer absorb separator-delimited neighbours (`censor('x-goblok')` is now `x-***`). The default `maxSteps` stays at 10,000,000; supported input sizes per policy combination are documented in the evasion and fuzzy guides.
