@@ -105,3 +105,51 @@ export interface SeverityRubric {
     readonly levels: Readonly<Record<Severity, string>>;
     readonly note: string;
 }
+
+/** Minimal location shape accepted by `classify`; `find()` locations satisfy it. */
+export interface ClassifiableLocation {
+    readonly word: string;
+}
+/** Input to `classify`: `find()` locations or an `analyze()` result. */
+export type ClassifyInput<T extends ClassifiableLocation = ClassifiableLocation> =
+    readonly T[] | { readonly locations: readonly T[] };
+
+/** Metadata joined to one occurrence. Unknown words are never guessed. */
+export interface Classification {
+    /** False when the matched dictionary word has no catalog entry (for example a custom word). */
+    readonly classified: boolean;
+    readonly variantIds: readonly string[];
+    readonly senseIds: readonly string[];
+    readonly categories: readonly CategoryId[];
+    /** Highest severity among the word's variants, or null when none is rated. */
+    readonly severity: Severity | null;
+    readonly regionIds: readonly UsageRegionId[];
+    readonly profiles: readonly ReviewedProfileId[];
+}
+/** The input location with every field passed through unchanged, plus its classification. */
+export type ClassifiedOccurrence<T extends ClassifiableLocation = ClassifiableLocation> = T & Classification;
+
+export type ClassificationLevel = 'none' | 'mild' | 'moderate' | 'strong' | 'extreme' | 'unrated';
+export interface ClassificationSummary {
+    /** Categories present, in registry order. */
+    readonly categories: readonly CategoryId[];
+    readonly maxSeverity: Severity | null;
+    /** Occurrences per severity; occurrences without a severity are counted in `unrated`. */
+    readonly bySeverity: Readonly<Record<Severity, number>>;
+    /** Occurrences per category; an occurrence counts once in each of its categories. */
+    readonly byCategory: Readonly<Record<CategoryId, number>>;
+    readonly classified: number;
+    readonly unclassified: number;
+    /** Classified occurrences whose severity is unresolved (null). */
+    readonly unrated: number;
+}
+export interface ClassificationResult<T extends ClassifiableLocation = ClassifiableLocation> {
+    readonly occurrences: readonly ClassifiedOccurrence<T>[];
+    readonly summary: ClassificationSummary;
+    /**
+     * Integer 0-100 editorial register intensity of the matched words; not a toxicity
+     * probability. 0 with no occurrences; null when occurrences exist but none has a severity.
+     */
+    readonly score: number | null;
+    readonly level: ClassificationLevel;
+}

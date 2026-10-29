@@ -80,7 +80,8 @@ slang such as `Riyad`, `item`, `suhu`, and `sepuh` are absent from both lists.
 
 The optional [`indonesian-badwords/metadata` entry point](metadata.md) adds
 reviewed profiles and selection by lexical category, documented abusive-use
-region, and editorial severity. `indonesian-badwords/catalog` provides source
+region, and editorial severity, and `classify()` to attach categories, severity,
+regions, and a register-intensity score to matches. `indonesian-badwords/catalog` provides source
 claims and policy explanations. Both are separate from the root runtime; they
 do not change the three existing lists.
 
@@ -110,6 +111,32 @@ const snapshot = custom.dict; // a copy; changing it does not mutate the checker
 Entries are trimmed, normalized using the configured settings, and deduplicated.
 Blank entries are ignored. Invalid types throw `TypeError` before any mutation.
 `addWords` and `removeWords` are also named exports that change the shared default.
+
+## Classifying matches
+
+`classify(input)` is exported from the optional `indonesian-badwords/metadata`
+entry point, so the root import does not grow.
+
+```text
+classify<T extends { word: string }>(
+    input: readonly T[] | { locations: readonly T[] },
+): ClassificationResult<T>
+```
+
+`input` is the array from `find()` or the whole result of `analyze()`. It throws
+`TypeError` for other input, for a location without a string `word`, and for holes
+in a sparse array.
+
+| Result field | Value |
+| --- | --- |
+| `occurrences` | Each input location, fields passed through, plus `classified`, `variantIds`, `senseIds`, `categories`, `severity`, `regionIds`, and `profiles`. Custom words are `classified: false`. |
+| `summary` | `categories`, `maxSeverity`, `bySeverity`, `byCategory`, `classified`, `unclassified`, and `unrated`. |
+| `score` | Integer 0-100 editorial register intensity, `0` with no occurrences, `null` when none has a severity. |
+| `level` | `none`, `mild`, `moderate`, `strong`, `extreme`, or `unrated`. |
+
+The score measures the register intensity of matched words. It is not a toxicity
+probability and infers no intent. The formula, score bands, and how to gate on
+`level` and `summary.unrated` are in the [metadata guide](metadata.md#classify-matches).
 
 ## Results and errors
 

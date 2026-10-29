@@ -81,6 +81,9 @@ assert.equal(new api.Badwords({ dictionary: metadataApi.reviewedDictionary }).fl
 assert.ok(catalogApi.catalog.length > 0 && catalogApi.sources.length > 0);
 assert.equal(catalogApi.catalogReview.humanReviewed, false);
 assert.ok(Object.isFrozen(metadataApi.metadata[0]));
+assert.equal(typeof metadataApi.classify, 'function');
+assert.equal(metadataApi.classify(api.analyze('dasar goblok')).level, 'moderate');
+assert.equal(cjsMetadata.classify([]).level, 'none');
 assert.ok(Object.isFrozen(catalogApi.catalog[0].variants));
 const evasions = require('indonesian-badwords/evasion');
 assert.equal(boundedEvasion, evasions.boundedEvasion);
@@ -337,7 +340,9 @@ import { mask, grawlix, type MaskOptions, type GrawlixOptions,
     type CensorContext as StrategyContext } from 'indonesian-badwords/censor';
 import { metadata, reviewedDictionary, reviewedExpandedDictionary, selectDictionary, getMetadata,
     categoryIds, profileIds, usageRegions, type CategoryId, type UsageRegionId,
-    type ReviewedProfileId, type Severity, type VariantMetadata, type DictionarySelection } from 'indonesian-badwords/metadata';
+    type ReviewedProfileId, type Severity, type VariantMetadata, type DictionarySelection,
+    classify, type ClassificationResult, type ClassificationLevel, type ClassificationSummary,
+    type ClassifiedOccurrence, type ClassifyInput } from 'indonesian-badwords/metadata';
 import { catalog, sources, getCatalogEntry, getSource, catalogReview, severityRubric,
     type CatalogEntry, type CatalogClaim, type CatalogSource } from 'indonesian-badwords/catalog';
 const region: UsageRegionId = 'javanese';
@@ -354,6 +359,21 @@ const sense: CatalogEntry | undefined = getCatalogEntry('ibw-0001');
 const source: CatalogSource | undefined = getSource('source-id');
 const reviewIsHuman: boolean = catalogReview.humanReviewed;
 const rubricLabel: string = severityRubric.levels[severity];
+const classified: ClassificationResult<BadwordLocation> = classify(find('dasar goblok'));
+const fromAnalysis: ClassificationResult<BadwordLocation> = classify(analyze('dasar goblok'));
+const classifyInput: ClassifyInput<BadwordLocation> = find('goblok');
+const occurrence: ClassifiedOccurrence<BadwordLocation> | undefined = classified.occurrences[0];
+const occurrenceIndex: number | undefined = occurrence?.index;
+const occurrenceSeverity: Severity | null | undefined = occurrence?.severity;
+const classifiedSummary: ClassificationSummary = classified.summary;
+const classifiedLevel: ClassificationLevel = fromAnalysis.level;
+const classifiedScore: number | null = classified.score;
+// @ts-expect-error classification levels are a closed set
+const badLevel: ClassificationLevel = 'severe';
+// @ts-expect-error classification results are immutable
+classified.occurrences.push(occurrence);
+// @ts-expect-error classify needs locations
+classify('goblok');
 // @ts-expect-error unknown category IDs must be rejected
 selectDictionary({ categories: ['misspelled'] });
 // @ts-expect-error unknown region IDs must be rejected
@@ -505,6 +525,8 @@ const optionsFromImport: cjsStrategies.MaskOptions = maskOptions;
 const metadataFromImport: readonly cjsMetadata.VariantMetadata[] = entries;
 const metadataFromRequire: readonly VariantMetadata[] = cjsMetadata.metadata;
 const selectionFromImport: cjsMetadata.DictionarySelection = selection;
+const classifiedFromRequire: cjsMetadata.ClassificationResult<BadwordLocation> = cjsMetadata.classify(find('goblok'));
+const levelFromImport: cjsMetadata.ClassificationLevel = classifiedLevel;
 const catalogFromImport: readonly cjsCatalog.CatalogEntry[] = catalog;
 const sourceFromRequire: CatalogSource | undefined = cjsCatalog.getSource('source-id');
 ` : extension === 'cts' ? `

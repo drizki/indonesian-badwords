@@ -1,6 +1,10 @@
 import { categoryIds, profileIds, usageRegions } from './registry.ts';
 import { freezeData } from './freeze.ts';
-import type { DictionarySelection, VariantMetadata } from './types.ts';
+import { mergeVariants } from './merge.ts';
+import type {
+    CategoryId, ClassifiableLocation, ClassificationLevel, ClassificationResult, ClassificationSummary,
+    ClassifiedOccurrence, ClassifyInput, DictionarySelection, Severity, VariantMetadata,
+} from './types.ts';
 export type * from './types.ts';
 export { categoryIds, profileIds, usageRegions } from './registry.ts';
 
@@ -71,3 +75,65 @@ export function selectDictionary(options: DictionarySelection = {}): readonly st
 /** Explicit opt-in profiles; these do not change the package's legacy defaults. */
 export const reviewedDictionary: readonly string[] = selectDictionary();
 export const reviewedExpandedDictionary: readonly string[] = selectDictionary({ profiles: profileIds });
+
+const levels: Readonly<Record<Severity, ClassificationLevel>> = { 1: 'mild', 2: 'moderate', 3: 'strong', 4: 'extreme' };
+const baseScore: Readonly<Record<Severity, number>> = { 1: 15, 2: 35, 3: 60, 4: 80 };
+const severities: readonly Severity[] = [1, 2, 3, 4];
+
+/**
+ * Join catalog metadata to matches. Accepts `find()` locations or an `analyze()` result.
+ * Input fields are passed through; classification fields take precedence over same-named
+ * input fields. Words without catalog entries are `classified: false`. The score is the
+ * editorial register intensity of the matched words (see docs/metadata.md); it is not a
+ * toxicity probability and infers no intent. It is `null` when occurrences exist but none
+ * has a severity.
+ */
+export function classify<T extends ClassifiableLocation>(input: ClassifyInput<T>): ClassificationResult<T> {
+    const locations: unknown = Array.isArray(input) ? input
+        : input !== null && typeof input === 'object' ? (input as { locations?: unknown }).locations : undefined;
+    if (!Array.isArray(locations)) throw new TypeError('input must be an array of locations or an analyze() result');
+    const bySeverity: Record<Severity, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    const byCategory = Object.fromEntries(categoryIds.map(id => [id, 0])) as Record<CategoryId, number>;
+    let classified = 0;
+    let unrated = 0;
+    let maxSeverity: Severity | null = null;
+    const occurrences: ClassifiedOccurrence<T>[] = [];
+    // Index loop, not map: holes in sparse arrays must be validated, not skipped.
+    for (let index = 0; index < locations.length; index++) {
+        const location = locations[index] as T;
+        if (location === null || typeof location !== 'object' || typeof location.word !== 'string') {
+            throw new TypeError('each location must be an object with a string word');
+        }
+        const merged = mergeVariants(getMetadata(location.word));
+        const { severity } = merged;
+        if (merged.classified) {
+            classified++;
+            for (const id of merged.categories) byCategory[id]++;
+            if (severity === null) unrated++;
+            else {
+                bySeverity[severity]++;
+                if (maxSeverity === null || severity > maxSeverity) maxSeverity = severity;
+            }
+        }
+        occurrences.push(Object.freeze({ ...location, ...merged }) as ClassifiedOccurrence<T>);
+    }
+    const rated = severities.reduce((sum, value) => sum + bySeverity[value], 0);
+    const summary: ClassificationSummary = Object.freeze({
+        categories: Object.freeze(categoryIds.filter(id => byCategory[id] > 0)),
+        maxSeverity,
+        bySeverity: Object.freeze(bySeverity),
+        byCategory: Object.freeze(byCategory),
+        classified,
+        unclassified: occurrences.length - classified,
+        unrated,
+    });
+    // Bands stay disjoint: the count bonus cannot lift a level into the next one.
+    const score = maxSeverity === null ? (occurrences.length === 0 ? 0 : null)
+        : baseScore[maxSeverity] + Math.min(maxSeverity === 4 ? 20 : 19, rated - 1);
+    return Object.freeze({
+        occurrences: Object.freeze(occurrences),
+        summary,
+        score,
+        level: occurrences.length === 0 ? 'none' : maxSeverity === null ? 'unrated' : levels[maxSeverity],
+    });
+}
