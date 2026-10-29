@@ -120,8 +120,8 @@ describe('analyze()', () => {
             count: 2,
             occurrenceCount: 2,
             locations: [
-                { word: 'goblok', index: 6, end: 12, match: 'goblok' },
-                { word: 'kontol', index: 13, end: 19, match: 'kontol' }
+                { word: 'goblok', index: 6, end: 12, match: 'goblok', via: { kind: 'exact' } },
+                { word: 'kontol', index: 13, end: 19, match: 'kontol', via: { kind: 'exact' } }
             ]
         });
     });

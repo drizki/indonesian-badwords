@@ -59,20 +59,27 @@ for (const [name, options] of Object.entries(configs)) test(`seeded differential
         const found = checker.find(input);
         hits += found.length;
         assert.equal(checker.flag(input), found.length > 0, label);
+        const allowedKinds = new Set(['exact', 'normalized', 'leetspeak',
+            ...(options.evasion || options.ignoreRepeatedLetters ? ['evasion'] : []), ...(options.fuzzy ? ['fuzzy'] : [])]);
         for (const location of found) {
             assert.equal(location.match, input.slice(location.index, location.end), label);
             assert.ok(order.has(location.word), label);
+            assert.ok(allowedKinds.has(location.via.kind), `${label} ${JSON.stringify(location.via)}`);
+            if (location.via.kind === 'exact') assert.equal(location.match, location.word, label);
+            else assert.notEqual(location.match, location.word, label);
         }
+        assert.deepEqual(checker.find(input), found, label);
         assert.deepEqual(checker.badwords(input), [...new Set(found.map(item => item.word))].sort((a, b) => order.get(a) - order.get(b)), label);
         const spans = merge(found);
         let expected = '', at = 0;
         for (const span of spans) { expected += input.slice(at, span.index) + '***'; at = span.end; }
         expected += input.slice(at);
         assert.equal(checker.censor(input), expected, label);
-        const contexts = [];
-        assert.equal(checker.censor(input, context => { contexts.push(context); return '***'; }), expected, label);
+        const contexts = [], details = [];
+        assert.equal(checker.censor(input, (context) => { contexts.push(context); details.push(context.occurrences()); return '***'; }), expected, label);
         assert.deepEqual(contexts.map(({ index, end }) => ({ index, end })), spans, label);
-        for (const context of contexts) {
+        for (const [at, context] of contexts.entries()) {
+            assert.deepEqual(details[at], found.filter(item => item.index >= context.index && item.end <= context.end), label);
             assert.equal(context.match, input.slice(context.index, context.end), label);
             assert.equal(context.text, input, label);
             const inside = found.filter(item => item.index >= context.index && item.end <= context.end).map(item => item.word);

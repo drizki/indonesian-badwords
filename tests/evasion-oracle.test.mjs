@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Badwords } from '../dist/esm/index.js';
 import { boundedEvasion } from '../dist/esm/evasion.js';
+import { bare } from './bare.mjs';
 
 // Deliberately independent per-word recursion, without the production trie,
 // state hash, prefilter, source mapper, or output aggregation.
@@ -81,10 +82,10 @@ test('bounded trie traversal, trigger rejection and every sink agree with an ind
         const checker = new Badwords({ dictionary, normalization: 'none', mode, evasion });
         const expected = reference(text, dictionary, config, mode === 'word');
         const context = JSON.stringify({ text, dictionary, config, mode });
-        assert.deepEqual(checker.find(text), expected, context);
+        assert.deepEqual(bare(checker.find(text)), expected, context);
         assert.equal(checker.flag(text), Boolean(expected.length), context);
         assert.deepEqual(checker.badwords(text), dictionary.filter(word => expected.some(hit => hit.word === word)), context);
-        assert.deepEqual(checker.analyze(text).locations, expected, context);
+        assert.deepEqual(bare(checker.analyze(text).locations), expected, context);
         assert.equal(checker.censor(text, '*'), censor(text, expected), context);
         const callbackCalls = [];
         assert.equal(checker.censor(text, value => { callbackCalls.push(value); return '*'; }), censor(text, expected), context);

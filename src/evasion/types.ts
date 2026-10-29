@@ -10,7 +10,9 @@ export interface EvasionRuntime {
     checkInput(text: string): void;
     potential(text: string): boolean;
     scan(value: NormalizedText, wholeWords: boolean, visit: (match: Match) => boolean | void,
-        selection: 'all' | 'spans' | 'unique', accept?: (start: number, end: number) => boolean): void;
+        selection: 'all' | 'spans' | 'unique', accept?: (start: number, end: number) => boolean,
+        /** With 'all': attach the most literal transform trace to each occurrence. */
+        detail?: boolean): void;
     censor(value: NormalizedText, wholeWords: boolean,
         accept?: (start: number, end: number) => boolean): CensorSpan[];
 }

@@ -47,7 +47,7 @@ per-call `ignoreRanges`. `replacement` is a string or synchronous callback.
 | Method | Returns | Behavior |
 | --- | --- | --- |
 | `flag(text, options?)` | `boolean` | Whether any accepted occurrence exists; stops at the first match. |
-| `find(text, options?)` | `BadwordLocation[]` | Every accepted occurrence, including overlaps. |
+| `find(text, options?)` | `MatchedLocation[]` | Every accepted occurrence, including overlaps. |
 | `badwords(text, options?)` | `string[]` | Unique matching dictionary terms, in dictionary insertion order. |
 | `censor(text, replacement?, options?)` | `string` | Replace matching spans; default replacement is `'***'`. |
 | `filter(text, options?)` | `string` | Remove matching spans, collapse whitespace, and trim. |
@@ -150,11 +150,48 @@ probability and infers no intent. The formula, score bands, and how to gate on
 | `badwords` | Unique matching terms, in dictionary insertion order. |
 | `count` | Number of unique matching terms. |
 | `occurrenceCount` | Number of occurrences. |
-| `locations` | All occurrences as `{ word, index, end, match }`. |
+| `locations` | All occurrences as `{ word, index, end, match, via }`. |
 
 Locations are sorted by source index, then dictionary insertion order. `index`
 and exclusive `end` are JavaScript UTF-16 offsets. `match` equals
 `text.slice(index, end)`, including any invisible characters inside the span.
+
+### How an occurrence matched
+
+`via` is plain data that says how that occurrence reached its word, so the
+application can decide what to do with it. The library reports; it does not
+infer intent.
+
+| `via` | Meaning |
+| --- | --- |
+| `{ kind: 'exact' }` | `match` equals the dictionary word. |
+| `{ kind: 'normalized' }` | Only case, width, compatibility or invisible-character normalization differs. |
+| `{ kind: 'leetspeak', folds }` | Digits or symbols were folded into letters; `folds` counts them. |
+| `{ kind: 'evasion', transforms }` | Bounded evasion applied; `transforms` is `{ separators, repetitions, confusables }` counts. `ignoreRepeatedLetters` reports `repetitions`. |
+| `{ kind: 'fuzzy', edits, model, transforms? }` | `edits` edits under `'levenshtein'` or `'osa'`; `transforms` appears when evasion was also used. |
+
+When several paths reach the same word and span, the most literal wins:
+`exact`, `normalized`, `leetspeak`, `evasion`, then `fuzzy`, and within the last
+two the fewest edits and transforms. Leetspeak combined with repeated-letter
+folding reports `leetspeak`. `find` and `analyze` always agree. `flag`,
+`badwords`, `censor` with a string and `filter` never compute `via`.
+
+With `ignoreRepeatedLetters`, `repetitions` counts the repeated letters actually
+collapsed in the source. It is `0` when the dictionary word itself has doubled
+letters that the source lacks (`kabulama` for `kabbulamma`). The same text can
+report different kinds under `ignoreRepeatedLetters` and under a bounded evasion
+policy: `g0ooblok` is `leetspeak` for the former and `evasion` for the latter.
+
+`find` and `analyze` return `MatchedLocation`, a `BadwordLocation` plus `via`;
+`BadwordLocation` itself is unchanged. The context passed to a censor callback
+has a non-enumerable `occurrences()` method (type `DetailedCensorContext`)
+returning the `MatchedLocation`s inside that merged span, as `find` reports them.
+Call it as `context.occurrences()`. It scans once per `censor` call, only when first used,
+applies the same `allowPhrases` and `ignoreRanges`, can throw the same
+`RangeError` as `find`, and throws `TypeError` if the dictionary changed during
+the call. The context's enumerable fields, spreads and equality checks are
+unchanged. See
+[act on how a word matched](guides/chat-moderation.md#act-on-how-a-word-matched).
 
 Results include overlapping occurrences. Censorship replaces overlapping spans
 once and adjacent matches separately. Replacement strings are literal.
@@ -170,8 +207,8 @@ every occurrence in memory. These four methods have no occurrence cap. Optional
 evasion and fuzzy work limits still apply to every method.
 
 Types exported from the package root include `BadwordsOptions`, `MatchMode`,
-`Normalization`, `BadwordLocation`, `AnalysisResult`, `CensorContext`,
-`CensorCallback`, `CensorReplacement`, `CheckOptions`, `IgnoreRange`, and the
+`Normalization`, `BadwordLocation`, `MatchedLocation`, `MatchVia`, `EvasionTransforms`,
+`AnalysisResult`, `CensorContext`, `DetailedCensorContext`, `CensorCallback`, `CensorReplacement`, `CheckOptions`, `IgnoreRange`, and the
 dictionary word types. `indonesian-badwords/censor` also exports the censorship
 types, `KeepOptions`, `MaskOptions`, and `GrawlixOptions`.
 

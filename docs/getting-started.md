@@ -56,7 +56,7 @@ const message = '👩🏽‍💻 g0bl0k!';
 const result = checker.analyze(message);
 result.censored; // => '👩🏽‍💻 ***!'
 result.occurrenceCount; // => 1
-result.locations; // => [{ word: 'goblok', index: 8, end: 14, match: 'g0bl0k' }]
+result.locations; // => [{ word: 'goblok', index: 8, end: 14, match: 'g0bl0k', via: { kind: 'leetspeak', folds: 2 } }]
 ```
 
 Locations refer to the original string's UTF-16 offsets. Render slices as text;

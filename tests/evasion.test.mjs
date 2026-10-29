@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Badwords } from '../dist/esm/index.js';
 import { boundedEvasion, latinLookalikes, EvasionLimitError } from '../dist/esm/evasion.js';
+import { bare } from './bare.mjs';
 
 const separators = { characters: [' ', '.', '_', '-'], maxGap: 1, maxTotal: 8 };
 const repetitions = { maxExtraPerLetter: 2, maxTotal: 8 };
@@ -52,7 +53,7 @@ test('explicit transformations compose with original-source spans across every A
         'xg-o-b-l-o-k', 'g-o-b-l-o-kx', 'gooooblok', 'gοblοк', 'cat dog', 'Saya pergi ke pantai.'])
         assert.equal(consistent(checker, text).length, 0, text);
     assert.deepEqual(checker.find('goblok-k').map(({ index, end }) => [index, end]), [[0, 6], [0, 8]]);
-    assert.deepEqual(checker.find('_goblok_'), [{ word: 'goblok', index: 1, end: 7, match: 'goblok' }]);
+    assert.deepEqual(bare(checker.find('_goblok_')), [{ word: 'goblok', index: 1, end: 7, match: 'goblok' }]);
     assert.equal(new Badwords({ dictionary: ['goblok'], evasion: profile({ separators: undefined, confusables: undefined }) }).flag('g-o-b-l-o-k'), false);
 });
 

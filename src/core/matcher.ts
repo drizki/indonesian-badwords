@@ -2,7 +2,16 @@ import type { NormalizedText } from '../text/normalize.ts';
 import type { TrieLimit } from '../evasion/types.ts';
 
 export interface Entry { word: string; key: string; order: number }
-export interface Match { word: string; start: number; end: number; order: number; from: number; to: number }
+/** Transform and edit counts surfaced by the optional scanners for detailed results. */
+export interface Trace { edits: number; model?: 'levenshtein' | 'osa'; gaps: number; repeats: number; maps: number }
+/** Strictly more literal: no edit before few transforms, then fewer edits, confusables, repetitions, separators. */
+export function moreLiteral(a: Trace, b: Trace): boolean {
+    const x = [Number(a.edits > 0), a.gaps + a.repeats + a.maps, a.edits, a.maps, a.repeats, a.gaps];
+    const y = [Number(b.edits > 0), b.gaps + b.repeats + b.maps, b.edits, b.maps, b.repeats, b.gaps];
+    for (let index = 0; index < x.length; index++) if (x[index] !== y[index]) return x[index] < y[index];
+    return false;
+}
+export interface Match { word: string; start: number; end: number; order: number; from: number; to: number; trace?: Trace }
 export interface CensorSpan { start: number; end: number; entries: Entry[] }
 interface CensorCluster { start: number; end: number; entries: Set<Entry>; id: number }
 interface Node { next: Map<number, number>; fail: number; output: number; entries: Entry[] }

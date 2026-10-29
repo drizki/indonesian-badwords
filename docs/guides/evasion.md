@@ -20,8 +20,8 @@ const checker = new Badwords({
 });
 checker.find('g-o-b-l-o-k');
 // [
-//   { word: 'goblo', index: 0, end: 9, match: 'g-o-b-l-o' },
-//   { word: 'goblok', index: 0, end: 11, match: 'g-o-b-l-o-k' }
+//   { word: 'goblo', index: 0, end: 9, match: 'g-o-b-l-o', via: { kind: 'evasion', transforms: { separators: 4, repetitions: 0, confusables: 0 } } },
+//   { word: 'goblok', index: 0, end: 11, match: 'g-o-b-l-o-k', via: { kind: 'evasion', transforms: { separators: 5, repetitions: 0, confusables: 0 } } }
 // ]
 checker.censor('gοblοk'); // => '***'
 ```

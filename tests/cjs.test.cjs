@@ -15,13 +15,26 @@ test('CommonJS build also exposes the default export and class', () => {
     assert.equal(badwords.default.flag('dasar goblok'), true);
     assert.equal(typeof badwords.Badwords, 'function');
     assert.equal(badwords.Badwords.name, 'Badwords');
+    assert.deepEqual(new badwords.Badwords().find('goblok GOBLOK g0bl0k').map(({ via }) => via), [
+        { kind: 'exact' }, { kind: 'normalized' }, { kind: 'leetspeak', folds: 2 }]);
+    const { boundedEvasion } = require('../dist/cjs/evasion.js');
+    const { boundedFuzzy } = require('../dist/cjs/fuzzy.js');
+    const layered = new badwords.Badwords({ dictionary: ['goblok'],
+        evasion: boundedEvasion({ separators: { characters: ['.'], maxGap: 1, maxTotal: 8 } }), fuzzy: boundedFuzzy() });
+    const hits = layered.find('g.o.b.l.o.k goblox');
+    assert.deepEqual(hits.find(hit => hit.match === 'g.o.b.l.o.k').via,
+        { kind: 'evasion', transforms: { separators: 5, repetitions: 0, confusables: 0 } });
+    assert.deepEqual(hits.find(hit => hit.match === 'goblox').via, { kind: 'fuzzy', edits: 1, model: 'levenshtein' });
+    let occurrences;
+    layered.censor('g0bl0k', (context) => { occurrences = context.occurrences(); return '#'; });
+    assert.deepEqual(occurrences.map(({ via }) => via.kind), ['leetspeak']);
     assert.equal(new badwords.Badwords({ dictionary: ['kucel'] }).flag('kucel'), true);
     assert.equal(new badwords.Badwords({ dictionary: ['asu'], mode: 'substring' }).censor('kamuasu'), 'kamu***');
 });
 
 test('CommonJS exposes presets, occurrence spans, and matching policies', () => {
     assert.deepEqual(badwords.find('😀 k0nt0l!'), [
-        { word: 'kontol', index: 3, end: 9, match: 'k0nt0l' }
+        { word: 'kontol', index: 3, end: 9, match: 'k0nt0l', via: { kind: 'leetspeak', folds: 2 } }
     ]);
     const analysis = badwords.analyze('kontol kontol');
     assert.equal(analysis.count, 1);
