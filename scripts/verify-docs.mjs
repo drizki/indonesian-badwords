@@ -14,7 +14,7 @@ const walk = path => readdirSync(path, { withFileTypes: true }).flatMap(entry =>
   const name = join(path, entry.name);
   return entry.isDirectory() ? walk(name) : name.endsWith('.md') ? [name] : [];
 });
-const files = [join(root, 'README.md'), join(root, 'README.id.md'), ...walk(join(root, 'docs')), ...walk(join(root, 'examples'))];
+const files = [join(root, 'README.md'), join(root, 'README.id.md'), ...walk(join(root, 'docs')), ...walk(join(root, 'examples')), join(root, 'llms.txt')];
 const blocks = text => [...text.matchAll(/^```(ts|js)\n([\s\S]*?)^```/gm)];
 const markdown = new Map(files.map(file => [file, readFileSync(file, 'utf8')]));
 const stripCode = text => text.replace(/^```[^\n]*\n[\s\S]*?^```/gm, '');
@@ -48,6 +48,9 @@ for (const [file, text] of markdown) {
 const english = blocks(markdown.get(join(root, 'README.md'))).map(block => block[2]);
 const indonesian = blocks(markdown.get(join(root, 'README.id.md'))).map(block => block[2]);
 assert.deepEqual(indonesian, english, 'README code must remain identical across languages.');
+const llms = markdown.get(join(root, 'llms.txt'));
+assert.match(llms, /^# .+\n\n> .+/, 'llms.txt needs a title and a summary blockquote.');
+for (const block of blocks(llms)) assert.ok(english.includes(block[2]), 'llms.txt recipes must also appear in README.md.');
 
 const consumer = mkdtempSync(join(tmpdir(), 'badwords-docs-'));
 let executed = 0;
@@ -107,7 +110,7 @@ try {
   `);
   execFileSync(process.execPath, [join(consumer, 'claims.mjs')], { cwd: consumer, stdio: 'pipe' });
   assert.ok(assertions >= 20, 'Keep executable expected-output assertions in the guides.');
-  console.log(`Verified ${links} local links/anchors, ${executed} executable examples, ${assertions} annotated outputs, README parity, and capability tables against the tarball.`);
+  console.log(`Verified ${links} local links/anchors, llms.txt, ${executed} executable examples, ${assertions} annotated outputs, README parity, and capability tables against the tarball.`);
 } finally {
   rmSync(consumer, { recursive: true, force: true });
 }
