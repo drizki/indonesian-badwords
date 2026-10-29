@@ -10,6 +10,7 @@ loads neither the detection engine nor the larger source catalog.
 - [Choose a dictionary](#choose-a-dictionary)
 - [Selection rules](#selection-rules)
 - [Attach metadata to matches](#attach-metadata-to-matches)
+- [Classify matches](#classify-matches)
 - [What the metadata means](#what-the-metadata-means)
 - [Inspect a policy decision](#inspect-a-policy-decision)
 - [Review limits](#review-limits)
@@ -80,6 +81,84 @@ const matches = checker.find('dasar g0bl0k!').map(hit => ({
 Use `hit.word`, the matched dictionary spelling, rather than `hit.match`, which
 may contain obfuscation from the original text. A spelling can have several
 senses, so the lookup returns an array.
+
+## Classify matches
+
+`classify(input)` joins catalog metadata to every occurrence and summarizes the
+message. It accepts the `BadwordLocation[]` from `find()` or the whole result of
+`analyze()`, never touches the detection engine, and costs nothing unless you
+call it.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { reviewedDictionary, classify } from 'indonesian-badwords/metadata';
+
+const checker = new Badwords({ dictionary: [...reviewedDictionary, 'zzcustom'] });
+const result = classify(checker.analyze('dasar g0bl0k, kontol, zzcustom'));
+
+result.occurrences[0]?.word; // => 'goblok'
+result.occurrences[0]?.match; // => 'g0bl0k'
+result.occurrences[0]?.severity; // => 2
+result.occurrences[2]?.classified; // => false
+result.summary.maxSeverity; // => 3
+result.summary.bySeverity; // => { 1: 0, 2: 1, 3: 1, 4: 0 }
+result.summary.unclassified; // => 1
+result.score; // => 61
+result.level; // => 'strong'
+```
+
+| Result field | Contract |
+| --- | --- |
+| `occurrences` | Each input location with all its fields passed through unchanged (it is spread, so fields added to locations later flow through), plus the fields below. |
+| `occurrences[].classified` | `false` when the matched `word` has no catalog entry, such as a custom dictionary word. Such occurrences get empty arrays and `severity: null`; nothing is guessed. |
+| `occurrences[].variantIds`, `senseIds` | IDs of every catalog variant of the spelling and their canonical senses. |
+| `occurrences[].categories`, `regionIds`, `profiles` | Unions over the spelling's variants, in registry order. |
+| `occurrences[].severity` | The highest severity among its variants, or `null` when none is rated. |
+| `summary.categories` | Categories present, in registry order. |
+| `summary.maxSeverity` | Highest severity, or `null`. |
+| `summary.bySeverity` | Occurrence counts for `1`, `2`, `3`, `4`. |
+| `summary.byCategory` | Occurrence counts for every category ID (zero when absent); an occurrence counts once in each of its categories. |
+| `summary.classified`, `unclassified`, `unrated` | Occurrences with and without a catalog entry, and classified occurrences whose severity is `null`. |
+| `score`, `level` | See [the score](#the-score). |
+
+Classification uses `location.word`, the matched dictionary spelling, so
+evasion and fuzzy matches classify through the dictionary word they matched,
+not through their obfuscated source text. Each location is one occurrence:
+overlapping matches from different dictionary words are counted separately, the
+same as in `analyze().occurrenceCount`. Words that your `allowPhrases` or
+`ignoreRanges` exempted never reach `classify`, because detection removed them.
+`classify` throws `TypeError` for input that is neither an array of locations nor
+an object with a `locations` array, or for a location without a string `word`.
+Results are frozen.
+
+### The score
+
+The score measures the **editorial register intensity of the matched words**.
+It is not a toxicity or harm probability, it does not infer intent, target, or
+context, and a low score does not mean a message is safe. It is a deterministic
+function of the occurrence severities and counts only.
+
+Let `max` be the highest occurrence severity and `n` the number of occurrences
+that have a severity (`unclassified` and `unrated` occurrences are not counted).
+
+```text
+score = 0                                         when n = 0
+score = base[max] + min(20, n - 1)                otherwise
+
+base = { 1: 15, 2: 35, 3: 60, 4: 80 }
+```
+
+The score is an integer from 0 to 100. The first rated occurrence sets the
+anchor for its severity; each further rated occurrence adds 1 point, up to 20.
+Adding an occurrence never lowers the score, and the order of occurrences does
+not matter. The maximum, 100, needs a severity 4 word and at least 21 rated
+occurrences.
+
+| `level` | When |
+| --- | --- |
+| `none` | There are no occurrences. |
+| `unrated` | Occurrences exist but none has a severity (custom words or unresolved catalog entries). The score is 0. |
+| `mild`, `moderate`, `strong`, `extreme` | `maxSeverity` is 1, 2, 3, or 4, per the [severity rubric](#what-the-metadata-means). |
 
 ## What the metadata means
 
@@ -197,11 +276,12 @@ and lexical matches do not determine intent, hostility, or whole-message safety.
 
 ```js
 const { Badwords } = require('indonesian-badwords');
-const { reviewedDictionary, selectDictionary } = require('indonesian-badwords/metadata');
+const { reviewedDictionary, selectDictionary, classify } = require('indonesian-badwords/metadata');
 const { getCatalogEntry } = require('indonesian-badwords/catalog');
 ```
 
 ESM and CommonJS share the same frozen data and functions within one installed
 copy. TypeScript exports include `DictionarySelection`, `VariantMetadata`,
-`CategoryId`, `UsageRegionId`, `ReviewedProfileId`, `Severity`, `CatalogEntry`,
+`CategoryId`, `UsageRegionId`, `ReviewedProfileId`, `Severity`, `ClassificationResult`,
+`ClassificationSummary`, `ClassificationLevel`, `ClassifiedOccurrence`, `ClassifyInput`, `CatalogEntry`,
 `CatalogVariant`, `CatalogClaim`, and `CatalogSource`.

@@ -80,7 +80,8 @@ slang such as `Riyad`, `item`, `suhu`, and `sepuh` are absent from both lists.
 
 The optional [`indonesian-badwords/metadata` entry point](metadata.md) adds
 reviewed profiles and selection by lexical category, documented abusive-use
-region, and editorial severity. `indonesian-badwords/catalog` provides source
+region, and editorial severity, and `classify()` to attach categories, severity,
+regions, and a register-intensity score to matches. `indonesian-badwords/catalog` provides source
 claims and policy explanations. Both are separate from the root runtime; they
 do not change the three existing lists.
 

@@ -1,6 +1,9 @@
 import { categoryIds, profileIds, usageRegions } from './registry.ts';
 import { freezeData } from './freeze.ts';
-import type { DictionarySelection, VariantMetadata } from './types.ts';
+import type {
+    CategoryId, ClassifiableLocation, ClassificationLevel, ClassificationResult, ClassificationSummary,
+    ClassifiedOccurrence, ClassifyInput, DictionarySelection, ReviewedProfileId, Severity, UsageRegionId, VariantMetadata,
+} from './types.ts';
 export type * from './types.ts';
 export { categoryIds, profileIds, usageRegions } from './registry.ts';
 
@@ -71,3 +74,76 @@ export function selectDictionary(options: DictionarySelection = {}): readonly st
 /** Explicit opt-in profiles; these do not change the package's legacy defaults. */
 export const reviewedDictionary: readonly string[] = selectDictionary();
 export const reviewedExpandedDictionary: readonly string[] = selectDictionary({ profiles: profileIds });
+
+const levels: Readonly<Record<Severity, ClassificationLevel>> = { 1: 'mild', 2: 'moderate', 3: 'strong', 4: 'extreme' };
+const baseScore: Readonly<Record<Severity, number>> = { 1: 15, 2: 35, 3: 60, 4: 80 };
+const severities: readonly Severity[] = [1, 2, 3, 4];
+
+/** Union of values in registry order, so results do not depend on catalog row order. */
+function ordered<T extends string>(order: readonly string[], values: Iterable<T>): readonly T[] {
+    const set = new Set<string>(values);
+    return Object.freeze(order.filter(id => set.has(id)) as T[]);
+}
+
+/**
+ * Join catalog metadata to matches. Accepts `find()` locations or an `analyze()` result.
+ * Every input field is passed through unchanged. Words without catalog entries are
+ * `classified: false`. The score is the editorial register intensity of the matched
+ * words (see docs/metadata.md); it is not a toxicity probability and infers no intent.
+ */
+export function classify<T extends ClassifiableLocation>(input: ClassifyInput<T>): ClassificationResult<T> {
+    const locations: unknown = Array.isArray(input) ? input
+        : input !== null && typeof input === 'object' ? (input as { locations?: unknown }).locations : undefined;
+    if (!Array.isArray(locations)) throw new TypeError('input must be an array of locations or an analyze() result');
+    const bySeverity: Record<Severity, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    const byCategory = Object.fromEntries(categoryIds.map(id => [id, 0])) as Record<CategoryId, number>;
+    let classified = 0;
+    let unrated = 0;
+    let maxSeverity: Severity | null = null;
+    const occurrences = (locations as T[]).map(location => {
+        if (location === null || typeof location !== 'object' || typeof location.word !== 'string') {
+            throw new TypeError('each location must be an object with a string word');
+        }
+        const variants = getMetadata(location.word);
+        let severity: Severity | null = null;
+        for (const variant of variants) {
+            if (variant.severity !== null && (severity === null || variant.severity > severity)) severity = variant.severity;
+        }
+        const categories = ordered<CategoryId>(categoryIds, variants.flatMap(variant => variant.categories));
+        if (variants.length > 0) {
+            classified++;
+            for (const id of categories) byCategory[id]++;
+            if (severity === null) unrated++;
+            else {
+                bySeverity[severity]++;
+                if (maxSeverity === null || severity > maxSeverity) maxSeverity = severity;
+            }
+        }
+        return Object.freeze({
+            ...location,
+            classified: variants.length > 0,
+            variantIds: Object.freeze(variants.map(variant => variant.id)),
+            senseIds: Object.freeze(Array.from(new Set(variants.map(variant => variant.senseId)))),
+            categories,
+            severity,
+            regionIds: ordered<UsageRegionId>(regionIds, variants.flatMap(variant => variant.abusiveRegionIds)),
+            profiles: ordered<ReviewedProfileId>(profileIds, variants.flatMap(variant => variant.profiles)),
+        }) as ClassifiedOccurrence<T>;
+    });
+    const rated = severities.reduce((sum, value) => sum + bySeverity[value], 0);
+    const summary: ClassificationSummary = Object.freeze({
+        categories: categoryIds.filter(id => byCategory[id] > 0),
+        maxSeverity,
+        bySeverity: Object.freeze(bySeverity),
+        byCategory: Object.freeze(byCategory),
+        classified,
+        unclassified: occurrences.length - classified,
+        unrated,
+    });
+    return Object.freeze({
+        occurrences: Object.freeze(occurrences),
+        summary,
+        score: maxSeverity === null ? 0 : baseScore[maxSeverity] + Math.min(20, rated - 1),
+        level: occurrences.length === 0 ? 'none' : maxSeverity === null ? 'unrated' : levels[maxSeverity],
+    });
+}
