@@ -219,4 +219,4 @@ Ada kata kasar yang lolos atau teks biasa yang ikut ditandai? Buka issue dengan 
 
 Semoga bermanfaat 😉
 
-Badge status dirender oleh [shieldcn](https://shieldcn.dev) (MIT).
+Badge status ditampilkan dengan [shieldcn](https://shieldcn.dev) (MIT).
