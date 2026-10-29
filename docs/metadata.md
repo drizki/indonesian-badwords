@@ -200,7 +200,7 @@ it is not presented as an observed spelling.
 | `categories` | Readonly lexical `CategoryId` values. |
 | `severity` | `1`, `2`, `3`, `4`, or `null` when unresolved. |
 | `attestation` | `attested`, `editorial-alias`, or `unresolved`. |
-| `registerEvidence` | `attested`, `editorial-inference`, or `unverified`. |
+| `registerEvidence` | `attested`, `editorial-inference`, or `unverified`. A maintainer native-speaker judgment with no cited source is recorded as `editorial-inference`; `unverified` always keeps a `null` severity. |
 | `abusiveRegionIds` | Readonly region IDs supported for coarse/abusive use. |
 | `profiles` | Accepted `reviewed-core` / `reviewed-contextual` selections; empty for unaccepted entries. |
 
@@ -291,7 +291,19 @@ they do not turn an unattested alias into an observed spelling.
 
 AI agents checked the catalog against the cited material. There is no native
 human panel or independent corpus validation; `catalogReview` exposes those
-limits. Source evidence can support one claim without establishing another,
+limits.
+
+On 2026-10-29 the maintainer, a native Indonesian speaker, reviewed a subset of
+variants: it set or confirmed their severity and categories and decided the
+keep, guard or remove recommendation for some default and expanded-list terms.
+That review is one person's judgment, not a cited source and not a panel. It did
+not cover the whole catalog, so `catalogReview.humanReviewed` and
+`catalogReview.nativeReviewed` stay `false`: they mean the whole catalog was
+reviewed. Coverage is recorded per variant, in `notes` (each covered variant has
+a note starting `Covered by maintainer native-speaker review (2026-10-29)`, or a
+recommendation note naming that review) and in the variant's `severityRationale`.
+Variants without such a note are not covered. The recommendations are metadata
+only and do not change the default, contextual or expanded dictionaries. Source evidence can support one claim without establishing another,
 and lexical matches do not determine intent, hostility, or whole-message safety.
 
 ## CommonJS

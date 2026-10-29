@@ -148,6 +148,29 @@ test('unknown severity, unresolved forms, and literal-only regions never silentl
     assert.equal(catalogReview.method, 'ai-source-review');
 });
 
+test('maintainer native-speaker review (2026-10-29) is recorded per variant, never catalog-wide', () => {
+    const marker = 'native-speaker review (2026-10-29)';
+    const covered = catalog.flatMap(sense => sense.variants).filter(variant => variant.notes.some(note => note.includes(marker)));
+    assert.equal(covered.length, 123);
+    const bySurface = new Map(covered.map(variant => [variant.surface, variant]));
+    assert.deepEqual([bySurface.get('homo').severity, bySurface.get('homo').categories], [3, ['identity-slur']]);
+    assert.deepEqual([bySurface.get('monyet').severity, bySurface.get('monyet').categories], [2, ['insult', 'identity-slur']]);
+    assert.equal(bySurface.get('anjing'), undefined);
+    assert.ok(bySurface.get('tai').notes.some(note => note.includes('tai chi')));
+    for (const variant of covered) {
+        // A reviewed severity is never left on an unverified register, and rationales must not claim a cited source.
+        if (variant.severity !== null) assert.notEqual(variant.registerEvidence, 'unverified', variant.surface);
+        assert.ok(!/awaiting maintainer native review/u.test(variant.severityRationale), variant.surface);
+    }
+    const all = new Map(catalog.flatMap(sense => sense.variants).map(variant => [variant.surface, variant]));
+    for (const [surface, base] of [['ngentu', 'ngentot'], ['ngentd', 'ngentot'], ['kontil', 'kontol'], ['colay', 'coli'], ['wancok', 'jancok']]) {
+        assert.deepEqual(all.get(surface).categories, all.get(base).categories, surface);
+        assert.equal(all.get(surface).severity, 3, surface);
+    }
+    assert.equal(catalogReview.humanReviewed, false);
+    assert.equal(catalogReview.nativeReviewed, false);
+});
+
 test('selection validates all options before returning even an intentionally empty list', () => {
     for (const options of [null, [], 'core', 1, new Date(), { typo: true }, { [Symbol('categories')]: [] }]) {
         assert.throws(() => selectDictionary(options), TypeError);
