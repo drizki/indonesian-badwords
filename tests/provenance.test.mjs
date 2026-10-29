@@ -3,6 +3,9 @@ import { test } from 'node:test';
 import { Badwords } from '../dist/esm/index.js';
 import { boundedEvasion, latinLookalikes } from '../dist/esm/evasion.js';
 import { boundedFuzzy } from '../dist/esm/fuzzy.js';
+import { createRequire } from 'node:module';
+
+const { moreLiteral } = createRequire(import.meta.url)('../dist/cjs/core/matcher.js');
 
 const evasion = () => boundedEvasion({ minLength: 3, separators: { characters: ['.', '-', ' '], maxGap: 1, maxTotal: 8 },
     repetitions: { maxExtraPerLetter: 2, maxTotal: 8 }, confusables: { mappings: latinLookalikes, maxTotal: 2 } });
@@ -68,6 +71,23 @@ test('fuzzy composed with evasion keeps both kinds of evidence', () => {
     assert.deepEqual(via(checker, 'goblox'), { kind: 'fuzzy', edits: 1, model: 'levenshtein' });
 });
 
+test('evasion with fuzzy pins the most literal kind and counts, whatever the path order', () => {
+    const checker = new Badwords({ dictionary: ['goblok'], evasion: evasion(), fuzzy: boundedFuzzy() });
+    assert.deepEqual(via(checker, 'gooblok'), { kind: 'evasion', transforms: transforms(0, 1, 0) });
+    assert.deepEqual(via(checker, 'gobllok'), { kind: 'evasion', transforms: transforms(0, 1, 0) });
+    assert.deepEqual(via(checker, 'goobllk'), { kind: 'fuzzy', edits: 1, model: 'levenshtein', transforms: transforms(0, 1, 0) });
+});
+
+test('repeated-letter folding reports the repeats actually collapsed in the source', () => {
+    const checker = new Badwords({ dictionary: ['kabbulamma', 'blon'], ignoreRepeatedLetters: true });
+    assert.deepEqual(via(checker, 'kabulama', 'kabbulamma'), { kind: 'evasion', transforms: transforms(0, 0, 0) });
+    assert.deepEqual(via(checker, 'bloon', 'blon'), { kind: 'evasion', transforms: transforms(0, 1, 0) });
+    assert.deepEqual(via(checker, 'blooon', 'blon'), { kind: 'evasion', transforms: transforms(0, 2, 0) });
+    // The same text takes different kinds under ignoreRepeatedLetters and bounded evasion.
+    assert.deepEqual(via(new Badwords({ ignoreRepeatedLetters: true }), 'g0ooblok'), { kind: 'leetspeak', folds: 1 });
+    assert.deepEqual(via(new Badwords({ evasion: evasion() }), 'g0ooblok'), { kind: 'evasion', transforms: transforms(0, 2, 0) });
+});
+
 test('a word reachable by several evasion paths reports the fewest transforms, deterministically', () => {
     // goblokk is a literal word and also goblok with one repeated k.
     const checker = new Badwords({ dictionary: ['goblokk'], evasion: evasion() });
@@ -82,8 +102,8 @@ test('overlapping and multi-contributor spans keep one via per occurrence', () =
     const hits = checker.find('ASUS1LA');
     assert.deepEqual(hits.map(({ word, via }) => [word, via.kind]), [['asu', 'normalized'], ['asusila', 'leetspeak'], ['sila', 'leetspeak']]);
     const contexts = [], inside = [];
-    assert.equal(checker.censor('x ASUS1LA y asu', (context, detail) => {
-        contexts.push(context); inside.push(detail.occurrences(context)); return '#';
+    assert.equal(checker.censor('x ASUS1LA y asu', (context) => {
+        contexts.push(context); inside.push(context.occurrences()); return '#';
     }), 'x # y #');
     assert.equal(contexts.length, 2);
     assert.deepEqual(inside[0].map(({ word }) => word), ['asu', 'asusila', 'sila']);
@@ -97,7 +117,7 @@ test('censor detail is lazy, leaves the context unchanged and honours scoped exc
     const seen = [];
     const text = 'goblok banget, goblok g0bl0k';
     const options = { ignoreRanges: [{ index: 22, end: 28 }] };
-    checker.censor(text, (context, detail) => { seen.push([context, detail.occurrences(context)]); return '#'; }, options);
+    checker.censor(text, (context) => { seen.push([context, context.occurrences()]); return '#'; }, options);
     assert.equal(seen.length, 1);
     const [context, occurrences] = seen[0];
     assert.deepEqual(Object.keys(context), ['text', 'index', 'end', 'match', 'words']);
@@ -108,7 +128,25 @@ test('censor detail is lazy, leaves the context unchanged and honours scoped exc
     // A callback that never asks for detail never runs the detailed scan, so the cap cannot fire.
     const capped = new Badwords({ maxMatches: 1 });
     assert.equal(capped.censor('goblok kontol', () => '#'), '# #');
-    assert.throws(() => capped.censor('goblok kontol', (context, detail) => detail.occurrences(context).length + ''), RangeError);
+    assert.throws(() => capped.censor('goblok kontol', (context) => context.occurrences().length + ''), RangeError);
+});
+
+test('censor occurrences honour allowPhrases inside a counted span', () => {
+    // 'kaya' is exempt inside the allowed phrase yet lies within the counted 'asu kaya' span.
+    const checker = new Badwords({ dictionary: ['asu kaya', 'kaya raya', 'kaya'], allowPhrases: ['kaya raya'] });
+    const text = 'asu kaya raya';
+    const seen = [];
+    assert.equal(checker.censor(text, (context) => { seen.push(context.occurrences()); return '#'; }), '# raya');
+    assert.deepEqual(seen[0].map(({ word }) => word), ['asu kaya']);
+    assert.deepEqual(seen[0], checker.find(text));
+    const ignoring = new Badwords({ dictionary: ['asusi', 'sika'] });
+    const options = { ignoreRanges: [{ index: 5, end: 7 }] };
+    ignoring.censor('asusika', (context) => { assert.deepEqual(context.occurrences(), ignoring.find('asusika', options)); return '#'; }, options);
+});
+
+test('a dictionary change during censor() is an error, never a different later span', () => {
+    const checker = new Badwords({ dictionary: ['goblok', 'kontol'] });
+    assert.throws(() => checker.censor('goblok kontol', (context) => { checker.removeWords('kontol'); return context.occurrences().length + ''; }), TypeError);
 });
 
 test('scoped exceptions and ignoreRanges remove occurrences without changing the rest', () => {
@@ -136,11 +174,20 @@ test('the review pattern: censor exact and leetspeak, queue fuzzy', () => {
     const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
     const text = 'goblok g0bl0k goblox';
     const queue = [];
-    const censored = checker.censor(text, (context, detail) => {
+    const censored = checker.censor(text, (context) => {
         const { match, index, end } = context;
-        if (detail.occurrences(context).every(({ via }) => via.kind === 'fuzzy')) { queue.push({ match, index, end }); return match; }
+        if (context.occurrences().every(({ via }) => via.kind === 'fuzzy')) { queue.push({ match, index, end }); return match; }
         return '***';
     });
     assert.equal(censored, '*** *** goblox');
     assert.deepEqual(queue, [{ match: 'goblox', index: 14, end: 20 }]);
+});
+
+test('the shared tie-break ranks no edit, then fewer transforms, then fewer edits, deterministically', () => {
+    const trace = (edits, gaps, repeats, maps) => ({ edits, gaps, repeats, maps });
+    assert.ok(moreLiteral(trace(0, 0, 0, 0), trace(0, 1, 0, 0)));
+    assert.ok(moreLiteral(trace(0, 5, 0, 0), trace(1, 0, 0, 0)));
+    assert.ok(moreLiteral(trace(1, 0, 0, 0), trace(2, 0, 0, 0)));
+    assert.ok(moreLiteral(trace(0, 0, 1, 0), trace(0, 0, 0, 1)) && !moreLiteral(trace(0, 0, 0, 1), trace(0, 0, 1, 0)));
+    assert.ok(!moreLiteral(trace(0, 1, 0, 0), trace(0, 1, 0, 0)));
 });

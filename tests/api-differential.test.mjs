@@ -76,7 +76,7 @@ for (const [name, options] of Object.entries(configs)) test(`seeded differential
         expected += input.slice(at);
         assert.equal(checker.censor(input), expected, label);
         const contexts = [], details = [];
-        assert.equal(checker.censor(input, (context, detail) => { contexts.push(context); details.push(detail.occurrences(context)); return '***'; }), expected, label);
+        assert.equal(checker.censor(input, (context) => { contexts.push(context); details.push(context.occurrences()); return '***'; }), expected, label);
         assert.deepEqual(contexts.map(({ index, end }) => ({ index, end })), spans, label);
         for (const [at, context] of contexts.entries()) {
             assert.deepEqual(details[at], found.filter(item => item.index >= context.index && item.end <= context.end), label);

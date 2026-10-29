@@ -92,8 +92,8 @@ import { boundedFuzzy } from 'indonesian-badwords/fuzzy';
 const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
 const review: string[] = [];
 
-const output = checker.censor('goblok g0bl0k goblox', (context, detail) => {
-  const kinds = detail.occurrences(context).map(({ via }) => via.kind);
+const output = checker.censor('goblok g0bl0k goblox', (context) => {
+  const kinds = context.occurrences().map(({ via }) => via.kind);
   if (kinds.every((kind) => kind === 'fuzzy')) {
     review.push(context.match);
     return context.match;
@@ -106,7 +106,7 @@ review; // => ['goblox']
 checker.find('goblox')[0].via; // => { kind: 'fuzzy', edits: 1, model: 'levenshtein' }
 ```
 
-A merged span can have several contributors, so `detail.occurrences(context)`
+A merged span can have several contributors, so `context.occurrences()`
 lists each with its own `via`. Detail is computed only when you ask for it. See
 the [result shape](../api.md#how-an-occurrence-matched).
 

@@ -47,7 +47,7 @@ per-call `ignoreRanges`. `replacement` is a string or synchronous callback.
 | Method | Returns | Behavior |
 | --- | --- | --- |
 | `flag(text, options?)` | `boolean` | Whether any accepted occurrence exists; stops at the first match. |
-| `find(text, options?)` | `BadwordLocation[]` | Every accepted occurrence, including overlaps. |
+| `find(text, options?)` | `MatchedLocation[]` | Every accepted occurrence, including overlaps. |
 | `badwords(text, options?)` | `string[]` | Unique matching dictionary terms, in dictionary insertion order. |
 | `censor(text, replacement?, options?)` | `string` | Replace matching spans; default replacement is `'***'`. |
 | `filter(text, options?)` | `string` | Remove matching spans, collapse whitespace, and trim. |
@@ -176,11 +176,21 @@ two the fewest edits and transforms. Leetspeak combined with repeated-letter
 folding reports `leetspeak`. `find` and `analyze` always agree. `flag`,
 `badwords`, `censor` with a string and `filter` never compute `via`.
 
-A censor callback receives a second argument, `detail`.
-`detail.occurrences(context)` returns the occurrences inside a merged span, as
-`find` reports them, with their `via`. It scans once per `censor` call, only when
-first used, applies the same `allowPhrases` and `ignoreRanges`, and can throw the
-same `RangeError` as `find`. `CensorContext` itself is unchanged. See
+With `ignoreRepeatedLetters`, `repetitions` counts the repeated letters actually
+collapsed in the source. It is `0` when the dictionary word itself has doubled
+letters that the source lacks (`kabulama` for `kabbulamma`). The same text can
+report different kinds under `ignoreRepeatedLetters` and under a bounded evasion
+policy: `g0ooblok` is `leetspeak` for the former and `evasion` for the latter.
+
+`find` and `analyze` return `MatchedLocation`, a `BadwordLocation` plus `via`;
+`BadwordLocation` itself is unchanged. The context passed to a censor callback
+has a non-enumerable `occurrences()` method (type `DetailedCensorContext`)
+returning the `MatchedLocation`s inside that merged span, as `find` reports them.
+Call it as `context.occurrences()`. It scans once per `censor` call, only when first used,
+applies the same `allowPhrases` and `ignoreRanges`, can throw the same
+`RangeError` as `find`, and throws `TypeError` if the dictionary changed during
+the call. The context's enumerable fields, spreads and equality checks are
+unchanged. See
 [act on how a word matched](guides/chat-moderation.md#act-on-how-a-word-matched).
 
 Results include overlapping occurrences. Censorship replaces overlapping spans
@@ -197,8 +207,8 @@ every occurrence in memory. These four methods have no occurrence cap. Optional
 evasion and fuzzy work limits still apply to every method.
 
 Types exported from the package root include `BadwordsOptions`, `MatchMode`,
-`Normalization`, `BadwordLocation`, `MatchVia`, `EvasionTransforms`,
-`AnalysisResult`, `CensorContext`, `CensorDetail`, `CensorCallback`, `CensorReplacement`, `CheckOptions`, `IgnoreRange`, and the
+`Normalization`, `BadwordLocation`, `MatchedLocation`, `MatchVia`, `EvasionTransforms`,
+`AnalysisResult`, `CensorContext`, `DetailedCensorContext`, `CensorCallback`, `CensorReplacement`, `CheckOptions`, `IgnoreRange`, and the
 dictionary word types. `indonesian-badwords/censor` also exports the censorship
 types, `KeepOptions`, `MaskOptions`, and `GrawlixOptions`.
 

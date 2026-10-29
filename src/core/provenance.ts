@@ -21,49 +21,59 @@ export type MatchVia =
     /** `transforms` is present only when evasion transforms were also used. */
     | { kind: 'fuzzy'; edits: number; model: 'levenshtein' | 'osa'; transforms?: EvasionTransforms };
 
+const ASCII = /^[\x00-\x7f]*$/;
 const EXACT: MatchVia = Object.freeze({ kind: 'exact' });
 const NORMALIZED: MatchVia = Object.freeze({ kind: 'normalized' });
 const collapse = (text: string) => normalize(text, 'none', true).text;
+const counts = (separators: number, repetitions: number, confusables: number): EvasionTransforms =>
+    Object.freeze({ separators, repetitions, confusables });
+
+// Common non-ASCII spellings (fullwidth, invisible characters) normalize with the built-ins alone.
+const INVISIBLE = /[\u00ad\u034f\u061c\u115f\u1160\u17b4\u17b5\u180b-\u180f\u200b-\u200f\u202a-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\uffa0]/g;
+function cheap(source: string, word: string): string | undefined {
+    const text = source.replace(INVISIBLE, '').normalize('NFKC').toLowerCase();
+    return text === word ? text : undefined;
+}
 
 export interface ProvenanceSettings { normalization: Normalization; ignoreRepeatedLetters: boolean }
 
-/** Post hoc: compare the source slice with the dictionary word, unless a scanner supplied a trace. */
+/**
+ * Post hoc, from the source slice and the dictionary word, unless a scanner supplied a trace.
+ * A match already guarantees that folding the literal text yields the word, so leetspeak
+ * needs no second normalization: its fold count is where the literal text differs from the word.
+ */
 export function describe(source: string, match: Match, settings: ProvenanceSettings): MatchVia {
     const trace = match.trace;
-    const transforms = trace && trace.gaps + trace.repeats + trace.maps > 0
-        ? { separators: trace.gaps, repetitions: trace.repeats, confusables: trace.maps } : undefined;
-    if (trace && trace.edits > 0) return { kind: 'fuzzy', edits: trace.edits, model: trace.model!, ...(transforms && { transforms }) };
-    if (transforms) return { kind: 'evasion', transforms };
-    if (source === match.word) return EXACT;
-    const literal = settings.normalization === 'standard' ? normalizeLiteral(source, 'standard').text : source;
-    if (literal === match.word) return NORMALIZED;
-    if (settings.ignoreRepeatedLetters && collapse(literal) === collapse(match.word)) {
-        return { kind: 'evasion', transforms: { separators: 0, repetitions: Math.max(1, literal.length - match.word.length), confusables: 0 } };
+    const transforms = trace && trace.gaps + trace.repeats + trace.maps > 0 ? counts(trace.gaps, trace.repeats, trace.maps) : undefined;
+    if (trace && trace.edits > 0) return Object.freeze({ kind: 'fuzzy', edits: trace.edits, model: trace.model!, ...(transforms && { transforms }) });
+    if (transforms) return Object.freeze({ kind: 'evasion', transforms });
+    const word = match.word;
+    if (source === word) return EXACT;
+    const literal = settings.normalization !== 'standard' ? source
+        : ASCII.test(source) ? source.toLowerCase() : cheap(source, word) ?? normalizeLiteral(source, 'standard').text;
+    if (literal === word) return NORMALIZED;
+    if (settings.ignoreRepeatedLetters) {
+        const collapsed = collapse(literal);
+        // Counts repeated letters actually collapsed in the source; 0 when the word itself has doubles the source lacks.
+        if (collapsed === collapse(word)) return Object.freeze({ kind: 'evasion', transforms: counts(0, literal.length - collapsed.length, 0) });
     }
-    const folded = settings.normalization === 'standard' ? normalize(source, 'standard').text : literal;
     let folds = 0;
-    for (let index = 0; index < Math.max(folded.length, literal.length); index++) if (folded[index] !== literal[index]) folds++;
-    return folds ? { kind: 'leetspeak', folds } : NORMALIZED;
+    // Repeat folding can change the length; then count the folding symbols themselves.
+    if (literal.length !== word.length) folds = literal.match(/[0-9@$(|!]/g)?.length ?? 0;
+    else for (let index = 0; index < word.length; index++) if (word[index] !== literal[index]) folds++;
+    return Object.freeze({ kind: 'leetspeak', folds: Math.max(1, folds) });
 }
 
-interface BadwordLocationLike { index: number; end: number }
-
-/** Per-call, lazy access to the occurrences behind merged callback spans. */
-export interface CensorDetail<Location extends { index: number; end: number }> {
-    /** Occurrences inside a span passed to this call's callback, exactly as find() reports them. Scans once, on first use. */
-    occurrences(span: { readonly index: number; readonly end: number }): readonly Location[];
-}
-export function censorDetail<Location extends { index: number; end: number }>(load: () => readonly Location[]): CensorDetail<Location> {
+/** Per-call lazy lookup of the occurrences inside a merged span, scanned once on first use. */
+export function occurrencesWithin<Location extends { index: number; end: number }>(load: () => readonly Location[]) {
     let all: readonly Location[] | undefined;
-    return Object.freeze({
-        occurrences(span: { readonly index: number; readonly end: number }) {
-            all ??= load();
-            // Locations are ordered by start, so binary-search the first candidate.
-            let low = 0, high = all.length;
-            while (low < high) { const middle = (low + high) >> 1; if (all[middle].index < span.index) low = middle + 1; else high = middle; }
-            const inside: Location[] = [];
-            for (let at = low; at < all.length && all[at].index < span.end; at++) if (all[at].end <= span.end) inside.push(all[at]);
-            return Object.freeze(inside);
-        }
-    });
+    return (span: { readonly index: number; readonly end: number }): readonly Location[] => {
+        all ??= load();
+        // Ordered by start: binary-search the first candidate.
+        let low = 0, high = all.length;
+        while (low < high) { const middle = (low + high) >> 1; if (all[middle].index < span.index) low = middle + 1; else high = middle; }
+        const inside: Location[] = [];
+        for (let at = low; at < all.length && all[at].index < span.end; at++) if (all[at].end <= span.end) inside.push(all[at]);
+        return Object.freeze(inside);
+    };
 }

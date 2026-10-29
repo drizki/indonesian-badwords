@@ -26,7 +26,7 @@ test('CommonJS build also exposes the default export and class', () => {
         { kind: 'evasion', transforms: { separators: 5, repetitions: 0, confusables: 0 } });
     assert.deepEqual(hits.find(hit => hit.match === 'goblox').via, { kind: 'fuzzy', edits: 1, model: 'levenshtein' });
     let occurrences;
-    layered.censor('g0bl0k', (context, detail) => { occurrences = detail.occurrences(context); return '#'; });
+    layered.censor('g0bl0k', (context) => { occurrences = context.occurrences(); return '#'; });
     assert.deepEqual(occurrences.map(({ via }) => via.kind), ['leetspeak']);
     assert.equal(new badwords.Badwords({ dictionary: ['kucel'] }).flag('kucel'), true);
     assert.equal(new badwords.Badwords({ dictionary: ['asu'], mode: 'substring' }).censor('kamuasu'), 'kamu***');
