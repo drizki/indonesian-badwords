@@ -1,6 +1,6 @@
 {
   "name": "indonesian-badwords",
-  "version": "2.5.3",
+  "version": "2.6.0",
   "description": "Indonesian profanity filter with severity, category and region classification, leetspeak, evasion and fuzzy matching, scoped exceptions, censor strategies and exact offsets. Zero dependencies, TypeScript.",
   "keywords": [
     "indonesian",

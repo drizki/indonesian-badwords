@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-30
+
 - Docs: the READMEs, `package.json` description and keywords, and a new `llms.txt` now lead with capabilities (classification, `via`, evasion, fuzzy matching, exceptions, censoring, offsets) before performance; `test:docs` checks `llms.txt` links and recipes.
 - Adds `classify()` to `indonesian-badwords/metadata`: it joins variant and sense IDs, categories, severity, regions, and profiles to `find()` or `analyze()` matches and returns a summary, a deterministic 0-100 editorial register-intensity `score` (`null` when matches exist but none has a severity), and a `level`. Custom words are reported as unclassified. The root import size is unchanged.
 - `find()` and `analyze().locations` return `MatchedLocation`, a `BadwordLocation` with `via` describing how the occurrence matched (`exact`, `normalized`, `leetspeak`, `evasion` with transform counts, or `fuzzy` with edit count and model). Censor contexts gain a non-enumerable `occurrences()` method for the occurrences behind a merged span. `flag`, `badwords` and string `censor` pay nothing.
