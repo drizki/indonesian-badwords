@@ -7,7 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-- Placeholder: list changes here as they land on `main`.
+- Combined evasion and fuzzy scans, and fuzzy substring mode, now complete within the default step budget: projections are pruned soundly, one-edit signatures are hashed in linear time, and insertion edits no longer absorb separator-delimited neighbours. Supported input sizes per policy combination are documented in the evasion and fuzzy guides.
+- Policy checks are stricter: policies carry a v2 brand and are validated at construction, so policies from other package copies or forged objects are rejected with `TypeError`.
 
 ## [2.5.2] - 2026-10-28
 
