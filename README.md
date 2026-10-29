@@ -8,24 +8,9 @@
 
 [English](https://github.com/drizki/indonesian-badwords#readme) · [Bahasa Indonesia](https://github.com/drizki/indonesian-badwords/blob/main/README.id.md)
 
-**Catch more than the obvious spelling.**
+**Keep chat, comments and usernames civil in Bahasa Indonesia, and stay in control of what counts as "bad".**
 
-A fast profanity checker for Bahasa Indonesia, built for chat, comments, and
-user-generated text. Catch disguised words and typos, choose what your app should
-allow, and decide exactly how matches appear to your users.
-
-<table>
-  <tr>
-    <td align="center" width="33%"><h3>1.77 µs</h3>Clean ASCII chat check<br />280 characters</td>
-    <td align="center" width="33%"><h3>~12 KB</h3>Default browser bundle<br />minified + gzip</td>
-    <td align="center" width="33%"><h3>0</h3>Runtime dependencies</td>
-  </tr>
-</table>
-
-Timing is a warmed synthetic median on Node.js 24.22.1 with the default checker.
-[See the measurements](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md).
-
-## Try it in your app
+People type `g0bl0k`, `ＧＯＢＬＯＫ` or `g-o-b-l-o-k` to slip past a filter. Your team also needs to let a name like `Baju Bodo` through, treat a mild word differently from a severe one, and send doubtful cases to a person. Indonesian Badwords does all of that, and it reports what it found instead of guessing what the writer meant.
 
 ```bash
 npm install indonesian-badwords
@@ -41,34 +26,102 @@ checker.flag('dasar g0bl0k!'); // => true
 checker.censor('dasar g0bl0k!'); // => 'dasar ***!'
 ```
 
-Use it with JavaScript or TypeScript. ESM and CommonJS are included. Requires
-Node.js 22+; browser bundles need ES2022 support and `Intl.Segmenter`.
+Requires Node.js 22+ (browser bundles need ES2022 and `Intl.Segmenter`). ESM, CommonJS and TypeScript types are included, with zero runtime dependencies.
 
-## Catch spelling changes
+## What it can do
 
-`g0bl0k` and `ＧＯＢＬＯＫ` already match with the default checker. Invisible
-characters inside a word are handled too. Enable the optional evasion and fuzzy
-policies when you also want to catch inserted separators, stretched spellings,
-lookalikes, or typos.
+| Capability | How to use it |
+| --- | --- |
+| Whole-word matching with Unicode, case, width and invisible-character normalization, plus leetspeak (`g0bl0k`) | On by default (`mode: 'word'`, `normalization: 'standard'`) |
+| A conservative default list, an expanded list, and your own words | `dictionary`, `expandedDictionary`, `new Badwords({ dictionary: [...] })` |
+| Reviewed lists, selected by category, severity and region | `selectDictionary()` from `indonesian-badwords/metadata` |
+| How each match was found: `exact`, `normalized`, `leetspeak`, `evasion` or `fuzzy` | `via` on every item from `find()` and `analyze().locations` |
+| Category, editorial severity, region, and a 0-100 `score` with a `level` | `classify()` from `indonesian-badwords/metadata` |
+| Inserted separators, stretched letters and lookalike characters (opt-in, bounded) | `boundedEvasion()` from `indonesian-badwords/evasion` |
+| Typos and swapped letters (opt-in, bounded) | `boundedFuzzy()` from `indonesian-badwords/fuzzy` |
+| Exceptions at the narrowest scope: a phrase, or a range in one call | `allowPhrases` option, `ignoreRanges` call option |
+| Censoring with `***`, `mask()`, `grawlix()` or your own callback | `indonesian-badwords/censor` |
+| Exact UTF-16 offsets into your original text, for highlights | `find()`, `analyze()` |
+| Typed errors and finite work limits on untrusted input | `maxMatches` and the `limits` of each policy |
 
-With those policies configured below, these spellings all get censored:
+Methods: `flag`, `find`, `badwords`, `censor`, `filter`, `analyze`. Evasion and fuzzy matching are off unless you pass a policy.
 
-| Message | Output | What was handled |
-| --- | --- | --- |
-| `dasar g-o-b-l-o-k!` | `dasar ***!` | Inserted separators |
-| `dasar gobloook!` | `dasar ***!` | Repeated letters |
-| `dasar gοblοk!` | `dasar ***!` | Selected Greek lookalikes |
-| `dasar goblox!` | `dasar ***!` | A substituted letter |
-| `dasar golbok!` | `dasar ***!` | An adjacent letter swap |
-| `dasar g-o-b-l-o-x!` | `dasar ***!` | Separators and a typo together |
+## Principles
 
-Fuzzy matching supports Levenshtein spelling edits and OSA adjacent swaps. Choose
-the transformations and edit tolerance your app needs; each optional scanner has
-finite work limits. Broader matching can also flag ordinary words, so test the
-policy on your application's text.
+- **Correctness first.** A false positive is a bug. The default list leaves out words with everyday meanings, such as `anjing` and `babi`; broader matching is something you opt into.
+- **No guessing from context.** The library says what matched and how. Your app decides what to do about it. A `score` rates the matched words, never the intent of a message.
+- **Control at the narrowest scope.** Change one word, one phrase, one category or one call, not the whole checker.
+- **Reliable on untrusted input.** Results are deterministic, work is bounded, and a limit throws a typed error instead of quietly returning "clean".
+- **Fast.** Chat-sized checks take microseconds, and optional features never grow the default import.
 
-<details>
-<summary>Try the matching policy used above</summary>
+## Recipes
+
+### Censor exact and leetspeak matches, queue fuzzy ones for review
+
+Every occurrence carries `via`, so one pass can treat sure matches and guesses differently.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedFuzzy } from 'indonesian-badwords/fuzzy';
+
+const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
+const review: string[] = [];
+
+const output = checker.censor('goblok g0bl0k goblox', (context) => {
+  const kinds = context.occurrences().map(({ via }) => via.kind);
+  if (kinds.every((kind) => kind === 'fuzzy')) {
+    review.push(context.match);
+    return context.match;
+  }
+  return '***';
+});
+
+output; // => '*** *** goblox'
+review; // => ['goblox']
+```
+
+### Classify a message and decide what to do
+
+`classify()` adds category, severity and region to each match and summarizes the message. `level` is `none`, `unrated`, `mild`, `moderate`, `strong` or `extreme`. A `level` of `unrated` (with a `score` of `null`) means words matched but have no severity, such as custom words. It is never clean.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { classify, reviewedDictionary } from 'indonesian-badwords/metadata';
+
+const checker = new Badwords({ dictionary: reviewedDictionary });
+
+function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
+  const result = classify(checker.analyze(message));
+  if (result.level === 'none') return 'allow';
+  // Matched but unrated is never clean: a person looks at it.
+  if (result.level === 'unrated' || result.summary.unrated + result.summary.unclassified > 0) return 'review';
+  return (result.score ?? 0) >= 60 ? 'block' : 'mask';
+}
+
+decide('terima kasih'); // => 'allow'
+decide('dasar g0bl0k!'); // => 'mask'
+```
+
+[How the score and level are defined](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md#the-score)
+
+### Choose your vocabulary
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { selectDictionary } from 'indonesian-badwords/metadata';
+
+const checker = new Badwords({
+  dictionary: selectDictionary({ categories: ['insult'], minSeverity: 2 }),
+});
+
+checker.flag('dasar goblok'); // => true
+```
+
+Selectors are `profiles`, `categories`, `regions` and `minSeverity` (1 to 4). Regional vocabulary includes Javanese, such as `jancuk`, and Sundanese, such as `kehed`. Severity describes a dictionary entry, not a whole message. [Dictionary guide](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/dictionaries.md).
+
+### Catch disguised spellings and typos
+
+`g0bl0k` and full-width text already match with no setup. Add evasion and fuzzy policies only when you need more, and test them on ordinary text from your app: broader matching can flag innocent words.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
@@ -87,106 +140,49 @@ const tolerant = new Badwords({
 tolerant.censor('dasar g-o-b-l-o-x!'); // => 'dasar ***!'
 ```
 
-[Evasion options](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/evasion.md)
-· [Fuzzy matching](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/fuzzy-matching.md)
+[Evasion options](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/evasion.md) · [Fuzzy matching](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/fuzzy-matching.md)
 
-</details>
-
-## Choose what your users see
-
-Replace the entire word, keep its edges, or turn a match into your own label.
-These are actual outputs from the same message:
-
-| Replacement | Input | Output |
-| --- | --- | --- |
-| Default | `dasar g0bl0k!` | `dasar ***!` |
-| Keep first and last letters | `dasar g0bl0k!` | `dasar g****k!` |
-| Custom callback | `dasar g0bl0k!` | `dasar [goblok]!` |
+### Decide how it looks, and what it leaves alone
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
 import { mask } from 'indonesian-badwords/censor';
 
-const checker = new Badwords();
-const message = 'dasar g0bl0k!';
-
-checker.censor(message);
-checker.censor(message, mask({ keepFirst: 1, keepLast: 1 }));
-checker.censor(message, ({ words }) => `[${words[0]}]`);
-```
-
-Custom mask characters and random grawlix symbols are available too. Callbacks
-receive the original text, match positions, and contributing dictionary words,
-so you can produce replacements that fit your interface. All censorship styles
-use the same matching rules as detection.
-[Censorship examples](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/censoring.md).
-
-## Let the right words through
-
-An allowed phrase should not exempt an entire message. Keep a known name such as
-`Baju Bodo` while still catching insults elsewhere, including another `bodo`:
-
-```ts
-import { Badwords } from 'indonesian-badwords';
+const plain = new Badwords();
+plain.censor('dasar g0bl0k!', mask({ keepFirst: 1, keepLast: 1 })); // => 'dasar g****k!'
+plain.censor('dasar g0bl0k!', ({ words }) => `[${words[0]}]`); // => 'dasar [goblok]!'
 
 const checker = new Badwords({ allowPhrases: ['Baju Bodo'] });
-
 checker.censor('Baju Bodo goblok bodo'); // => 'Baju Bodo *** ***'
+checker.censor('goblok\nBaju Bodo goblok', '***', { ignoreRanges: [{ index: 0, end: 7 }] }); // => 'goblok\nBaju Bodo ***'
 ```
 
-Your app can also exclude specific source ranges, such as quotes or code it has
-already identified. The rest of the message stays checked.
-[Phrase and range exceptions](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/exceptions.md).
+An allowed phrase exempts only itself, never the rest of the message. [Censoring](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/censoring.md) · [Exceptions](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/exceptions.md)
 
-Dictionary choice is part of your policy too. The default list excludes words
-with common literal uses, including `anjing` and `babi`. Opt into the expanded
-list when you need to flag those words regardless of their use:
+### Highlight the original text
 
-| Text | Default dictionary | Expanded dictionary |
-| --- | --- | --- |
-| `anjing peliharaan` | Clean | Flags `anjing` |
-
-Regional vocabulary is included, such as Javanese `jancuk` and Sundanese `kehed`.
-Use the optional metadata to select reviewed words by category, documented
-regional usage, and editorial severity, or supply your own list. The source
-catalog lets you inspect explanations, citations, and review status behind those
-choices. [Choose a dictionary](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/dictionaries.md).
-
-## Build highlights and review tools
-
-Find the spelling that appeared in the message and the dictionary word it
-matched. Positions refer to the original text, so you can highlight the right
-characters even when normalization was needed:
+`index` and `end` are UTF-16 offsets into the text you passed in, and `match` equals `text.slice(index, end)`, even after normalization.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
 
 const checker = new Badwords();
 
-checker.find('👩🏽‍💻 g0bl0k!');
+checker.find('👩🏽‍💻 g0bl0k!').map(({ word, index, end, match }) => ({ word, index, end, match }));
 // [{ word: 'goblok', index: 8, end: 14, match: 'g0bl0k' }]
 ```
 
-Unicode graphemes stay intact, including combining marks and emoji sequences.
-Use `analyze()` for unique terms, occurrence counts, censored text, and locations
-in one result, or `filter()` to remove matches and clean up whitespace.
-[Result formats](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md#results-and-errors).
+## Speed
 
-## Add capabilities as your app needs them
+Measured with the default checker on Node.js 24.22.1 (warmed synthetic medians, setup excluded).
 
-The default browser bundle is about 12 KB minified and gzipped. Censor helpers,
-evasion, fuzzy matching, metadata, and source catalogs have separate imports.
-Adding typo detection does not require loading the source catalog; selecting
-dictionary categories happens during setup rather than on each message.
-
-The same public methods work with every policy. Keep your detection,
-censorship, and reporting code as you add matching options.
-
-## Measure the speed
-
-The maintained benchmark covers ASCII and Unicode input, match positions,
-censorship, callbacks, custom dictionaries, scoped exceptions, evasion, and fuzzy
-matching. A few measured default-policy results:
+<table>
+  <tr>
+    <td align="center" width="33%"><h3>1.77 µs</h3>Clean ASCII chat check<br />280 characters</td>
+    <td align="center" width="33%"><h3>~12 KB</h3>Default browser bundle<br />minified + gzip</td>
+    <td align="center" width="33%"><h3>0</h3>Runtime dependencies</td>
+  </tr>
+</table>
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
@@ -194,25 +190,14 @@ matching. A few measured default-policy results:
 | Clean ASCII paragraph, 4,000 characters | `censor` | 5.56 µs |
 | Accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.79 µs |
 
-These are warmed synthetic medians on Node.js 24.22.1, with setup excluded.
-Optional policies have their own costs. Run `npm run benchmark` from the
-repository to measure your runtime.
-[Full results and methodology](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md).
+Optional policies have their own costs. Run `npm run benchmark` from the repository to measure your runtime. [Methodology and full results](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md).
 
 ## Documentation
 
-Start with the [documentation index](https://github.com/drizki/indonesian-badwords/blob/main/docs/README.md)
-for setup, configuration guides, browser/framework examples, and troubleshooting.
-
-[API reference](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md)
-· [Dictionaries and sources](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md)
-· [Benchmarks](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md)
+[Documentation index](https://github.com/drizki/indonesian-badwords/blob/main/docs/README.md) · [API reference](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md) · [Dictionaries and metadata](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md) · [Chat moderation guide](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/chat-moderation.md) · [Troubleshooting](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/troubleshooting.md) · [llms.txt](https://github.com/drizki/indonesian-badwords/blob/main/llms.txt)
 
 ## Contributing
 
-Missing a word or getting a false positive? Open an issue with the example, the
-result you expected, and a similar benign case. For dictionary additions, include
-sources showing the abusive usage. Use the [dictionary report form](https://github.com/drizki/indonesian-badwords/issues/new?template=dictionary-report.yml)
-and the [contribution guide](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md).
+Missing a word or getting a false positive? Open an issue with the example, the result you expected, and a similar benign case. For dictionary additions, include sources showing the abusive usage. Use the [dictionary report form](https://github.com/drizki/indonesian-badwords/issues/new?template=dictionary-report.yml) and the [contribution guide](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md).
 
 Semoga bermanfaat 😉

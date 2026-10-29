@@ -1,0 +1,87 @@
+# Indonesian Badwords
+
+> Indonesian Badwords (npm: `indonesian-badwords`) is an Indonesian (Bahasa Indonesia) profanity filter for chat, comments and usernames. It matches whole words with Unicode, case, width and invisible-character normalization plus leetspeak (`g0bl0k`); offers a conservative default dictionary, an expanded one and reviewed lists selectable by category, severity and region (`indonesian-badwords/metadata`, `selectDictionary`); reports how each occurrence matched through `via` (exact, normalized, leetspeak, evasion, fuzzy); classifies matches with category, editorial severity, region and a 0-100 score with a level (`classify`; a null score or level `unrated` means matched but unrated, never clean); adds optional bounded evasion (`indonesian-badwords/evasion`) and fuzzy matching (`indonesian-badwords/fuzzy`); supports scoped exceptions (`allowPhrases`, `ignoreRanges`) and censor strategies (`indonesian-badwords/censor`: `mask`, `grawlix`, callbacks); returns exact UTF-16 source offsets; has zero runtime dependencies, ESM and CommonJS builds, and TypeScript types. It does not infer context or intent: the application decides what to do with what matched. Requires Node.js 22+.
+
+Defaults: `mode: 'word'`, `normalization: 'standard'`, conservative `dictionary` (words with common literal uses such as `anjing` and `babi` are left out; `expandedDictionary` includes them), evasion and fuzzy disabled until a policy is passed, `maxMatches: 10_000` for `find` and `analyze`. Methods: `flag`, `find`, `badwords`, `censor`, `filter`, `analyze`.
+
+## Recipes
+
+Install with `npm install indonesian-badwords`.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const checker = new Badwords();
+
+checker.flag('terima kasih'); // => false
+checker.flag('dasar g0bl0k!'); // => true
+checker.censor('dasar g0bl0k!'); // => 'dasar ***!'
+```
+
+Censor exact and leetspeak matches, queue fuzzy ones for review:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { boundedFuzzy } from 'indonesian-badwords/fuzzy';
+
+const checker = new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
+const review: string[] = [];
+
+const output = checker.censor('goblok g0bl0k goblox', (context) => {
+  const kinds = context.occurrences().map(({ via }) => via.kind);
+  if (kinds.every((kind) => kind === 'fuzzy')) {
+    review.push(context.match);
+    return context.match;
+  }
+  return '***';
+});
+
+output; // => '*** *** goblox'
+review; // => ['goblox']
+```
+
+Classify a message and gate on `level`:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+import { classify, reviewedDictionary } from 'indonesian-badwords/metadata';
+
+const checker = new Badwords({ dictionary: reviewedDictionary });
+
+function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
+  const result = classify(checker.analyze(message));
+  if (result.level === 'none') return 'allow';
+  // Matched but unrated is never clean: a person looks at it.
+  if (result.level === 'unrated' || result.summary.unrated + result.summary.unclassified > 0) return 'review';
+  return (result.score ?? 0) >= 60 ? 'block' : 'mask';
+}
+
+decide('terima kasih'); // => 'allow'
+decide('dasar g0bl0k!'); // => 'mask'
+```
+
+## Guides
+
+- [Documentation index](https://github.com/drizki/indonesian-badwords/blob/main/docs/README.md): where to start.
+- [Get started](https://github.com/drizki/indonesian-badwords/blob/main/docs/getting-started.md): install and first check.
+- [Moderate chat and comments](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/chat-moderation.md): vocabulary, exceptions, `via`, incomplete checks.
+- [Dictionaries](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/dictionaries.md): default, expanded, reviewed and custom words.
+- [Censoring](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/censoring.md): mask, grawlix and callbacks.
+- [Exceptions](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/exceptions.md): `allowPhrases` and `ignoreRanges`.
+- [Evasion](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/evasion.md): separators, repeated letters, lookalikes, limits.
+- [Fuzzy matching](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/fuzzy-matching.md): typos and swapped letters, limits.
+- [Browsers and frameworks](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/browser-and-frameworks.md): browser, React, Vue and Svelte examples.
+- [Troubleshooting](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/troubleshooting.md): missed words, false positives, limit errors.
+
+## Reference
+
+- [API reference](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md): options, methods, results, `via`, errors.
+- [Metadata, `selectDictionary` and `classify`](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md): categories, severity, regions, score and level.
+- [Performance](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md): measured workloads and how to reproduce them.
+- [Changelog](https://github.com/drizki/indonesian-badwords/blob/main/CHANGELOG.md)
+
+## Optional
+
+- [README](https://github.com/drizki/indonesian-badwords/blob/main/README.md)
+- [README in Bahasa Indonesia](https://github.com/drizki/indonesian-badwords/blob/main/README.id.md)
+- [Contributing and dictionary reports](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md)
