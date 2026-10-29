@@ -52,7 +52,8 @@ The release-artifact job also installs the separate examples tooling and runs
 `npm run test:docs -- "$package_file"`. That command checks local Markdown links
 and anchors, README code parity, strict TypeScript, executable expected outputs,
 and capability-table results against the packed API. It then installs that same
-tarball into `examples` and runs strict framework checks, policy-isolation checks,
+tarball over the locked `indonesian-badwords` entry in `examples/node_modules`
+without re-resolving other dependencies, then runs strict framework checks, policy-isolation checks,
 production builds, and Chromium interaction tests for all four apps. See the
 [examples validation commands](../examples/README.md#validate-changes) to run these
 locally. Playwright's first installation may need `--with-deps` on Linux.
