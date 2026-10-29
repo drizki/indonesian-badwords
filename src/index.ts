@@ -191,16 +191,16 @@ export class Badwords {
             if (ignoreRepeatedLetters) throw new TypeError('bounded evasion cannot use unlimited ignoreRepeatedLetters');
             if (!options.evasion || typeof options.evasion !== 'object' || !Object.isFrozen(options.evasion))
                 throw new TypeError('evasion must be created by boundedEvasion()');
-            const compiler = Reflect.get(options.evasion, Symbol.for('indonesian-badwords.evasion.v1')) as EvasionCompiler | undefined;
-            if (!compiler || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
+            const compiler = Reflect.get(options.evasion, Symbol.for('indonesian-badwords.evasion.v2')) as EvasionCompiler | undefined;
+            if (!compiler || compiler.version !== 2 || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
                 throw new TypeError('evasion must be created by boundedEvasion()');
             this.#evasionCompiler = compiler;
         }
         if (options.fuzzy !== undefined) {
             if (!options.fuzzy || typeof options.fuzzy !== 'object' || !Object.isFrozen(options.fuzzy))
                 throw new TypeError('fuzzy must be created by boundedFuzzy()');
-            const compiler = Reflect.get(options.fuzzy, Symbol.for('indonesian-badwords.fuzzy.v1')) as FuzzyCompiler | undefined;
-            if (!compiler || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
+            const compiler = Reflect.get(options.fuzzy, Symbol.for('indonesian-badwords.fuzzy.v2')) as FuzzyCompiler | undefined;
+            if (!compiler || compiler.version !== 2 || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
                 throw new TypeError('fuzzy must be created by boundedFuzzy()');
             this.#fuzzyCompiler = compiler;
         }
@@ -269,6 +269,9 @@ export class Badwords {
             matcher = new Matcher(entries, limit);
             return matcher.view();
         }, text => foldCandidateText(canonicalSearchView(text).text)?.normalize('NFKC'), this.#evasionCompiler);
+        // Policy objects cross bundle boundaries, so a brand alone cannot prove origin.
+        if (!matcher || !runtime || (['checkInput', 'potential', 'scan', 'censor'] as const).some(name => typeof runtime[name] !== 'function'))
+            throw new TypeError(`${this.#fuzzyCompiler ? 'fuzzy' : 'evasion'} policy did not compile; create it with ${this.#fuzzyCompiler ? 'boundedFuzzy()' : 'boundedEvasion()'}`);
         this.#dictionary = words;
         this.#matcher = matcher;
         this.#evasion = runtime;

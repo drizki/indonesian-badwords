@@ -67,12 +67,13 @@ export function boundedFuzzy(options: FuzzyOptions = {}): FuzzyPolicy {
         maxLength: integer(input.maxLength === undefined ? 64 : input.maxLength, 'maxLength', minLength),
         insertions: input.insertions !== false, deletions: input.deletions !== false, substitutions: input.substitutions !== false,
         maxInputLength: budget('maxInputLength', 1_000_000), maxStates: budget('maxStates', 4096, 1_048_576),
-        maxSteps: budget('maxSteps', 10_000_000, Number.MAX_SAFE_INTEGER), maxCompileStates: budget('maxCompileStates', 65_536),
+        maxSteps: budget('maxSteps', 100_000_000, Number.MAX_SAFE_INTEGER), maxCompileStates: budget('maxCompileStates', 65_536),
         maxDictionaryLength: budget('maxDictionaryLength', 1_000_000), maxIndexPostings: budget('maxIndexPostings', 250_000),
         maxCandidates: budget('maxCandidates', 100_000), maxStateCells: budget('maxStateCells', 1_000_000)
     });
     const fail = (limit: FuzzyLimit, maximum: number, used: number): never => { throw new FuzzyLimitError(limit, maximum, used); };
     const compiler = Object.freeze<FuzzyCompiler>({
+        version: 2,
         checkDictionary(words, evasion) {
             let length = 0;
             for (const word of words) {
@@ -85,5 +86,5 @@ export function boundedFuzzy(options: FuzzyOptions = {}): FuzzyPolicy {
         compile: (entries, normalization, canonicalize, trie, candidateText, evasion) =>
             compileFuzzy(config, entries, normalization, canonicalize, trie, candidateText, fail, evasion)
     });
-    return Object.freeze({ [Symbol.for('indonesian-badwords.fuzzy.v1')]: compiler }) as unknown as FuzzyPolicy;
+    return Object.freeze({ [Symbol.for('indonesian-badwords.fuzzy.v2')]: compiler }) as unknown as FuzzyPolicy;
 }

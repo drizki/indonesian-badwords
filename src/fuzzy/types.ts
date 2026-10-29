@@ -7,6 +7,7 @@ declare const policyBrand: unique symbol;
 /** An immutable policy created by the optional `indonesian-badwords/fuzzy` module. */
 export interface FuzzyPolicy { readonly [policyBrand]: true }
 export interface FuzzyCompiler {
+    readonly version: 2;
     checkDictionary(words: readonly string[], evasion?: EvasionCompiler): void;
     compile(entries: readonly Entry[], normalization: Normalization,
         canonicalize: (text: string, normalization: Normalization) => string,
