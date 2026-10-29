@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Badwords, dictionary, contextualDictionary, expandedDictionary } from '../dist/esm/index.js';
+import { bare } from './bare.mjs';
 
 const core = new Badwords();
 const expanded = new Badwords({ dictionary: expandedDictionary });
@@ -12,7 +13,7 @@ test('bundled spellings preserve source spans, case handling, and terminal punct
             for (const spelling of [word, word.toUpperCase()]) {
                 const text = `Pesan: ${spelling}!`;
                 assert.equal(detector.flag(text), true, text);
-                assert.deepEqual(detector.find(text), [{ word, index: 7, end: 7 + spelling.length, match: spelling }], text);
+                assert.deepEqual(bare(detector.find(text)), [{ word, index: 7, end: 7 + spelling.length, match: spelling }], text);
                 assert.equal(detector.censor(text), 'Pesan: ***!', text);
                 assert.deepEqual(detector.badwords(text), [word], text);
                 if (preset === 'contextual') {
@@ -49,7 +50,7 @@ test('ordinary homonyms, acronyms, names, food and nearby words stay clean by de
     ];
     for (const text of texts) {
         assert.equal(core.flag(text), false, text);
-        assert.deepEqual(core.find(text), [], text);
+        assert.deepEqual(bare(core.find(text)), [], text);
         assert.equal(core.censor(text), text, text);
     }
 });

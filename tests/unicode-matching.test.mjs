@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import { Badwords } from '../dist/esm/index.js';
+import { bare } from './bare.mjs';
 
 function paired(dictionary, settings = {}) {
     // An unused non-ASCII key selects the complete normalization/scanner path.
@@ -34,6 +35,7 @@ test('stable Unicode matches use original offsets without constructing source ma
         import assert from 'node:assert/strict';
         Intl.Segmenter = class { constructor() { throw new Error('unexpected segmentation'); } };
         const { Badwords } = await import(${JSON.stringify(module)});
+        const bare = (list) => list.map(({ via, ...rest }) => rest);
         const checker = new Badwords();
         const text = 'café GOBLOK, g0bl0k!';
         const all = [{ word: 'goblok', index: 5, end: 11, match: 'GOBLOK' },
@@ -41,12 +43,12 @@ test('stable Unicode matches use original offsets without constructing source ma
         for (const options of [undefined, { ignoreRanges: [{ index: 5, end: 11 }] }]) {
             const expected = options ? all.slice(1) : all;
             assert.equal(checker.flag(text, options), true);
-            assert.deepEqual(checker.find(text, options), expected);
+            assert.deepEqual(bare(checker.find(text, options)), expected);
             assert.deepEqual(checker.badwords(text, options), ['goblok']);
             const censored = options ? 'café GOBLOK, ***!' : 'café ***, ***!';
             assert.equal(checker.censor(text, undefined, options), censored);
             assert.equal(checker.analyze(text, options).censored, censored);
-            assert.deepEqual(checker.analyze(text, options).locations, expected);
+            assert.deepEqual(bare(checker.analyze(text, options).locations), expected);
             assert.equal(checker.filter(text, options), options ? 'café GOBLOK, !' : 'café , !');
             const contexts = [];
             assert.equal(checker.censor(text, context => { contexts.push(context); return '***'; }, options), censored);
@@ -106,7 +108,7 @@ test('exceptions precede detailed limits, callback clustering and contributor de
     const text = 'café g0bl0k tolol g0bl0k';
     const options = { ignoreRanges: [{ index: 12, end: 17 }] };
     agree(checkers, text, options);
-    assert.deepEqual(checkers[0].find(text, options), [{ word: 'goblok', index: 18, end: 24, match: 'g0bl0k' }]);
+    assert.deepEqual(bare(checkers[0].find(text, options)), [{ word: 'goblok', index: 18, end: 24, match: 'g0bl0k' }]);
     assert.deepEqual(callback(checkers[0], text, options).contexts.map(({ index, end, words }) => ({ index, end, words })),
         [{ index: 18, end: 24, words: ['goblok'] }]);
     assert.throws(() => checkers[0].find(text), RangeError);

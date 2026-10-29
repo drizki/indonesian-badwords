@@ -2,6 +2,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Badwords, dictionary } from '../dist/esm/index.js';
+import { bare } from './bare.mjs';
 
 // A non-ASCII dictionary entry disables the bounded native ASCII matcher but
 // cannot match these inputs. This provides the same policy through the general
@@ -62,7 +63,7 @@ describe('native matching and general scanner equivalence', () => {
             '😀goblok👍kontol', 'goblok🏻', 'goblok\ufe0f', 'goblok\u200d👍',
             '🇮🇩goblok', '™goblok', 'ℹgoblok', '😀g0bl0k👍', '😀go\u200bblok👍'
         ]) agree(checkers, text);
-        assert.deepEqual(checkers[0].find('😀goblok👍'), [{ word: 'goblok', index: 2, end: 8, match: 'goblok' }]);
+        assert.deepEqual(bare(checkers[0].find('😀goblok👍')), [{ word: 'goblok', index: 2, end: 8, match: 'goblok' }]);
         for (let code = 0; code < 128; code++) {
             const separator = String.fromCharCode(code);
             agree(checkers, `${separator}goblok${separator}kontol${separator}`);
@@ -74,7 +75,7 @@ describe('native matching and general scanner equivalence', () => {
         for (const text of ['goblokx', 'xgoblok', 'g0bl0kx', '741'.repeat(2_000), 'goblok'.repeat(2_000)]) {
             assert.equal(checker.flag(text), false);
             assert.equal(checker.censor(text), text);
-            assert.deepEqual(checker.find(text), []);
+            assert.deepEqual(bare(checker.find(text)), []);
         }
         assert.equal(checker.flag('g0bl0k'), true);
         assert.equal(new Badwords({ dictionary: ['goblok'], mode: 'substring' }).flag('xgoblokx'), true);
@@ -92,7 +93,7 @@ describe('native matching and general scanner equivalence', () => {
         detector.addWords('Ω');
         assert.equal(detector.flag('kontol'), true);
         detector.removeWords('Ω');
-        assert.deepEqual(detector.find('kontol'), [{ word: 'kontol', index: 0, end: 6, match: 'kontol' }]);
+        assert.deepEqual(bare(detector.find('kontol')), [{ word: 'kontol', index: 0, end: 6, match: 'kontol' }]);
         detector.addWords('a.b');
         assert.equal(detector.censor('a.b'), '***');
         detector.removeWords('a.b');

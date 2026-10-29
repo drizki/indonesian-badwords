@@ -1,5 +1,6 @@
 import { dictionary as defaultDictionary } from './dictionary/presets.ts';
 import { Matcher, type Match } from './core/matcher.ts';
+import { censorDetail, describe, type CensorDetail, type MatchVia, type ProvenanceSettings } from './core/provenance.ts';
 import type { FuzzyCompiler, FuzzyPolicy } from './fuzzy/types.ts';
 import type { EvasionCompiler, EvasionPolicy, EvasionRuntime } from './evasion/types.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './core/exceptions.ts';
@@ -16,6 +17,7 @@ export type { DictionaryWord, ContextualDictionaryWord, ExpandedDictionaryWord }
 export type { Normalization } from './text/normalize.ts';
 export type { FuzzyPolicy } from './fuzzy/types.ts';
 export type { EvasionPolicy } from './evasion/types.ts';
+export type { CensorDetail, EvasionTransforms, MatchVia } from './core/provenance.ts';
 
 /** One occurrence with exclusive end and UTF-16 offsets into the original input. */
 export interface BadwordLocation {
@@ -24,6 +26,8 @@ export interface BadwordLocation {
     end: number;
     /** Exact matched source text, including any obfuscation. */
     match: string;
+    /** How this occurrence matched; the most literal path when several reach the same span. */
+    via: MatchVia;
 }
 
 /** One merged source span passed to a censorship callback. */
@@ -35,7 +39,8 @@ export interface CensorContext {
     /** Unique contributing dictionary words, in dictionary insertion order. */
     readonly words: readonly string[];
 }
-export type CensorCallback = (context: CensorContext) => string;
+/** The second argument reaches per-occurrence detail without adding cost to the context itself. */
+export type CensorCallback = (context: CensorContext, detail: CensorDetail<BadwordLocation>) => string;
 export type CensorReplacement = string | CensorCallback;
 
 /** A half-open UTF-16 range in the original input, on complete grapheme boundaries. */
@@ -94,8 +99,9 @@ function wordsArray(words: string | readonly string[]): readonly string[] {
     }
     return words;
 }
-function location(text: string, match: Match): BadwordLocation {
-    return { word: match.word, index: match.start, end: match.end, match: text.slice(match.start, match.end) };
+function location(text: string, match: Match, settings: ProvenanceSettings): BadwordLocation {
+    const source = text.slice(match.start, match.end);
+    return { word: match.word, index: match.start, end: match.end, match: source, via: describe(source, match, settings) };
 }
 function mergeSpan(spans: Array<{ start: number; end: number }>, match: Match): void {
     let { start, end } = match;
@@ -171,6 +177,7 @@ export class Badwords {
     #maxWordLength = 0;
     #native: NativeMatcher | null | undefined;
     #preset = false;
+    readonly #provenance: ProvenanceSettings;
 
     constructor(options: BadwordsOptions = {}) {
         if (!options || typeof options !== 'object' || Array.isArray(options)) {
@@ -208,6 +215,7 @@ export class Badwords {
         this.#mode = mode;
         this.#normalization = normalization;
         this.#ignoreRepeatedLetters = ignoreRepeatedLetters;
+        this.#provenance = { normalization, ignoreRepeatedLetters };
         this.#maxMatches = maxMatches;
         this.#allowed = compileAllowedPhrases(options.allowPhrases, normalization);
         if (options.dictionary === undefined || (options.dictionary as readonly string[]) === defaultDictionary) {
@@ -431,12 +439,12 @@ export class Badwords {
     }
 
     #scan(text: string, visit: (match: Match) => boolean | void, spansOnly = false, skipNative = false,
-        accept?: MatchAcceptance, unique = false, knownEvasion?: boolean): void {
+        accept?: MatchAcceptance, unique = false, knownEvasion?: boolean, detail = false): void {
         validateText(text);
         if (!text.length || !this.#dictionary.size) return;
         if (knownEvasion === undefined ? this.#evasion?.potential(text) : knownEvasion) {
             this.#evasion!.scan(this.#normalizeInput(text), this.#mode === 'word', visit,
-                unique ? 'unique' : spansOnly ? 'spans' : 'all', accept);
+                unique ? 'unique' : spansOnly ? 'spans' : 'all', accept, detail);
             return;
         }
         if (this.#longWord(text)) return;
@@ -553,13 +561,15 @@ export class Badwords {
         this.#scan(text, () => { found = true; return false; }, false, true);
         return found;
     }
+    #locations(text: string, accept?: MatchAcceptance): BadwordLocation[] {
+        const matches: Match[] = [];
+        this.#scan(text, (match) => { this.#append(matches, match); }, false, false, accept, false, undefined, true);
+        matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
+        return matches.map((match) => location(text, match, this.#provenance));
+    }
     /** All occurrences in source order; dictionary order breaks ties. */
     find(text: string, options?: CheckOptions): BadwordLocation[] {
-        const accept = this.#acceptance(text, options);
-        const matches: Match[] = [];
-        this.#scan(text, (match) => { this.#append(matches, match); }, false, false, accept);
-        matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
-        return matches.map((match) => location(text, match));
+        return this.#locations(text, this.#acceptance(text, options));
     }
     /** Unique found dictionary words in dictionary insertion order. */
     badwords(text: string, options?: CheckOptions): string[] {
@@ -586,11 +596,12 @@ export class Badwords {
         }
         const pieces: string[] = [];
         let index = 0;
+        const detail = censorDetail(() => this.#locations(text, accept));
         for (const span of spans) {
             const words = Object.freeze(span.entries.sort((a, b) => a.order - b.order).map((entry) => entry.word));
             const context: CensorContext = Object.freeze({ text, index: span.start, end: span.end,
                 match: text.slice(span.start, span.end), words });
-            const value = replacement(context);
+            const value = replacement(context, detail);
             if (typeof value !== 'string') throw new TypeError('censor callback must return a string');
             pieces.push(text.slice(index, span.start), value);
             index = span.end;
@@ -632,12 +643,12 @@ export class Badwords {
         const matches: Match[] = [];
         const found = new Set<string>();
         const spans: Array<{ start: number; end: number }> = [];
-        this.#scan(text, (match) => { this.#append(matches, match); found.add(match.word); mergeSpan(spans, match); }, false, false, accept);
+        this.#scan(text, (match) => { this.#append(matches, match); found.add(match.word); mergeSpan(spans, match); }, false, false, accept, false, undefined, true);
         matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
         const badwords = [...this.#dictionary].filter((word) => found.has(word));
         return { text, words: text.match(/\S+/gu)?.length ?? 0, censored: replaceSpans(text, spans, '***'),
             badwords, count: badwords.length, occurrenceCount: matches.length,
-            locations: matches.map((match) => location(text, match)) };
+            locations: matches.map((match) => location(text, match, this.#provenance)) };
     }
 }
 

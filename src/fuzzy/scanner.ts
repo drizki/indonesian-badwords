@@ -1,4 +1,4 @@
-import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode } from '../core/matcher.ts';
+import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode, type Trace, moreLiteral } from '../core/matcher.ts';
 import type { EvasionCompiler, EvasionRuntime, TrieLimit } from '../evasion/types.ts';
 import type { Normalization, NormalizedText } from '../text/normalize.ts';
 import type { FuzzyConfig } from './types.ts';
@@ -46,6 +46,25 @@ function anchored(a: readonly number[], b: readonly number[], first: number, las
             relax(i + 2, j + 2, mask | bits(j) | bits(j + 1), value + 1);
     }
     return cost[at(n, m, 3)] <= k;
+}
+
+/** Minimum edit count between two scalar sequences under the configured model and operations. */
+function editCost(a: readonly number[], b: readonly number[], config: FuzzyConfig): number {
+    const n = a.length, m = b.length, inf = config.maxEdits + 1, width = m + 1, cost = new Uint8Array((n + 1) * width).fill(inf);
+    cost[0] = 0;
+    const relax = (i: number, j: number, value: number) => { if (value < cost[i * width + j]) cost[i * width + j] = value; };
+    for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) {
+        const value = cost[i * width + j];
+        if (value > config.maxEdits) continue;
+        if (i < n && j < m) {
+            if (a[i] === b[j]) relax(i + 1, j + 1, value);
+            else if (config.substitutions) relax(i + 1, j + 1, value + 1);
+        }
+        if (i < n && config.deletions) relax(i + 1, j, value + 1);
+        if (j < m && config.insertions) relax(i, j + 1, value + 1);
+        if (config.model === 'osa' && i + 1 < n && j + 1 < m && a[i] === b[j + 1] && a[i + 1] === b[j]) relax(i + 2, j + 2, value + 1);
+    }
+    return cost[n * width + m];
 }
 
 export function compileFuzzy(config: FuzzyConfig, entries: readonly Entry[], normalization: Normalization,
@@ -112,20 +131,30 @@ export function compileFuzzy(config: FuzzyConfig, entries: readonly Entry[], nor
         };
     }
     function run(value: NormalizedText, wholeWords: boolean, selection: 'all' | 'spans' | 'unique' | 'censor',
-        visit?: (match: Match) => boolean | void, accept?: (start: number, end: number) => boolean): CensorSpan[] {
+        visit?: (match: Match) => boolean | void, accept?: (start: number, end: number) => boolean, detail = false): CensorSpan[] {
         const work = meter(), clusters: Cluster[] = [], unique = selection === 'unique' ? new Uint8Array(entries.length) : undefined;
         let exact = 0, active: Projection[] = [], activeCells = 0, tokenStart = 0, transformable: boolean | undefined;
         const token: number[] = [], offsets: number[] = [];
         for (let from = 0; from < value.text.length;) {
             const code = value.text.codePointAt(from)!, to = from + (code > 0xffff ? 2 : 1), lexical = value.wordCharacters[from];
             const matches = new Map<number, Map<number, Match>>(); let stopped = false;
-            const add = (entry: Entry, origin: number): void => {
+            const defer = detail && selection === 'all';
+            const add = (entry: Entry, origin: number, key?: readonly number[], text?: readonly number[],
+                gaps = 0, repeats = 0, maps = 0): void => {
                 work.tick();
                 if (unique?.[entry.order] || !acceptsStart(value, origin, wholeWords)) return;
                 const start = value.starts[origin], end = value.ends[to - 1];
                 if (accept && !accept(start, end)) return;
                 let origins = matches.get(entry.order);
                 if (!origins) matches.set(entry.order, origins = new Map());
+                if (defer) {
+                    // Equal spans reached by several paths report the most literal one.
+                    const trace: Trace = { edits: key && text ? editCost(key, text, config) : 0, model: config.model, gaps, repeats, maps };
+                    const old = origins.get(start);
+                    if (!old || moreLiteral(trace, old.trace!))
+                        origins.set(start, { word: entry.word, order: entry.order, start, end, from: origin, to, trace });
+                    return;
+                }
                 if (origins.has(start)) return;
                 const match = { word: entry.word, order: entry.order, start, end, from: origin, to };
                 origins.set(start, match);
@@ -153,7 +182,7 @@ export function compileFuzzy(config: FuzzyConfig, entries: readonly Entry[], nor
                         const origin = offsets[at];
                         if (!acceptsStart(value, origin, wholeWords)) continue;
                         work.tick();
-                        index.query(at ? token.slice(at) : token, work, group => { for (const entry of group.entries) { add(entry, origin); if (stopped) return false; } });
+                        index.query(at ? token.slice(at) : token, work, group => { for (const entry of group.entries) { add(entry, origin, group.units, at ? token.slice(at) : token); if (stopped) return false; } });
                         if (stopped) return [];
                         if (wholeWords) break;
                     }
@@ -204,19 +233,21 @@ export function compileFuzzy(config: FuzzyConfig, entries: readonly Entry[], nor
                         if (state.gap || !(state.gaps || state.repeats || state.maps) || (state.maps && plan.requireAsciiLetter && !state.ascii)) continue;
                         const key = `${state.origin}|${state.cuts}|${state.text}`;
                         if (queried.has(key)) continue; queried.add(key);
-                        for (const entry of evasionWords.get(state.text) ?? []) { add(entry, state.origin); if (stopped) return []; }
+                        for (const entry of evasionWords.get(state.text) ?? []) { add(entry, state.origin, undefined, undefined, state.gaps, state.repeats, state.maps); if (stopped) return []; }
                         const units = Array.from(state.text, character => character.codePointAt(0)!);
                         // An insertion edit must not absorb a neighbouring word delimited by a separator.
                         const cuts = state.cuts ? state.cuts.slice(1).split(',').map(Number).filter(cut => cut < units.length) : [];
                         index.query(units, work, group => {
                             if (cuts.length && !anchored(group.units, units, cuts[0], cuts[cuts.length - 1], config, work)) return;
-                            for (const entry of group.entries) { add(entry, state.origin); if (stopped) return false; }
+                            for (const entry of group.entries) { add(entry, state.origin, group.units, units, state.gaps, state.repeats, state.maps); if (stopped) return false; }
                         }, true);
                         if (stopped) return [];
                     }
                 }
             }
-            if (matches.size) {
+            if (defer) {
+                for (const origins of matches.values()) for (const match of origins.values()) if (visit!(match) === false) return [];
+            } else if (matches.size) {
                 let coverage = Infinity, longest: Match | undefined; const contributors = new Set<Entry>();
                 for (const [order, origins] of matches) for (const match of origins.values()) {
                     if (selection === 'censor') { coverage = Math.min(coverage, match.start); contributors.add(entries[order]); }
@@ -233,7 +264,7 @@ export function compileFuzzy(config: FuzzyConfig, entries: readonly Entry[], nor
     return Object.freeze<EvasionRuntime>({
         checkInput(text: string) { bounded('input', config.maxInputLength, plan?.maxInputLength, text.length); },
         potential: () => enabled,
-        scan: (value, wholeWords, visit, selection, accept) => { run(value, wholeWords, selection, visit, accept); },
+        scan: (value, wholeWords, visit, selection, accept, detail) => { run(value, wholeWords, selection, visit, accept, detail); },
         censor: (value, wholeWords, accept) => run(value, wholeWords, 'censor', undefined, accept)
     });
 }

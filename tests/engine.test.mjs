@@ -2,6 +2,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Badwords } from '../dist/esm/index.js';
+import { bare } from './bare.mjs';
 
 describe('normalized matching spans', () => {
     const detector = new Badwords({ dictionary: ['anjing', 'babi', "blo'on"] });
@@ -207,7 +208,7 @@ describe('matching edge cases', () => {
             assert.equal(detector.flag(text), false, text);
             assert.equal(detector.censor(text), text, text);
         }
-        assert.deepEqual(detector.find('b@col! pukima!'), [
+        assert.deepEqual(bare(detector.find('b@col! pukima!')), [
             { word: 'bacol', index: 0, end: 5, match: 'b@col' },
             { word: 'pukima', index: 7, end: 13, match: 'pukima' }
         ]);
@@ -250,7 +251,7 @@ describe('matching edge cases', () => {
             for (const text of ['BABİ', 'babi\u0307', 'ﬃ']) assert.equal(detector.flag(text), false, text);
         }
         const full = new Badwords({ dictionary: ['ffi'], mode: 'substring' });
-        assert.deepEqual(full.find('😀ﬃ!'), [{ word: 'ffi', index: 2, end: 3, match: 'ﬃ' }]);
+        assert.deepEqual(bare(full.find('😀ﬃ!')), [{ word: 'ffi', index: 2, end: 3, match: 'ﬃ' }]);
         assert.equal(new Badwords({ dictionary: ['ff'], mode: 'substring' }).flag('ﬃ\u200b\u0301'), false);
         assert.equal(new Badwords({ dictionary: ['f'], mode: 'substring' }).flag('ﬀ\u200b\u0301'), false);
     });
@@ -258,13 +259,13 @@ describe('matching edge cases', () => {
     test('normalizes composed accents, compatibility Hangul and fullwidth spellings', () => {
         const detector = new Badwords({ dictionary: ['café', '가', 'kontol'] });
         assert.equal(detector.censor('cafe\u0301 ㄱㅏ ＫＯＮＴＯＬ!'), '*** *** ***!');
-        assert.deepEqual(detector.find('😀cafe\u0301'), [{ word: 'café', index: 2, end: 7, match: 'cafe\u0301' }]);
+        assert.deepEqual(bare(detector.find('😀cafe\u0301')), [{ word: 'café', index: 2, end: 7, match: 'cafe\u0301' }]);
     });
 
     test('matches invisibly split words without changing unmatched original text', () => {
         const detector = new Badwords({ dictionary: ['kontol'] });
         const text = '👩‍💻 kon\u200btol!';
-        assert.deepEqual(detector.find(text), [{ word: 'kontol', index: 6, end: 13, match: 'kon\u200btol' }]);
+        assert.deepEqual(bare(detector.find(text)), [{ word: 'kontol', index: 6, end: 13, match: 'kon\u200btol' }]);
         assert.equal(detector.censor(text), '👩‍💻 ***!');
         assert.equal(new Badwords({ dictionary: ['👩'], mode: 'substring' }).flag('👩‍💻'), false);
     });

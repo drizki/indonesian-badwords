@@ -9,7 +9,8 @@ test('original highlights, exceptions, safe text, incomplete checks, and recover
   await expect(page.getByTestId('censored')).toHaveText('👩🏽‍💻 ***! Baju Bodo');
   await expect(page.getByTestId('highlights').locator('mark')).toHaveText(['g0bl0k']);
   expect(JSON.parse(await page.getByTestId('locations').innerText())).toEqual([
-    ...['goblik', 'goblo', 'goblog', 'goblok'].map(word => ({ word, index: 8, end: 14, match: 'g0bl0k' })),
+    ...['goblik', 'goblo', 'goblog'].map(word => ({ word, index: 8, end: 14, match: 'g0bl0k', via: { kind: 'fuzzy', edits: 1, model: 'osa' } })),
+    { word: 'goblok', index: 8, end: 14, match: 'g0bl0k', via: { kind: 'leetspeak', folds: 2 } },
   ]);
   await quote.fill('goblok');
   await message.fill('Baju Bodo goblok bodo');
