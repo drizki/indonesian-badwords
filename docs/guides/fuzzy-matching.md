@@ -120,29 +120,29 @@ early. Detailed caps remain controlled separately by `maxMatches`.
 
 The 1,000,000-unit input default is a ceiling, not a promise that every input
 completes under the default 10,000,000 steps. Steps are deterministic counts,
-not time (about 50 ms per 10,000,000 on a current laptop CPU). Measured with
-the bundled dictionary and `boundedFuzzy()`; the evasion policy is the
-separators, repetitions and `latinLookalikes` example from the
-[evasion guide](evasion.md). Sizes are `find`-style complete scans.
+not time; a scan that uses the whole default budget takes roughly 0.2–0.6 s on a
+current laptop CPU. Measured with the bundled dictionary and `boundedFuzzy()`;
+the evasion policy is the separators, repetitions and `latinLookalikes` example
+from the [evasion guide](evasion.md). Figures are the largest complete
+`censor()` scans across Indonesian prose, slang chat with emoji, separator-heavy,
+doubled-letter and leetspeak-with-separator text, and unbroken letter runs,
+rounded down.
 
-| Policy combination | Steps per character | Characters at default budget |
+| Policy combination | Ordinary text completes up to | Worst tested adversarial text completes up to |
 | --- | ---: | ---: |
-| Fuzzy, word mode: prose or unbroken runs | 1–8 | 1,000,000 |
-| Fuzzy, substring mode: prose | 16–25 | about 400,000 |
-| Fuzzy, substring mode: one unbroken letter run | about 230 | about 43,000 |
-| Fuzzy + evasion, word mode: prose | about 60 | about 166,000 |
-| Fuzzy + evasion, word mode: separator-heavy adversarial text | about 530 | about 19,000 |
-| Fuzzy + evasion, substring mode: prose | about 290 | about 34,000 |
-| Fuzzy + evasion, substring mode: one unbroken letter run | about 460 | about 21,000 |
-| Fuzzy + evasion, substring mode: separator-heavy adversarial text | about 1,600 | about 6,000 |
+| Fuzzy, word mode | 400,000 characters | 400,000 characters |
+| Fuzzy, substring mode | 200,000 characters | 40,000 characters (one unbroken letter run) |
+| Fuzzy + evasion, word mode | 130,000 characters | 15,000 characters (separator-heavy) |
+| Fuzzy + evasion, substring mode | 35,000 characters | 4,000 characters (separator-heavy) |
 
 Applications should cap message length well below these figures. Raise
 `limits.maxSteps` only for larger trusted documents; CPU time grows in
 proportion to the budget.
 
 Larger edit bounds, bigger dictionaries and longer keys cost more; measure your
-own profile, or raise `maxSteps`. `maxStates` (4,096) and `maxStateCells`
-(1,000,000) are not reached by these inputs.
+own profile, or raise `maxSteps`. Separator-heavy input can reach
+`maxCandidates` (100,000) before `maxSteps`. `maxStates` (4,096) and
+`maxStateCells` (1,000,000) are not reached by these inputs.
 
 ### Which APIs can hit a budget
 

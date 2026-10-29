@@ -118,17 +118,17 @@ occurrence, but their optional work budgets still apply.
 
 ### Supported input size
 
-Steps are deterministic counts, not time (about 50 ms per 10,000,000 on a
-current laptop CPU). Measured with the bundled dictionary and the separators,
-repetitions and `latinLookalikes` policy shown above. Evasion alone is gated by
-a prefilter, so clean text costs about one step per character.
+Steps are deterministic counts, not time; a scan that uses the whole default
+budget takes roughly 0.2–0.6 s on a current laptop CPU. Measured with the
+bundled dictionary and the separators, repetitions and `latinLookalikes` policy
+shown above, using complete `censor()` scans, rounded down. Evasion alone is
+gated by a prefilter, so clean text costs about one step per character.
 
-| Policy combination | Steps per character | Characters at default budget |
+| Policy combination | Ordinary text completes up to | Worst tested adversarial text completes up to |
 | --- | ---: | ---: |
-| Evasion, word or substring mode: clean text or unbroken runs | about 1 | 1,000,000 |
-| Evasion, word mode: separator-heavy adversarial text | about 5 | 1,000,000 |
-| Evasion, substring mode: separator-heavy adversarial text | about 14 | about 700,000 |
-| Evasion + fuzzy | see the table in [fuzzy matching](fuzzy-matching.md#supported-input-size) | 6,000–1,000,000 |
+| Evasion, word mode | 1,000,000 characters | 1,000,000 characters |
+| Evasion, substring mode | 1,000,000 characters | 600,000 characters (separator-heavy or doubled letters) |
+| Evasion + fuzzy | see [fuzzy matching](fuzzy-matching.md#supported-input-size) | 4,000–15,000 characters |
 
 Applications should cap message length; raise `limits.maxSteps` only for larger
 trusted documents, at a proportional CPU cost. With both policies the smaller applicable bound applies, so the lower of the two
