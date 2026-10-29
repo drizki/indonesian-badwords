@@ -2,11 +2,25 @@
   <img src="https://raw.githubusercontent.com/drizki/indonesian-badwords/main/assets/readme-banner.svg" alt="Indonesian Badwords. Fast checks and exact matches for Bahasa Indonesia." width="1440" />
 </p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/indonesian-badwords"><img src="https://shieldcn.dev/npm/v/indonesian-badwords.svg?variant=secondary&size=sm" alt="npm version" /></a>
+  <a href="https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml"><img src="https://shieldcn.dev/github/ci/drizki/indonesian-badwords.svg?variant=secondary&size=sm" alt="CI status" /></a>
+  <a href="https://www.npmjs.com/package/indonesian-badwords"><img src="https://shieldcn.dev/npm/dm/indonesian-badwords.svg?variant=secondary&size=sm" alt="npm downloads per month" /></a>
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/LICENSE"><img src="https://shieldcn.dev/github/license/drizki/indonesian-badwords.svg?variant=secondary&size=sm" alt="License" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/docs/README.md">Documentation</a> ·
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md">API</a> ·
+  <a href="https://github.com/drizki/indonesian-badwords/tree/main/docs/guides">Guides</a> ·
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/CHANGELOG.md">Changelog</a> ·
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md">Contributing</a> ·
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/README.id.md">Bahasa Indonesia</a>
+</p>
+
+---
+
 # Indonesian Badwords
-
-[![npm](https://img.shields.io/npm/v/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) [![CI](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml/badge.svg)](https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml) [![Downloads](https://img.shields.io/npm/dt/indonesian-badwords.svg)](https://www.npmjs.com/package/indonesian-badwords) [![MIT license](https://img.shields.io/npm/l/indonesian-badwords.svg)](https://github.com/drizki/indonesian-badwords/blob/main/LICENSE)
-
-[English](https://github.com/drizki/indonesian-badwords#readme) · [Bahasa Indonesia](https://github.com/drizki/indonesian-badwords/blob/main/README.id.md)
 
 **Keep chat, comments and usernames civil in Bahasa Indonesia, and stay in control of what counts as "bad".**
 
@@ -202,3 +216,5 @@ Optional policies have their own costs. Run `npm run benchmark` from the reposit
 Missing a word or getting a false positive? Open an issue with the example, the result you expected, and a similar benign case. For dictionary additions, include sources showing the abusive usage. Use the [dictionary report form](https://github.com/drizki/indonesian-badwords/issues/new?template=dictionary-report.yml) and the [contribution guide](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md).
 
 Semoga bermanfaat 😉
+
+Status badges are rendered by [shieldcn](https://shieldcn.dev) (MIT).
