@@ -39,7 +39,7 @@ export interface EvasionOptions {
         readonly maxInputLength?: number;
         /** Unique active states per input position. Defaults to 4,096; maximum 1,048,576. */
         readonly maxStates?: number;
-        /** State visits, attempted transitions, and candidate inspections. Defaults to 100,000,000. */
+        /** State visits, attempted transitions, and candidate inspections. Defaults to 10,000,000. */
         readonly maxSteps?: number;
         /** Shared trie states, including its root. Defaults to 65,536. */
         readonly maxCompileStates?: number;
@@ -122,7 +122,7 @@ export function boundedEvasion(options: EvasionOptions): EvasionPolicy {
         extra, maxRepeats, maxConfusables, requireAsciiLetter,
         maxInputLength: integer(limits.maxInputLength === undefined ? 1_000_000 : limits.maxInputLength, 'maxInputLength', 1),
         maxStates: integer(limits.maxStates === undefined ? 4096 : limits.maxStates, 'maxStates', 1, 1_048_576),
-        maxSteps: integer(limits.maxSteps === undefined ? 100_000_000 : limits.maxSteps, 'maxSteps', 1, Number.MAX_SAFE_INTEGER),
+        maxSteps: integer(limits.maxSteps === undefined ? 10_000_000 : limits.maxSteps, 'maxSteps', 1, Number.MAX_SAFE_INTEGER),
         maxCompileStates: integer(limits.maxCompileStates === undefined ? 65_536 : limits.maxCompileStates, 'maxCompileStates', 1),
         maxDictionaryLength: integer(limits.maxDictionaryLength === undefined ? 1_000_000 : limits.maxDictionaryLength, 'maxDictionaryLength', 1)
     });

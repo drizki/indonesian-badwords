@@ -104,7 +104,7 @@ no callbacks.
 | --- | ---: | --- |
 | `maxInputLength` | 1,000,000 | Original input UTF-16 units. |
 | `maxStates` | 4,096 | Unique active candidate states at one input position; maximum 1,048,576. |
-| `maxSteps` | 100,000,000 | State visits, attempted transitions, hash-collision probes and candidate inspections. |
+| `maxSteps` | 10,000,000 | State visits, attempted transitions, hash-collision probes and candidate inspections. |
 | `maxCompileStates` | 65,536 | Shared dictionary-trie states, including its root. |
 | `maxDictionaryLength` | 1,000,000 | Supplied dictionary/mutation batch and staged canonical snapshot UTF-16 units. |
 
@@ -118,7 +118,7 @@ occurrence, but their optional work budgets still apply.
 
 ### Supported input size
 
-Steps are deterministic counts, not time (about 0.5 s per 100,000,000 on a
+Steps are deterministic counts, not time (about 50 ms per 10,000,000 on a
 current laptop CPU). Measured with the bundled dictionary and the separators,
 repetitions and `latinLookalikes` policy shown above. Evasion alone is gated by
 a prefilter, so clean text costs about one step per character.
@@ -127,10 +127,11 @@ a prefilter, so clean text costs about one step per character.
 | --- | ---: | ---: |
 | Evasion, word or substring mode: clean text or unbroken runs | about 1 | 1,000,000 |
 | Evasion, word mode: separator-heavy adversarial text | about 5 | 1,000,000 |
-| Evasion, substring mode: separator-heavy adversarial text | about 14 | 1,000,000 |
-| Evasion + fuzzy | see the table in [fuzzy matching](fuzzy-matching.md#supported-input-size) | 60,000–1,000,000 |
+| Evasion, substring mode: separator-heavy adversarial text | about 14 | about 700,000 |
+| Evasion + fuzzy | see the table in [fuzzy matching](fuzzy-matching.md#supported-input-size) | 6,000–1,000,000 |
 
-With both policies the smaller applicable bound applies, so the lower of the two
+Applications should cap message length; raise `limits.maxSteps` only for larger
+trusted documents, at a proportional CPU cost. With both policies the smaller applicable bound applies, so the lower of the two
 `maxSteps` values governs.
 
 ### Which APIs can hit a budget

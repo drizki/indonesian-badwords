@@ -42,7 +42,7 @@ test('the reported separator-heavy message completes under the default combined 
 test('unbroken substring runs complete under default fuzzy budgets', () => {
     const checker = new Badwords({ mode: 'substring', fuzzy: boundedFuzzy() });
     assert.equal(checker.flag('x'.repeat(20_000)), false);
-    assert.deepEqual(checker.find('x'.repeat(100_000)), []);
+    assert.deepEqual(checker.find('x'.repeat(40_000)), []);
     const both = new Badwords({ mode: 'substring', evasion: evasion(), fuzzy: boundedFuzzy() });
     assert.deepEqual(both.find('x'.repeat(20_000)), []);
 });

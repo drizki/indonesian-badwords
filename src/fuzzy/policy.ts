@@ -67,7 +67,7 @@ export function boundedFuzzy(options: FuzzyOptions = {}): FuzzyPolicy {
         maxLength: integer(input.maxLength === undefined ? 64 : input.maxLength, 'maxLength', minLength),
         insertions: input.insertions !== false, deletions: input.deletions !== false, substitutions: input.substitutions !== false,
         maxInputLength: budget('maxInputLength', 1_000_000), maxStates: budget('maxStates', 4096, 1_048_576),
-        maxSteps: budget('maxSteps', 100_000_000, Number.MAX_SAFE_INTEGER), maxCompileStates: budget('maxCompileStates', 65_536),
+        maxSteps: budget('maxSteps', 10_000_000, Number.MAX_SAFE_INTEGER), maxCompileStates: budget('maxCompileStates', 65_536),
         maxDictionaryLength: budget('maxDictionaryLength', 1_000_000), maxIndexPostings: budget('maxIndexPostings', 250_000),
         maxCandidates: budget('maxCandidates', 100_000), maxStateCells: budget('maxStateCells', 1_000_000)
     });

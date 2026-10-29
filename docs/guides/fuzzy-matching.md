@@ -112,15 +112,15 @@ early. Detailed caps remain controlled separately by `maxMatches`.
 | `maxCompileStates` | 65,536 | Shared exact trie nodes, including root. |
 | `maxIndexPostings` | 250,000 | Compiled signature/key or gram/key postings. |
 | `maxStates` | 4,096 | Unique projection states at one source position; maximum 1,048,576. |
-| `maxSteps` | 100,000,000 | Scan transitions, string/gram processing, postings and verifier cells. |
+| `maxSteps` | 10,000,000 | Scan transitions, string/gram processing, postings and verifier cells. |
 | `maxCandidates` | 100,000 | Full key verifications during one scan. |
 | `maxStateCells` | 1,000,000 | Numeric query workspace cells plus simultaneous UTF-16 projection-string cells and state fields. |
 
 ### Supported input size
 
 The 1,000,000-unit input default is a ceiling, not a promise that every input
-completes under the default 100,000,000 steps. Steps are deterministic counts,
-not time (about 0.5 s per 100,000,000 on a current laptop CPU). Measured with
+completes under the default 10,000,000 steps. Steps are deterministic counts,
+not time (about 50 ms per 10,000,000 on a current laptop CPU). Measured with
 the bundled dictionary and `boundedFuzzy()`; the evasion policy is the
 separators, repetitions and `latinLookalikes` example from the
 [evasion guide](evasion.md). Sizes are `find`-style complete scans.
@@ -128,13 +128,17 @@ separators, repetitions and `latinLookalikes` example from the
 | Policy combination | Steps per character | Characters at default budget |
 | --- | ---: | ---: |
 | Fuzzy, word mode: prose or unbroken runs | 1–8 | 1,000,000 |
-| Fuzzy, substring mode: prose | 16–25 | 1,000,000 |
-| Fuzzy, substring mode: one unbroken letter run | about 230 | about 430,000 |
-| Fuzzy + evasion, word mode: prose | about 60 | 1,000,000 |
-| Fuzzy + evasion, word mode: separator-heavy adversarial text | about 530 | about 190,000 |
-| Fuzzy + evasion, substring mode: prose | about 290 | about 340,000 |
-| Fuzzy + evasion, substring mode: one unbroken letter run | about 460 | about 215,000 |
-| Fuzzy + evasion, substring mode: separator-heavy adversarial text | about 1,600 | about 60,000 |
+| Fuzzy, substring mode: prose | 16–25 | about 400,000 |
+| Fuzzy, substring mode: one unbroken letter run | about 230 | about 43,000 |
+| Fuzzy + evasion, word mode: prose | about 60 | about 166,000 |
+| Fuzzy + evasion, word mode: separator-heavy adversarial text | about 530 | about 19,000 |
+| Fuzzy + evasion, substring mode: prose | about 290 | about 34,000 |
+| Fuzzy + evasion, substring mode: one unbroken letter run | about 460 | about 21,000 |
+| Fuzzy + evasion, substring mode: separator-heavy adversarial text | about 1,600 | about 6,000 |
+
+Applications should cap message length well below these figures. Raise
+`limits.maxSteps` only for larger trusted documents; CPU time grows in
+proportion to the budget.
 
 Larger edit bounds, bigger dictionaries and longer keys cost more; measure your
 own profile, or raise `maxSteps`. `maxStates` (4,096) and `maxStateCells`
