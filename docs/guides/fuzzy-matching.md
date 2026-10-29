@@ -80,6 +80,21 @@ by the evasion stage, including one later removed by an edit. Separators still
 form word boundaries: both a shorter deletion-enabled span and its longer
 substitution-enabled span may be reported in `g-o-b-l-o-x`.
 
+An insertion edit never absorbs a neighbouring word. A span that crosses a
+separator must align at least one dictionary scalar with its first and with its
+last separator-delimited segment, so `censor('x-goblok')` is `'x-***'` and
+`g-o-b-l-o-k-s` does not report a span ending in `s`.
+Leetspeak folding does not currently cross inserted separators: `g0blok` and
+`g0-blok` fold, but `g-0-b-l-0-k` does not. Opt-in support is tracked in
+[#39](https://github.com/drizki/indonesian-badwords/issues/39).
+
+Combined scans keep a projection only while its text stays within the fuzzy
+edit bound of some dictionary-key prefix (two Levenshtein edits per OSA swap,
+and only for bounds up to two), and skip projection entirely for text with no
+separator between letters, doubled ASCII letter or mapped letter. Both checks
+only discard projections that could never match, so results equal an
+exhaustive scan.
+
 ### Fuzzy resource limits
 
 All methods check `limits.maxInputLength` before normalization, even for an
@@ -97,9 +112,43 @@ early. Detailed caps remain controlled separately by `maxMatches`.
 | `maxCompileStates` | 65,536 | Shared exact trie nodes, including root. |
 | `maxIndexPostings` | 250,000 | Compiled signature/key or gram/key postings. |
 | `maxStates` | 4,096 | Unique projection states at one source position; maximum 1,048,576. |
-| `maxSteps` | 10,000,000 | Scan transitions, string/gram processing, postings and verifier cells. |
+| `maxSteps` | 100,000,000 | Scan transitions, string/gram processing, postings and verifier cells. |
 | `maxCandidates` | 100,000 | Full key verifications during one scan. |
 | `maxStateCells` | 1,000,000 | Numeric query workspace cells plus simultaneous UTF-16 projection-string cells and state fields. |
+
+### Supported input size
+
+The 1,000,000-unit input default is a ceiling, not a promise that every input
+completes under the default 100,000,000 steps. Steps are deterministic counts,
+not time (about 0.5 s per 100,000,000 on a current laptop CPU). Measured with
+the bundled dictionary and `boundedFuzzy()`; the evasion policy is the
+separators, repetitions and `latinLookalikes` example from the
+[evasion guide](evasion.md). Sizes are `find`-style complete scans.
+
+| Policy combination | Steps per character | Characters at default budget |
+| --- | ---: | ---: |
+| Fuzzy, word mode: prose or unbroken runs | 1–8 | 1,000,000 |
+| Fuzzy, substring mode: prose | 16–25 | 1,000,000 |
+| Fuzzy, substring mode: one unbroken letter run | about 230 | about 430,000 |
+| Fuzzy + evasion, word mode: prose | about 60 | 1,000,000 |
+| Fuzzy + evasion, word mode: separator-heavy adversarial text | about 530 | about 190,000 |
+| Fuzzy + evasion, substring mode: prose | about 290 | about 340,000 |
+| Fuzzy + evasion, substring mode: one unbroken letter run | about 460 | about 215,000 |
+| Fuzzy + evasion, substring mode: separator-heavy adversarial text | about 1,600 | about 60,000 |
+
+Larger edit bounds, bigger dictionaries and longer keys cost more; measure your
+own profile, or raise `maxSteps`. `maxStates` (4,096) and `maxStateCells`
+(1,000,000) are not reached by these inputs.
+
+### Which APIs can hit a budget
+
+`flag()` returns at the first accepted occurrence, so text with an early match
+can return `true` while later work would exhaust a budget. `find`, `badwords`,
+`censor` (string and callback) and `analyze` must examine the whole input and
+throw the typed error instead. `input`, `compileStates` and `dictionaryLength`
+limits are checked identically by every method; `flag()` on text with no
+accepted occurrence does the same work as the others. Treat a thrown
+`FuzzyLimitError` as an incomplete moderation check, never as clean text.
 
 Limits are positive integers through 4,294,967,295, except `maxSteps` may reach
 `Number.MAX_SAFE_INTEGER`. Unknown options and invalid types are rejected.

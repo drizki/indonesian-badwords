@@ -86,6 +86,11 @@ overlapping source spans remain separate occurrences: `goblok-k` can
 contain the exact `goblok` span and its longer repeat-enabled span. Censorship
 merges that coverage once; callbacks receive the merged span and unique terms.
 
+Leetspeak folding does not currently cross inserted separators: `g0blok` and
+`g0-blok` match through the checker's ordinary folding, but `g-0-b-l-0-k` does
+not. Opt-in support is tracked in
+[#39](https://github.com/drizki/indonesian-badwords/issues/39).
+
 ### Resource limits
 
 All methods enforce `limits.maxInputLength` before normalization, including
@@ -99,7 +104,7 @@ no callbacks.
 | --- | ---: | --- |
 | `maxInputLength` | 1,000,000 | Original input UTF-16 units. |
 | `maxStates` | 4,096 | Unique active candidate states at one input position; maximum 1,048,576. |
-| `maxSteps` | 10,000,000 | State visits, attempted transitions, hash-collision probes and candidate inspections. |
+| `maxSteps` | 100,000,000 | State visits, attempted transitions, hash-collision probes and candidate inspections. |
 | `maxCompileStates` | 65,536 | Shared dictionary-trie states, including its root. |
 | `maxDictionaryLength` | 1,000,000 | Supplied dictionary/mutation batch and staged canonical snapshot UTF-16 units. |
 
@@ -110,6 +115,32 @@ work; they are not wall-clock deadlines. Existing `maxMatches` independently
 limits detailed accepted occurrences after exclusions and path deduplication.
 Boolean, unique-term and censorship methods aggregate without retaining every
 occurrence, but their optional work budgets still apply.
+
+### Supported input size
+
+Steps are deterministic counts, not time (about 0.5 s per 100,000,000 on a
+current laptop CPU). Measured with the bundled dictionary and the separators,
+repetitions and `latinLookalikes` policy shown above. Evasion alone is gated by
+a prefilter, so clean text costs about one step per character.
+
+| Policy combination | Steps per character | Characters at default budget |
+| --- | ---: | ---: |
+| Evasion, word or substring mode: clean text or unbroken runs | about 1 | 1,000,000 |
+| Evasion, word mode: separator-heavy adversarial text | about 5 | 1,000,000 |
+| Evasion, substring mode: separator-heavy adversarial text | about 14 | 1,000,000 |
+| Evasion + fuzzy | see the table in [fuzzy matching](fuzzy-matching.md#supported-input-size) | 60,000–1,000,000 |
+
+With both policies the smaller applicable bound applies, so the lower of the two
+`maxSteps` values governs.
+
+### Which APIs can hit a budget
+
+`flag()` may stop after the first fully accepted occurrence, so it can return
+`true` for text whose complete scan would exhaust `maxSteps`. `find`,
+`badwords`, `censor` (string and callback) and `analyze` must finish the whole
+scan and throw `EvasionLimitError` instead. Input-length, compile and
+dictionary limits apply to every method alike. Treat the error as an incomplete
+check, never as clean text.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
