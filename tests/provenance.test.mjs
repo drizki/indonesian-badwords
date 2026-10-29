@@ -191,3 +191,14 @@ test('the shared tie-break ranks no edit, then fewer transforms, then fewer edit
     assert.ok(moreLiteral(trace(0, 0, 1, 0), trace(0, 0, 0, 1)) && !moreLiteral(trace(0, 0, 0, 1), trace(0, 0, 1, 0)));
     assert.ok(!moreLiteral(trace(0, 1, 0, 0), trace(0, 1, 0, 0)));
 });
+
+test('destructured censor callbacks can still list occurrences', () => {
+    const checker = new Badwords({ dictionary: ['goblok'] });
+    const seen = [];
+    const out = checker.censor('dasar g0bl0k', ({ match, occurrences }) => {
+        seen.push(...occurrences().map(({ word, via }) => [word, via.kind]));
+        return '*'.repeat(match.length);
+    });
+    assert.equal(out, 'dasar ******');
+    assert.deepEqual(seen, [['goblok', 'leetspeak']]);
+});

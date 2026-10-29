@@ -620,11 +620,11 @@ export class Badwords {
             if (version !== this.#version) throw new TypeError('dictionary changed during censor()');
             return this.#locations(text, accept);
         });
-        const descriptor = { value(this: CensorContext) { return within(this); } };
         for (const span of spans) {
             const words = Object.freeze(span.entries.sort((a, b) => a.order - b.order).map((entry) => entry.word));
             const context = { text, index: span.start, end: span.end, match: text.slice(span.start, span.end), words };
-            Object.defineProperty(context, 'occurrences', descriptor);
+            // A closure, not a this-bound method, so destructured callbacks work.
+            Object.defineProperty(context, 'occurrences', { value: () => within(context) });
             const value = replacement(Object.freeze(context) as DetailedCensorContext);
             if (typeof value !== 'string') throw new TypeError('censor callback must return a string');
             pieces.push(text.slice(index, span.start), value);
