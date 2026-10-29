@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 - Adds `classify()` to `indonesian-badwords/metadata`: it joins variant and sense IDs, categories, severity, regions, and profiles to `find()` or `analyze()` matches and returns a summary, a deterministic 0-100 editorial register-intensity `score` (`null` when matches exist but none has a severity), and a `level`. Custom words are reported as unclassified. The root import size is unchanged.
+- `find()` and `analyze().locations` return `MatchedLocation`, a `BadwordLocation` with `via` describing how the occurrence matched (`exact`, `normalized`, `leetspeak`, `evasion` with transform counts, or `fuzzy` with edit count and model). Censor contexts gain a non-enumerable `occurrences()` method for the occurrences behind a merged span. `flag`, `badwords` and string `censor` pay nothing.
+- Compatibility: locations from `find()`/`analyze()` gain a `via` field, so deep-equality tests, snapshots and strict JSON schemas see a new field. Strip it with `locations.map(({ via, ...location }) => location)`. `BadwordLocation`, `CensorContext` enumerable fields and callback signatures are unchanged.
 
 ## [2.5.3] - 2026-10-29
 
