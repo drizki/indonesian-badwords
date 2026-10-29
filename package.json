@@ -122,6 +122,7 @@
     "catalog:generate": "node scripts/catalog-data.mjs --write",
     "test": "npm run build && npm run test:unit",
     "test:unit": "node --test",
+    "test:coverage": "npm run build && node --test --experimental-test-coverage",
     "test:package": "node scripts/verify-package.mjs",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
     "benchmark:compare": "npm run build && node scripts/benchmark-compare.mjs",
@@ -146,6 +147,6 @@
   "devDependencies": {
     "esbuild": "0.28.2",
     "semver": "7.8.5",
-    "typescript": "^7.0.2"
+    "typescript": "7.0.2"
   }
 }
