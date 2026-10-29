@@ -31,7 +31,11 @@ jobs:
       - name: Verify docs against the release artifact
         run: npm run test:docs -- "$RUNNER_TEMP/npm-package/package.tgz"
       - name: Install the release artifact in examples
-        run: npm install --prefix examples --no-save --ignore-scripts --package-lock=false --no-audit --no-fund "$RUNNER_TEMP/npm-package/package.tgz"
+        shell: bash
+        run: |
+          rm -rf examples/node_modules/indonesian-badwords
+          mkdir -p examples/node_modules/indonesian-badwords
+          tar -xzf "$RUNNER_TEMP/npm-package/package.tgz" -C examples/node_modules/indonesian-badwords --strip-components=1
       - name: Type-check, test policy, and build all examples
         run: |
           npm run check --prefix examples
