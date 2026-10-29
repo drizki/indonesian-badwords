@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/indonesian-badwords"><img src="https://shieldcn.dev/npm/v/indonesian-badwords.svg?variant=secondary&size=sm" alt="npm version" /></a>
-  <a href="https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml"><img src="https://shieldcn.dev/github/ci/drizki/indonesian-badwords.svg?variant=secondary&size=sm" alt="CI status" /></a>
-  <a href="https://www.npmjs.com/package/indonesian-badwords"><img src="https://shieldcn.dev/npm/dm/indonesian-badwords.svg?variant=secondary&size=sm" alt="npm downloads per month" /></a>
-  <a href="https://github.com/drizki/indonesian-badwords/blob/main/LICENSE"><img src="https://shieldcn.dev/github/license/drizki/indonesian-badwords.svg?variant=secondary&size=sm" alt="License" /></a>
+  <a href="https://www.npmjs.com/package/indonesian-badwords"><img src="https://shieldcn.dev/npm/v/indonesian-badwords.svg?variant=default&color=acf274&labelColor=18382b&labelTextColor=eff5eb&font=geist-mono&split=true&size=sm" alt="npm version" /></a>
+  <a href="https://github.com/drizki/indonesian-badwords/actions/workflows/ci.yml"><img src="https://shieldcn.dev/github/ci/drizki/indonesian-badwords.svg?variant=default&color=acf274&labelColor=18382b&labelTextColor=eff5eb&font=geist-mono&split=true&size=sm" alt="CI status" /></a>
+  <a href="https://www.npmjs.com/package/indonesian-badwords"><img src="https://shieldcn.dev/npm/dm/indonesian-badwords.svg?variant=default&color=acf274&labelColor=18382b&labelTextColor=eff5eb&font=geist-mono&split=true&size=sm" alt="npm downloads per month" /></a>
+  <a href="https://github.com/drizki/indonesian-badwords/blob/main/LICENSE"><img src="https://shieldcn.dev/github/license/drizki/indonesian-badwords.svg?variant=default&color=acf274&labelColor=18382b&labelTextColor=eff5eb&font=geist-mono&split=true&size=sm" alt="License" /></a>
 </p>
 
 <p align="center">
