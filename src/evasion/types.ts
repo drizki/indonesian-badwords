@@ -23,9 +23,12 @@ export interface EvasionPlan {
     readonly maxConfusables: number; readonly requireAsciiLetter: boolean;
     readonly maxInputLength: number; readonly maxStates: number; readonly maxSteps: number;
     readonly maxCompileStates: number; readonly maxDictionaryLength: number;
+    /** Internal test hook: `false` disables sound prefilters so differential tests can scan exhaustively. */
+    readonly prefilter?: boolean;
     exceeded(limit: 'input' | 'states' | 'steps' | 'compileStates' | 'dictionaryLength', maximum: number, used: number): never;
 }
 export interface EvasionCompiler {
+    readonly version: 2;
     readonly dictionaryLimit?: { readonly maximum: number; exceeded(used: number): never };
     plan?(normalization: Normalization, canonicalize: (text: string, normalization: Normalization) => string): EvasionPlan;
     checkDictionary(words: readonly string[]): void;

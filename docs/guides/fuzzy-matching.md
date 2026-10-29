@@ -80,6 +80,21 @@ by the evasion stage, including one later removed by an edit. Separators still
 form word boundaries: both a shorter deletion-enabled span and its longer
 substitution-enabled span may be reported in `g-o-b-l-o-x`.
 
+An insertion edit never absorbs a neighbouring word. A span that crosses a
+separator must align at least one dictionary scalar with its first and with its
+last separator-delimited segment, so `censor('x-goblok')` is `'x-***'` and
+`g-o-b-l-o-k-s` does not report a span ending in `s`.
+Leetspeak folding does not currently cross inserted separators: `g0blok` and
+`g0-blok` fold, but `g-0-b-l-0-k` does not. Opt-in support is tracked in
+[#39](https://github.com/drizki/indonesian-badwords/issues/39).
+
+Combined scans keep a projection only while its text stays within the fuzzy
+edit bound of some dictionary-key prefix (two Levenshtein edits per OSA swap,
+and only for bounds up to two), and skip projection entirely for text with no
+separator between letters, doubled ASCII letter or mapped letter. Both checks
+only discard projections that could never match, so results equal an
+exhaustive scan.
+
 ### Fuzzy resource limits
 
 All methods check `limits.maxInputLength` before normalization, even for an
@@ -100,6 +115,44 @@ early. Detailed caps remain controlled separately by `maxMatches`.
 | `maxSteps` | 10,000,000 | Scan transitions, string/gram processing, postings and verifier cells. |
 | `maxCandidates` | 100,000 | Full key verifications during one scan. |
 | `maxStateCells` | 1,000,000 | Numeric query workspace cells plus simultaneous UTF-16 projection-string cells and state fields. |
+
+### Supported input size
+
+The 1,000,000-unit input default is a ceiling, not a promise that every input
+completes under the default 10,000,000 steps. Steps are deterministic counts,
+not time; a scan that uses the whole default budget takes roughly 0.2–0.6 s on a
+current laptop CPU. Measured with the bundled dictionary and `boundedFuzzy()`;
+the evasion policy is the separators, repetitions and `latinLookalikes` example
+from the [evasion guide](evasion.md). Figures are the largest complete
+`censor()` scans across Indonesian prose, slang chat with emoji, separator-heavy,
+doubled-letter and leetspeak-with-separator text, and unbroken letter runs,
+rounded down.
+
+| Policy combination | Ordinary text completes up to | Worst tested adversarial text completes up to |
+| --- | ---: | ---: |
+| Fuzzy, word mode | 400,000 characters | 400,000 characters |
+| Fuzzy, substring mode | 200,000 characters | 40,000 characters (one unbroken letter run) |
+| Fuzzy + evasion, word mode | 130,000 characters | 15,000 characters (separator-heavy) |
+| Fuzzy + evasion, substring mode | 35,000 characters | 4,000 characters (separator-heavy) |
+
+Applications should cap message length well below these figures. Raise
+`limits.maxSteps` only for larger trusted documents; CPU time grows in
+proportion to the budget.
+
+Larger edit bounds, bigger dictionaries and longer keys cost more; measure your
+own profile, or raise `maxSteps`. Separator-heavy input can reach
+`maxCandidates` (100,000) before `maxSteps`. `maxStates` (4,096) and
+`maxStateCells` (1,000,000) are not reached by these inputs.
+
+### Which APIs can hit a budget
+
+`flag()` returns at the first accepted occurrence, so text with an early match
+can return `true` while later work would exhaust a budget. `find`, `badwords`,
+`censor` (string and callback) and `analyze` must examine the whole input and
+throw the typed error instead. `input`, `compileStates` and `dictionaryLength`
+limits are checked identically by every method; `flag()` on text with no
+accepted occurrence does the same work as the others. Treat a thrown
+`FuzzyLimitError` as an incomplete moderation check, never as clean text.
 
 Limits are positive integers through 4,294,967,295, except `maxSteps` may reach
 `Number.MAX_SAFE_INTEGER`. Unknown options and invalid types are rejected.

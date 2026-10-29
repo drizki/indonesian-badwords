@@ -128,6 +128,7 @@ export function boundedEvasion(options: EvasionOptions): EvasionPolicy {
     });
     const fail = (limit: EvasionLimit, maximum: number, used: number): never => { throw new EvasionLimitError(limit, maximum, used); };
     const compiler = Object.freeze<EvasionCompiler>({
+        version: 2,
         dictionaryLimit: Object.freeze({ maximum: config.maxDictionaryLength, exceeded: (used: number) => fail('dictionaryLength', config.maxDictionaryLength, used) }),
         plan(normalization, canonicalize) {
             return Object.freeze({ ...config, ...prepareEvasion(config, normalization, canonicalize), version: 1 as const, exceeded: fail });
@@ -141,5 +142,5 @@ export function boundedEvasion(options: EvasionOptions): EvasionPolicy {
         },
         compile: (entries, normalization, canonicalize, trie, candidateText) => compileEvasion(config, entries, normalization, canonicalize, trie, candidateText, fail)
     });
-    return Object.freeze({ [Symbol.for('indonesian-badwords.evasion.v1')]: compiler }) as unknown as EvasionPolicy;
+    return Object.freeze({ [Symbol.for('indonesian-badwords.evasion.v2')]: compiler }) as unknown as EvasionPolicy;
 }

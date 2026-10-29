@@ -86,6 +86,11 @@ overlapping source spans remain separate occurrences: `goblok-k` can
 contain the exact `goblok` span and its longer repeat-enabled span. Censorship
 merges that coverage once; callbacks receive the merged span and unique terms.
 
+Leetspeak folding does not currently cross inserted separators: `g0blok` and
+`g0-blok` match through the checker's ordinary folding, but `g-0-b-l-0-k` does
+not. Opt-in support is tracked in
+[#39](https://github.com/drizki/indonesian-badwords/issues/39).
+
 ### Resource limits
 
 All methods enforce `limits.maxInputLength` before normalization, including
@@ -110,6 +115,33 @@ work; they are not wall-clock deadlines. Existing `maxMatches` independently
 limits detailed accepted occurrences after exclusions and path deduplication.
 Boolean, unique-term and censorship methods aggregate without retaining every
 occurrence, but their optional work budgets still apply.
+
+### Supported input size
+
+Steps are deterministic counts, not time; a scan that uses the whole default
+budget takes roughly 0.2–0.6 s on a current laptop CPU. Measured with the
+bundled dictionary and the separators, repetitions and `latinLookalikes` policy
+shown above, using complete `censor()` scans, rounded down. Evasion alone is
+gated by a prefilter, so clean text costs about one step per character.
+
+| Policy combination | Ordinary text completes up to | Worst tested adversarial text completes up to |
+| --- | ---: | ---: |
+| Evasion, word mode | 1,000,000 characters | 1,000,000 characters |
+| Evasion, substring mode | 1,000,000 characters | 600,000 characters (separator-heavy or doubled letters) |
+| Evasion + fuzzy | see [fuzzy matching](fuzzy-matching.md#supported-input-size) | 4,000–15,000 characters |
+
+Applications should cap message length; raise `limits.maxSteps` only for larger
+trusted documents, at a proportional CPU cost. With both policies the smaller applicable bound applies, so the lower of the two
+`maxSteps` values governs.
+
+### Which APIs can hit a budget
+
+`flag()` may stop after the first fully accepted occurrence, so it can return
+`true` for text whose complete scan would exhaust `maxSteps`. `find`,
+`badwords`, `censor` (string and callback) and `analyze` must finish the whole
+scan and throw `EvasionLimitError` instead. Input-length, compile and
+dictionary limits apply to every method alike. Treat the error as an incomplete
+check, never as clean text.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';

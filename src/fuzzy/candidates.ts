@@ -9,6 +9,19 @@ function hash(units: readonly number[], at: number, q: number): number {
     for (let j = 0; j < q; j++) value = Math.imul(value ^ units[at + j], 16777619);
     return value >>> 0;
 }
+const BASE = 0x01000193;
+/** Polynomial hashes of a sequence and each one-scalar deletion, in O(length). Collisions only add verified candidates. */
+function signatures(units: readonly number[], powers: Uint32Array, suffix: Uint32Array, visit: (hash: number) => boolean): boolean {
+    const length = units.length; suffix[length] = 0;
+    for (let j = length - 1; j >= 0; j--) suffix[j] = (Math.imul(units[j] + 1, powers[length - 1 - j]) + suffix[j + 1]) >>> 0;
+    let prefix = 0;
+    if (!visit(suffix[0])) return false;
+    for (let i = 0; i < length; i++) {
+        if (!visit((Math.imul(prefix, powers[length - 1 - i]) + suffix[i + 1]) >>> 0)) return false;
+        prefix = (Math.imul(prefix, BASE) + units[i] + 1) >>> 0;
+    }
+    return true;
+}
 /** Reusable numeric query counts. No source strings or per-token Maps are retained. */
 class Grams {
     hashes: Uint32Array; counts: Uint32Array; stamps: Uint32Array; touched: Uint32Array;
@@ -40,7 +53,8 @@ export class FuzzyIndex {
     #epoch = 0;
     readonly #grams: Grams[];
     readonly #rows: Uint32Array[];
-    readonly #deletions?: Map<string, Uint32Array>;
+    readonly #deletions?: Map<number, Uint32Array>;
+    readonly #powers: Uint32Array; readonly #suffix: Uint32Array;
     constructor(entries: readonly Entry[], readonly config: FuzzyConfig, composed: (key: string) => boolean, fail: IndexFail) {
         const grouped = new Map<string, FuzzyGroup>();
         for (const entry of entries) {
@@ -72,15 +86,18 @@ export class FuzzyIndex {
         this.workspaceCells = cells;
         this.#scores = new Uint32Array(this.groups.length); this.#stamps = new Uint32Array(this.groups.length); this.#touched = new Uint32Array(this.groups.length);
         this.#grams = useDeletions ? [] : [new Grams(capacity), new Grams(capacity), new Grams(capacity)];
+        this.#powers = new Uint32Array(this.maximum + config.maxEdits + 3); this.#powers[0] = 1;
+        for (let i = 1; i < this.#powers.length; i++) this.#powers[i] = Math.imul(this.#powers[i - 1], BASE) >>> 0;
+        this.#suffix = new Uint32Array(this.#powers.length);
         this.#rows = Array.from({ length: 3 }, () => new Uint32Array(this.maximum + config.maxEdits + 1));
         if (useDeletions) {
-            const lists = new Map<string, number[]>(); let postings = 0;
+            const lists = new Map<number, number[]>(); let postings = 0;
             this.groups.forEach((group, id) => {
-                const key = group.entries[0].key, signatures = new Set([key]); let at = 0;
-                for (const character of key) { signatures.add(key.slice(0, at) + key.slice(at + character.length)); at += character.length; }
-                for (const signature of signatures) {
+                const hashes = new Set<number>();
+                signatures(group.units, this.#powers, this.#powers.slice(), hash => { hashes.add(hash); return true; });
+                for (const hash of hashes) {
                     if (++postings > config.maxIndexPostings) fail('indexPostings', config.maxIndexPostings, postings);
-                    const ids = lists.get(signature) ?? []; ids.push(id); lists.set(signature, ids);
+                    const ids = lists.get(hash) ?? []; ids.push(id); lists.set(hash, ids);
                 }
             });
             this.#deletions = new Map([...lists].map(([key, ids]) => [key, Uint32Array.from(ids)]));
@@ -145,7 +162,8 @@ export class FuzzyIndex {
         if (this.#deletions) {
             // Any one-edit alignment, including an adjacent OSA swap, shares
             // a subsequence obtained by deleting at most one scalar per side.
-            const check = (signature: string): boolean => {
+            meter.tick(query.length * 3);
+            return signatures(query, this.#powers, this.#suffix, signature => {
                 for (const id of this.#deletions!.get(signature) ?? []) {
                     meter.tick(); if (this.#stamps[id] === this.#epoch) continue; this.#stamps[id] = this.#epoch;
                     const group = this.groups[id];
@@ -153,17 +171,7 @@ export class FuzzyIndex {
                         && this.#verify(group, query, meter) && visit(group) === false) return false;
                 }
                 return true;
-            };
-            meter.tick(query.length);
-            const spelling = query.map(code => String.fromCodePoint(code)).join('');
-            if (!check(spelling)) return false;
-            let offset = 0;
-            for (const code of query) {
-                meter.tick(query.length); const width = code > 0xffff ? 2 : 1;
-                if (!check(spelling.slice(0, offset) + spelling.slice(offset + width))) return false;
-                offset += width;
-            }
-            return true;
+            });
         }
         let size = 0, counted = 0;
         const verify = (id: number) => {
