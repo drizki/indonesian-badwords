@@ -18,6 +18,11 @@ npm ci
 npm test          # builds, then runs all regression tests
 ```
 
+The project relies on strict TypeScript, executable docs, and regression tests
+instead of a separate linter or formatter. Revisit this decision if outside
+contributions grow. Run `npm run test:coverage` for a coverage report; it has no
+threshold and is reported in CI on Node 24.
+
 The build generates TypeScript declarations and a bundled CommonJS runtime for
 each of the six public entrypoints, then creates their ESM facades. Within each
 entrypoint, both formats share the same exported identities; root imports share
@@ -98,7 +103,8 @@ npm version minor --no-git-tag-version
 
 Use `patch` for compatible fixes and optimizations, `minor` for compatible
 features, and `major` for incompatible API or behavior changes. Commit both
-manifests with a Conventional Commit. Record the relevant tests, package checks,
+manifests with a Conventional Commit. Release PRs also update the
+[changelog](../CHANGELOG.md) with an entry for the new version. Record the relevant tests, package checks,
 performance measurements, and independent review in the PR.
 
 `main` requires an up-to-date PR and all six CI checks: release artifact,

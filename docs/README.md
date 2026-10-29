@@ -40,4 +40,6 @@ matching and result contracts.
 - [Develop and release the package](maintaining.md): build, test, curate data,
   validate a tarball, and publish through the release pipeline.
 
+[Changelog](../CHANGELOG.md): release history; release PRs update it.
+
 [English README](../README.md) · [Bahasa Indonesia README](../README.id.md)
