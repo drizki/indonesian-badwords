@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { Badwords } from '../dist/esm/index.js';
 import { boundedFuzzy, FuzzyLimitError } from '../dist/esm/fuzzy.js';
 import { boundedEvasion, EvasionLimitError } from '../dist/esm/evasion.js';
+import { bare } from './bare.mjs';
 
 const basic = (options = {}, dictionary = ['goblok']) => new Badwords({ dictionary, fuzzy: boundedFuzzy(options) });
 const evasion = () => boundedEvasion({ minLength: 2, separators: { characters: ['-', ' '], maxGap: 1, maxTotal: 8 },
@@ -68,7 +69,7 @@ test('all APIs share original UTF-16 spans, callbacks, exclusions and accepted o
     const options = { ignoreRanges: [{ index: 11, end: 17 }] };
     assert.equal(checker.flag(text), true);
     assert.throws(() => checker.find(text), /Match limit/);
-    assert.deepEqual(checker.find(text, { ignoreRanges: [{ index: 11, end: text.length }] }), [{ word: 'goblok', index: 3, end: 9, match: 'ｇｏｂｌｏｘ' }]);
+    assert.deepEqual(bare(checker.find(text, { ignoreRanges: [{ index: 11, end: text.length }] })), [{ word: 'goblok', index: 3, end: 9, match: 'ｇｏｂｌｏｘ' }]);
     assert.equal(checker.censor(text, 'x', options), '😀 x! goblоk x');
     assert.equal(checker.filter(text, options), '😀 ! goblоk');
     assert.deepEqual(checker.badwords(text), ['goblok']);
@@ -106,7 +107,7 @@ test('real evasion composition preserves family eligibility, source spans and OS
     assert.equal(checker.flag('c-a-f-é-x'), false);
     assert.equal(checker.flag('caféz'), true);
     const text = '😀 g-o-b-l-o-x!';
-    assert.deepEqual(checker.find(text), [{ word: 'goblok', index: 3, end: 12, match: 'g-o-b-l-o' }, { word: 'goblok', index: 3, end: 14, match: 'g-o-b-l-o-x' }]);
+    assert.deepEqual(bare(checker.find(text)), [{ word: 'goblok', index: 3, end: 12, match: 'g-o-b-l-o' }, { word: 'goblok', index: 3, end: 14, match: 'g-o-b-l-o-x' }]);
     assert.equal(checker.censor(text), '😀 ***!');
     assert.equal(new Badwords({ dictionary: ['goblok'], evasion: evasion(), fuzzy: boundedFuzzy({ model: 'osa' }) }).flag('g-o-l-b-o-k'), true);
     assert.equal(checker.flag('g-o-l-b-o-k'), false);
@@ -120,7 +121,7 @@ test('normalization, complete source graphemes and dictionary-aware bangs remain
     assert.deepEqual(checker.find('goblok!goblok').map(({ index, end }) => [index, end]), [[0, 6], [7, 13]]);
     assert.deepEqual(checker.find('gοblοx\u200b').map(({ index, end }) => [index, end]), []);
     const exact = basic({ maxEdits: 0 }, ['goblok']);
-    assert.deepEqual(exact.find('😀 g\u200boblok'), [{ word: 'goblok', index: 3, end: 10, match: 'g\u200boblok' }]);
+    assert.deepEqual(bare(exact.find('😀 g\u200boblok')), [{ word: 'goblok', index: 3, end: 10, match: 'g\u200boblok' }]);
     assert.equal(new Badwords({ dictionary: ['AB'], normalization: 'none', fuzzy: boundedFuzzy({ minLength: 1, maxEdits: 0 }) }).flag('ab'), false);
     assert.equal(checker.flag('\ud800'), false);
 });

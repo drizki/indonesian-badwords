@@ -208,6 +208,8 @@ function censored(job, sample, orders) {
     }
     return replaceTerms(sample.text, locations(job, sample));
 }
+// Provenance is verified in tests; benchmarks compare the stable span fields.
+function plain(list) { return list.map(({ via, ...rest }) => (assert.ok(via?.kind), rest)); }
 function check(job, sample, result, orders, wordCount, callbackCalls) {
     if (job.replacement === 'callback') assert.equal(callbackCalls, sample.count, 'Expected one callback per merged span');
     if (job.limited) { assert.equal(result, LIMIT, 'Expected the detailed-match safety limit'); return; }
@@ -217,8 +219,8 @@ function check(job, sample, result, orders, wordCount, callbackCalls) {
         : [...new Set(job.terms.map((term) => term.word))].sort((a, b) => orders.get(a) - orders.get(b));
     if (job.method === 'badwords') { assert.deepEqual(result, words); return; }
     const expected = locations(job, sample);
-    if (job.method === 'find') { assert.deepEqual(result, expected); return; }
-    assert.deepEqual(result, { text: sample.text, words: wordCount,
+    if (job.method === 'find') { assert.deepEqual(plain(result), expected); return; }
+    assert.deepEqual({ ...result, locations: plain(result.locations) }, { text: sample.text, words: wordCount,
         censored: censored(job, sample, orders), badwords: words, count: words.length,
         occurrenceCount: expected.length, locations: expected });
 }

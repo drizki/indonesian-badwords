@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { test } from 'node:test';
 
 import { Badwords } from '../dist/esm/index.js';
+import { bare } from './bare.mjs';
 
 const require = createRequire(import.meta.url);
 const { canonicalCandidatePattern, prepareNativePatterns } = require('../dist/cjs/core/pattern.js');
@@ -30,11 +31,12 @@ test('clean Unicode avoids allocating grapheme provenance for every API', () => 
         const assert = require('node:assert/strict');
         Intl.Segmenter = class { constructor() { throw new Error('unexpected segmentation'); } };
         const { Badwords } = require(${JSON.stringify(runtime)});
+        const bare = (list) => list.map(({ via, ...rest }) => rest);
         const checker = new Badwords();
         for (const text of ['😀 Terima kasih, café baru itu nyaman.', 'cafe\\u0301',
             '普通の文章', '\\ud800 pengiriman selesai \\udfff', 'e\\u0301\\u200b café']) {
             assert.equal(checker.flag(text), false);
-            assert.deepEqual(checker.find(text), []);
+            assert.deepEqual(bare(checker.find(text)), []);
             assert.deepEqual(checker.badwords(text), []);
             assert.equal(checker.censor(text), text);
             assert.equal(checker.filter(text), text.replace(/\\s+/gu, ' ').trim());
@@ -54,9 +56,9 @@ test('canonical candidate search retains normalization and complete source spans
         'é anjing🏻', 'é anjing\ufe0f', 'é anjing\u200d👍', 'é 🇮🇩anjing',
         'é \r\u200b\nanjing', '\ud800 é anjing \udfff', 'e\u0301\u200b anjing'
     ]) agree(checkers, text);
-    assert.deepEqual(checkers[0].find('é 😀 4NJ1NG!'),
+    assert.deepEqual(bare(checkers[0].find('é 😀 4NJ1NG!')),
         [{ word: 'anjing', index: 5, end: 11, match: '4NJ1NG' }]);
-    assert.deepEqual(checkers[0].find('é ﬃ'), [{ word: 'ffi', index: 2, end: 3, match: 'ﬃ' }]);
+    assert.deepEqual(bare(checkers[0].find('é ﬃ')), [{ word: 'ffi', index: 2, end: 3, match: 'ﬃ' }]);
 });
 
 test('candidate aliases include literal and folded bang policies and numeric runs', () => {
@@ -110,7 +112,7 @@ test('unsupported policies retain the general scanner and detailed-match limits'
     assert.throws(() => limited.find('é goblok goblok'), RangeError);
     assert.throws(() => limited.analyze('é goblok goblok'), RangeError);
     assert.equal(limited.censor('é goblok goblok'), 'é *** ***');
-    assert.deepEqual(limited.find('é kalimat bersih'), []);
+    assert.deepEqual(bare(limited.find('é kalimat bersih')), []);
 });
 
 function wideWord(index, width = 64) {

@@ -1,4 +1,4 @@
-import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode } from '../core/matcher.ts';
+import { acceptsEnd, acceptsStart, type CensorSpan, type Entry, type Match, type MatcherNode, type Trace, moreLiteral } from '../core/matcher.ts';
 import type { EvasionRuntime, TrieLimit } from './types.ts';
 import type { Normalization, NormalizedText } from '../text/normalize.ts';
 import type { EvasionLimit } from './policy.ts';
@@ -213,7 +213,7 @@ export function compileEvasion(config: CompiledOptions, entries: readonly Entry[
 
     function run(value: NormalizedText, wholeWords: boolean,
         selection: 'all' | 'spans' | 'unique' | 'censor', visit?: (match: Match) => boolean | void,
-        accept?: (start: number, end: number) => boolean): CensorSpan[] {
+        accept?: (start: number, end: number) => boolean, detail = false): CensorSpan[] {
         let steps = 0;
         const meter = { tick() { if (++steps > config.maxSteps) fail('steps', config.maxSteps, steps); } };
         let active = new Frontier(config.maxStates, fail, meter), next = new Frontier(config.maxStates, fail, meter);
@@ -253,7 +253,8 @@ export function compileEvasion(config: CompiledOptions, entries: readonly Entry[
             if (acceptsEnd(value, to, wholeWords)) {
                 let longestStart = Infinity, longestOrigin = 0, longestEntry: Entry | undefined;
                 let coverage = Infinity, contributors: Set<Entry> | undefined;
-                const seen = selection === 'all' ? new Map<number, Set<number>>() : undefined;
+                const seen = selection === 'all' && !detail ? new Map<number, Set<number>>() : undefined;
+                const literal = detail && selection === 'all' ? new Map<number, Map<number, Match>>() : undefined;
                 const accepted = accept ? new Map<number, boolean>() : undefined;
                 for (let p = 0; p < next.size * FIELDS; p += FIELDS) {
                     const a = next.values, node = a[p], origin = a[p + 1];
@@ -277,6 +278,16 @@ export function compileEvasion(config: CompiledOptions, entries: readonly Entry[
                             if (start < longestStart) { longestStart = start; longestOrigin = origin; longestEntry = entry; }
                             continue;
                         }
+                        if (literal) {
+                            // Equal spans reached by several paths report the fewest transforms.
+                            const trace: Trace = { edits: 0, gaps: a[p + 3], repeats: a[p + 5], maps: a[p + 6] };
+                            let origins = literal.get(entry.order);
+                            if (!origins) literal.set(entry.order, origins = new Map());
+                            const old = origins.get(start)?.trace;
+                            if (old && !moreLiteral(trace, old)) continue;
+                            origins.set(start, { word: entry.word, start, end, order: entry.order, from: origin, to, trace });
+                            continue;
+                        }
                         if (seen) {
                             let origins = seen.get(entry.order);
                             if (origins?.has(start)) continue;
@@ -287,6 +298,8 @@ export function compileEvasion(config: CompiledOptions, entries: readonly Entry[
                         if (visit!({ word: entry.word, start, end, order: entry.order, from: origin, to }) === false) return [];
                     }
                 }
+                if (literal) for (const origins of literal.values()) for (const match of origins.values())
+                    if (visit!(match) === false) return [];
                 if (contributors) contribute(clusters, coverage, value.ends[to - 1], contributors);
                 if (longestEntry && visit!({ word: longestEntry.word, start: longestStart, end: value.ends[to - 1],
                     order: longestEntry.order, from: longestOrigin, to }) === false) return [];
@@ -298,7 +311,7 @@ export function compileEvasion(config: CompiledOptions, entries: readonly Entry[
     return Object.freeze<EvasionRuntime>({
         checkInput(text: string) { if (text.length > config.maxInputLength) fail('input', config.maxInputLength, text.length); },
         potential,
-        scan: (value, wholeWords, visit, selection, accept) => { run(value, wholeWords, selection, visit, accept); },
+        scan: (value, wholeWords, visit, selection, accept, detail) => { run(value, wholeWords, selection, visit, accept, detail); },
         censor: (value, wholeWords, accept) => run(value, wholeWords, 'censor', undefined, accept)
     });
 }

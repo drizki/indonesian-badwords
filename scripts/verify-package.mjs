@@ -118,7 +118,7 @@ assert.equal(api.censor('😀 k0nt0l!', context => {
 }), '😀 $&!');
 assert.equal(api.flag('pantai'), false);
 assert.deepEqual(api.find('😀 k0nt0l!'), [
-    { word: 'kontol', index: 3, end: 9, match: 'k0nt0l' }
+    { word: 'kontol', index: 3, end: 9, match: 'k0nt0l', via: { kind: 'leetspeak', folds: 2 } }
 ]);
 const repeated = api.analyze('kontol kontol');
 assert.equal(repeated.count, 1);
@@ -139,7 +139,7 @@ assert.equal(custom.flag('kontol'), false);
 const scoped = new api.Badwords({ dictionary: ['bodo', 'goblok'], allowPhrases: ['Baju Bodo'] });
 const scopedText = 'Baju Bodo goblok bodo';
 const checks = { ignoreRanges: [{ index: 10, end: 16 }] };
-assert.deepEqual(scoped.find(scopedText, checks), [{ word: 'bodo', index: 17, end: 21, match: 'bodo' }]);
+assert.deepEqual(scoped.find(scopedText, checks), [{ word: 'bodo', index: 17, end: 21, match: 'bodo', via: { kind: 'exact' } }]);
 assert.equal(scoped.censor(scopedText, mask(), checks), 'Baju Bodo goblok ****');
 assert.equal(scoped.analyze(scopedText, checks).occurrenceCount, 1);
 assert.equal(scoped.flag(scopedText, { ignoreRanges: [{ index: 10, end: 21 }] }), false);
@@ -173,7 +173,7 @@ assert.equal(api.flag('dasar kontol'), true);
 assert.equal(api.default.censor('dasar kontol'), 'dasar ***');
 assert.equal(api.censor('goblok', mask({ keepLast: 1 })), '*****k');
 assert.equal(api.censor('goblok', grawlix({ symbols: '#', random: () => 0 })), '######');
-assert.deepEqual(api.find('k0nt0l'), [{ word: 'kontol', index: 0, end: 6, match: 'k0nt0l' }]);
+assert.deepEqual(api.find('k0nt0l'), [{ word: 'kontol', index: 0, end: 6, match: 'k0nt0l', via: { kind: 'leetspeak', folds: 2 } }]);
 assert.equal(api.analyze('kontol kontol').occurrenceCount, 2);
 assert.equal(new api.Badwords({ dictionary: api.expandedDictionary }).flag('anjing'), true);
 assert.equal(new api.Badwords({ dictionary: ['customterm'] }).flag('customterm'), true);
@@ -256,8 +256,8 @@ globalThis.browserResults = {
     assert.deepEqual(browserResults, {
         flag: true,
         censored: 'dasar ***',
-        unicodeSpans: [{ word: 'kontol', index: 3, end: 9, match: 'ｋ０ｎｔ０ｌ' }],
-        invisibleSpans: [{ word: 'kontol', index: 0, end: 7, match: 'kon\u200btol' }],
+        unicodeSpans: [{ word: 'kontol', index: 3, end: 9, match: 'ｋ０ｎｔ０ｌ', via: { kind: 'leetspeak', folds: 2 } }],
+        invisibleSpans: [{ word: 'kontol', index: 0, end: 7, match: 'kon\u200btol', via: { kind: 'normalized' } }],
         repeatedLetters: true,
         exactCase: false,
         defaultContextual: false,
@@ -332,7 +332,7 @@ globalThis.browserResults = {
 
     const types = `
 import instance, { Badwords, flag, find, analyze, dictionary, contextualDictionary, expandedDictionary,
-    type AnalysisResult, type BadwordLocation, type BadwordsOptions, type MatchMode,
+    type AnalysisResult, type BadwordLocation, type MatchVia, type BadwordsOptions, type MatchMode,
     type Normalization, type DictionaryWord, type ContextualDictionaryWord,
     type ExpandedDictionaryWord, type CensorContext, type CensorCallback,
     type CensorReplacement, type CheckOptions, type IgnoreRange } from 'indonesian-badwords';
@@ -439,6 +439,8 @@ const occurrences: number = result.occurrenceCount;
 const locations: BadwordLocation[] = result.locations;
 const matches: BadwordLocation[] = find('k0nt0l');
 const instanceMatches: BadwordLocation[] = checker.find('customterm');
+const via: MatchVia | undefined = matches[0]?.via;
+const detailed: string[] = [checker.censor('customterm', (context, detail) => detail.occurrences(context)[0]?.via.kind ?? '')];
 for (const location of matches) {
     const start: number = location.index;
     const end: number = location.end;

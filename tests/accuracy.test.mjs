@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Badwords, dictionary, expandedDictionary } from '../dist/esm/index.js';
+import { bare } from './bare.mjs';
 
 const corpus = JSON.parse(readFileSync(new URL('./fixtures/accuracy-corpus.json', import.meta.url), 'utf8'));
 
@@ -57,7 +58,7 @@ describe('handcrafted Bahasa Indonesia regression corpus', () => {
             const analysis = detector.analyze(text);
 
             assert.equal(detector.flag(text), expected.matches.length > 0);
-            assert.deepEqual(detector.find(text), expectedLocations);
+            assert.deepEqual(bare(detector.find(text)), expectedLocations);
             assert.deepEqual(detector.badwords(text).sort(), expectedWords);
             assert.equal(detector.censor(text), expected.censored);
             assert.equal(
@@ -69,7 +70,7 @@ describe('handcrafted Bahasa Indonesia regression corpus', () => {
             assert.equal(analysis.count, expectedWords.length);
             assert.equal(analysis.occurrenceCount, expected.matches.length);
             assert.deepEqual([...analysis.badwords].sort(), expectedWords);
-            assert.deepEqual(analysis.locations, expectedLocations);
+            assert.deepEqual(bare(analysis.locations), expectedLocations);
         });
     }
 
