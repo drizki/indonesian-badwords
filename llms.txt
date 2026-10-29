@@ -44,9 +44,9 @@ Classify a message and gate on `level`:
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
-import { classify, reviewedDictionary } from 'indonesian-badwords/metadata';
+import { classify } from 'indonesian-badwords/metadata';
 
-const checker = new Badwords({ dictionary: reviewedDictionary });
+const checker = new Badwords();
 
 function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
   const result = classify(checker.analyze(message));
@@ -58,30 +58,31 @@ function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
 
 decide('terima kasih'); // => 'allow'
 decide('dasar g0bl0k!'); // => 'mask'
+decide('dasar cibai'); // => 'review'
 ```
 
 ## Guides
 
-- [Documentation index](https://github.com/drizki/indonesian-badwords/blob/main/docs/README.md): where to start.
-- [Get started](https://github.com/drizki/indonesian-badwords/blob/main/docs/getting-started.md): install and first check.
-- [Moderate chat and comments](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/chat-moderation.md): vocabulary, exceptions, `via`, incomplete checks.
-- [Dictionaries](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/dictionaries.md): default, expanded, reviewed and custom words.
-- [Censoring](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/censoring.md): mask, grawlix and callbacks.
-- [Exceptions](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/exceptions.md): `allowPhrases` and `ignoreRanges`.
-- [Evasion](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/evasion.md): separators, repeated letters, lookalikes, limits.
-- [Fuzzy matching](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/fuzzy-matching.md): typos and swapped letters, limits.
-- [Browsers and frameworks](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/browser-and-frameworks.md): browser, React, Vue and Svelte examples.
-- [Troubleshooting](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/troubleshooting.md): missed words, false positives, limit errors.
+- [Documentation index](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/README.md): where to start.
+- [Get started](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/getting-started.md): install and first check.
+- [Moderate chat and comments](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/chat-moderation.md): vocabulary, exceptions, `via`, incomplete checks.
+- [Dictionaries](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/dictionaries.md): default, expanded, reviewed and custom words.
+- [Censoring](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/censoring.md): mask, grawlix and callbacks.
+- [Exceptions](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/exceptions.md): `allowPhrases` and `ignoreRanges`.
+- [Evasion](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/evasion.md): separators, repeated letters, lookalikes, limits.
+- [Fuzzy matching](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/fuzzy-matching.md): typos and swapped letters, limits.
+- [Browsers and frameworks](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/browser-and-frameworks.md): browser, React, Vue and Svelte examples.
+- [Troubleshooting](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/troubleshooting.md): missed words, false positives, limit errors.
 
 ## Reference
 
-- [API reference](https://github.com/drizki/indonesian-badwords/blob/main/docs/api.md): options, methods, results, `via`, errors.
-- [Metadata, `selectDictionary` and `classify`](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md): categories, severity, regions, score and level.
-- [Performance](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md): measured workloads and how to reproduce them.
-- [Changelog](https://github.com/drizki/indonesian-badwords/blob/main/CHANGELOG.md)
+- [API reference](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/api.md): options, methods, results, `via`, errors.
+- [Metadata, `selectDictionary` and `classify`](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/metadata.md): categories, severity, regions, score and level.
+- [Performance](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/performance.md): measured workloads and how to reproduce them.
+- [Changelog](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/CHANGELOG.md)
 
 ## Optional
 
-- [README](https://github.com/drizki/indonesian-badwords/blob/main/README.md)
-- [README in Bahasa Indonesia](https://github.com/drizki/indonesian-badwords/blob/main/README.id.md)
-- [Contributing and dictionary reports](https://github.com/drizki/indonesian-badwords/blob/main/docs/contributing.md)
+- [README](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/README.md)
+- [README in Bahasa Indonesia](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/README.id.md)
+- [Contributing and dictionary reports](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/contributing.md)

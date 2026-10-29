@@ -8,9 +8,9 @@
 
 [English](https://github.com/drizki/indonesian-badwords#readme) · [Bahasa Indonesia](https://github.com/drizki/indonesian-badwords/blob/main/README.id.md)
 
-**Jaga chat, komentar, dan username tetap sopan dalam Bahasa Indonesia, dan Anda sendiri yang menentukan apa itu "kata kasar".**
+**Jaga chat, komentar, dan username berbahasa Indonesia tetap sopan, dengan aturan yang Anda tentukan sendiri.**
 
-Orang menulis `g0bl0k`, `ＧＯＢＬＯＫ`, atau `g-o-b-l-o-k` supaya lolos dari filter. Tim Anda juga perlu meloloskan nama seperti `Baju Bodo`, menanggapi kata yang agak kasar berbeda dari yang sangat kasar, dan menyerahkan kasus yang meragukan kepada manusia. Indonesian Badwords bisa semuanya, dan ia melaporkan apa yang ditemukan, bukan menebak maksud penulisnya.
+Orang menulis `g0bl0k` atau `ＧＯＢＬＯＫ` (keduanya tertangkap secara default), atau `g-o-b-l-o-k` (tertangkap dengan kebijakan evasion opsional), supaya lolos dari filter. Tim Anda juga perlu meloloskan nama seperti `Baju Bodo`, membedakan kata yang agak kasar dari yang sangat kasar, dan menyerahkan kasus yang meragukan kepada moderator. Indonesian Badwords menangani semuanya. Ia melaporkan apa yang ditemukan, bukan menebak maksud penulisnya.
 
 ```bash
 npm install indonesian-badwords
@@ -48,7 +48,7 @@ Metode: `flag`, `find`, `badwords`, `censor`, `filter`, `analyze`. Evasion dan f
 
 ## Prinsip
 
-- **Akurat lebih dulu.** Salah tandai adalah bug. Daftar default tidak memuat kata yang punya arti sehari-hari, seperti `anjing` dan `babi`; pencocokan yang lebih luas harus Anda aktifkan sendiri.
+- **Ketepatan nomor satu.** Teks aman yang ikut ditandai adalah bug. Daftar default tidak memuat kata yang punya arti sehari-hari, seperti `anjing` dan `babi`; pencocokan yang lebih luas harus Anda aktifkan sendiri.
 - **Tidak menebak konteks.** Pustaka ini melaporkan apa yang cocok dan bagaimana ia cocok. Aplikasi Andalah yang memutuskan tindakannya. `score` menilai kata yang cocok, bukan niat penulis pesan.
 - **Kendali pada lingkup tersempit.** Ubah satu kata, satu frasa, satu kategori, atau satu panggilan, bukan seluruh checker.
 - **Andal untuk input tak tepercaya.** Hasilnya deterministik, kerjanya dibatasi, dan batas yang terlampaui memunculkan error bertipe, bukan hasil "bersih" yang menyesatkan.
@@ -86,9 +86,9 @@ review; // => ['goblox']
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
-import { classify, reviewedDictionary } from 'indonesian-badwords/metadata';
+import { classify } from 'indonesian-badwords/metadata';
 
-const checker = new Badwords({ dictionary: reviewedDictionary });
+const checker = new Badwords();
 
 function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
   const result = classify(checker.analyze(message));
@@ -100,6 +100,7 @@ function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
 
 decide('terima kasih'); // => 'allow'
 decide('dasar g0bl0k!'); // => 'mask'
+decide('dasar cibai'); // => 'review'
 ```
 
 [Definisi score dan level](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md#the-score)
@@ -121,7 +122,7 @@ Selektornya adalah `profiles`, `categories`, `regions`, dan `minSeverity` (1 sam
 
 ### Tangkap ejaan yang disamarkan dan salah ketik
 
-`g0bl0k` dan teks full-width sudah cocok tanpa pengaturan apa pun. Tambahkan kebijakan evasion dan fuzzy hanya jika perlu, lalu uji dengan teks biasa dari aplikasi Anda: pencocokan yang lebih luas bisa menandai kata yang tidak bersalah.
+`g0bl0k` dan teks full-width sudah cocok tanpa pengaturan apa pun. Kebijakan evasion dan fuzzy menangkap lebih banyak, tetapi juga mencocokkan kata biasa: dengan `maxEdits: 1`, `bangsa`, `kampung`, dan `kontrol` hanya berjarak satu edit dari kata di daftar. Uji dengan teks dari aplikasi Anda, dan arahkan kecocokan `fuzzy` ke peninjauan (resep pertama), jangan langsung disensor.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
@@ -142,7 +143,7 @@ tolerant.censor('dasar g-o-b-l-o-x!'); // => 'dasar ***!'
 
 [Opsi evasion](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/evasion.md) · [Fuzzy matching](https://github.com/drizki/indonesian-badwords/blob/main/docs/guides/fuzzy-matching.md)
 
-### Atur tampilannya, dan apa yang dibiarkan
+### Atur tampilan sensor dan pengecualiannya
 
 ```ts
 import { Badwords } from 'indonesian-badwords';

@@ -10,7 +10,7 @@
 
 **Keep chat, comments and usernames civil in Bahasa Indonesia, and stay in control of what counts as "bad".**
 
-People type `g0bl0k`, `ＧＯＢＬＯＫ` or `g-o-b-l-o-k` to slip past a filter. Your team also needs to let a name like `Baju Bodo` through, treat a mild word differently from a severe one, and send doubtful cases to a person. Indonesian Badwords does all of that, and it reports what it found instead of guessing what the writer meant.
+People type `g0bl0k` or `ＧＯＢＬＯＫ` (both caught by default), or spaced-out `g-o-b-l-o-k` (caught with the opt-in evasion policy), to slip past a filter. Your team also needs to let a name like `Baju Bodo` through, treat a mild word differently from a severe one, and send doubtful cases to a person. Indonesian Badwords does all of that, and it reports what it found instead of guessing what the writer meant.
 
 ```bash
 npm install indonesian-badwords
@@ -86,9 +86,9 @@ review; // => ['goblox']
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
-import { classify, reviewedDictionary } from 'indonesian-badwords/metadata';
+import { classify } from 'indonesian-badwords/metadata';
 
-const checker = new Badwords({ dictionary: reviewedDictionary });
+const checker = new Badwords();
 
 function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
   const result = classify(checker.analyze(message));
@@ -100,6 +100,7 @@ function decide(message: string): 'allow' | 'mask' | 'review' | 'block' {
 
 decide('terima kasih'); // => 'allow'
 decide('dasar g0bl0k!'); // => 'mask'
+decide('dasar cibai'); // => 'review'
 ```
 
 [How the score and level are defined](https://github.com/drizki/indonesian-badwords/blob/main/docs/metadata.md#the-score)
@@ -121,7 +122,7 @@ Selectors are `profiles`, `categories`, `regions` and `minSeverity` (1 to 4). Re
 
 ### Catch disguised spellings and typos
 
-`g0bl0k` and full-width text already match with no setup. Add evasion and fuzzy policies only when you need more, and test them on ordinary text from your app: broader matching can flag innocent words.
+`g0bl0k` and full-width text already match with no setup. Evasion and fuzzy policies catch more, and also match ordinary words: with `maxEdits: 1`, `bangsa`, `kampung` and `kontrol` are each one edit from a listed word. Test on text from your app, and send `fuzzy` matches to review (first recipe) instead of censoring them.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
