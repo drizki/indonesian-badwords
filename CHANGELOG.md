@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- Catalog metadata only, pending native review (#35): resolves 26 severities and 18 category sets where fetched sources allow, adds `identity-slur` to `monyet` (reported racist use), records keep/guard/remove recommendations and literal-use risks for the default terms that are only contextual or unaccepted, and leaves unsupported values `null`. `dictionary`, `contextualDictionary` and `expandedDictionary` are unchanged.
+
 ## [2.5.3] - 2026-10-29
 
 - Combined evasion and fuzzy scans, and fuzzy substring mode, now complete within the default step budget: projections are pruned soundly, one-edit signatures are hashed in linear time, and insertion edits no longer absorb separator-delimited neighbours (`censor('x-goblok')` is now `x-***`). The default `maxSteps` stays at 10,000,000; supported input sizes per policy combination are documented in the evasion and fuzzy guides.
