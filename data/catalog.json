@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "review": {
-    "reviewedOn": "2026-10-28",
+    "reviewedOn": "2026-10-29",
     "method": "ai-source-review",
     "humanReviewed": false,
     "nativeReviewed": false,
@@ -393,7 +393,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Coarse-register selection is an editorial inference; spelling attestation alone does not establish coarse use.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial clipping of anjing; no benign sense documented, but the exact token is not independently attested. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -865,7 +867,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Sundanese expletive attested for the exact token; no benign sense documented. Usually friendly, so intensity is low (level 1). Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -2657,7 +2661,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Sexualizing acronym; no benign sense documented, but the study makes interpretation context-dependent. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -2728,11 +2734,38 @@
           "explanation": "The source records bodoh in a coarse-expression table. It is a distinct matching spelling from bodo; the Baju Bodo clothing collision belongs to bodo only.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
           "severityRationale": "Editorial register assessment for the indicated coarse use; not a measured probability or assessment of the current speaker.",
-          "literalUseRisks": [],
+          "literalUseRisks": [
+            "KBBI Daring lists bodoh as an ordinary adjective for not understanding quickly or lacking knowledge, and a colloquial sense meaning roughly \"up to you\"; descriptive, educational or dismissive uses need not insult anyone."
+          ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
-          "literalRiskEvidence": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Ordinary adjective with neutral descriptive and colloquial \"up to you\" senses; insulting use is context-dependent. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
+          "literalRiskEvidence": [
+            {
+              "riskIndex": 0,
+              "claims": [
+                {
+                  "sourceId": "kbbi-bodoh",
+                  "url": "https://kbbi.kemendikdasmen.go.id/entri/bodoh",
+                  "locator": "Entry bodoh, senses 1-3 (sense 3 labelled cak)",
+                  "supports": [
+                    "sense",
+                    "literal-use"
+                  ],
+                  "statement": "Lists neutral adjective senses and a colloquial \"up to you\" sense.",
+                  "verification": "read",
+                  "subjectForms": [
+                    "bodoh"
+                  ],
+                  "subjectSense": "ordinary adjective and colloquial dismissal",
+                  "usageScope": "literal-use",
+                  "scope": "exact-surface"
+                }
+              ]
+            }
+          ],
           "evidence": [
             {
               "sourceId": "bekasi2025",
@@ -2776,11 +2809,14 @@
           "presetReason": "Excluded from reviewed profiles because lexical attestation does not establish coarse use of this exact spelling.",
           "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
           "literalUseRisks": [
-            "Baju Bodo is an independently attested clothing name containing this exact token."
+            "Baju Bodo is an independently attested clothing name containing this exact token.",
+            "KBBI Daring gives bodo as the non-standard form of bodoh, including its colloquial \"up to you\" sense; the exact token also appears in the clothing name Baju Bodo."
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Non-standard spelling of bodoh with no exact-surface coarse evidence; collides with Baju Bodo and the colloquial \"up to you\" sense. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [
             {
               "riskIndex": 0,
@@ -2801,6 +2837,28 @@
                   "subjectSense": "clothing name",
                   "usageScope": "literal-use",
                   "scope": "compound"
+                }
+              ]
+            },
+            {
+              "riskIndex": 1,
+              "claims": [
+                {
+                  "sourceId": "kbbi-bodoh",
+                  "url": "https://kbbi.kemendikdasmen.go.id/entri/bodoh",
+                  "locator": "Entry bodoh; non-standard form note and sense 3",
+                  "supports": [
+                    "variant-relation",
+                    "literal-use"
+                  ],
+                  "statement": "Gives bodo as a non-standard form of bodoh and lists a colloquial \"up to you\" sense.",
+                  "verification": "read",
+                  "subjectForms": [
+                    "bodo"
+                  ],
+                  "subjectSense": "non-standard spelling of an ordinary adjective",
+                  "usageScope": "literal-use",
+                  "scope": "exact-surface"
                 }
               ]
             }
@@ -2962,7 +3020,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Mild Betawi exclamation; no benign sense documented, often friendly (level 1). Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -3067,7 +3127,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Mild Betawi exclamation attested in two studies; no benign sense documented, often friendly (level 1). Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -3186,7 +3248,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Hokkien-origin genital vulgarity; no Indonesian literal sense found for this spelling. Indonesian coarse-use evidence for the exact spelling is still missing. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -3254,7 +3318,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Recorded as a Sundanese snack name in a food-name study. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [
             {
               "riskIndex": 0,
@@ -3341,7 +3407,7 @@
           "categories": [
             "sexual-vulgarity"
           ],
-          "severity": null,
+          "severity": 3,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [],
@@ -3350,13 +3416,15 @@
           ],
           "explanation": "Exact documented form; no additional variants or general derivation rule are implied.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): a sexual-slang term for masturbation attested as coarse in the acronym study; sibling terms colmek, cokli and bacol are level 3. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "Escherichia coli and E. coli are independently attested scientific-name contexts containing this exact token."
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Collides with E. coli and other scientific names (documented in a ministry health article). Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [
             {
               "riskIndex": 0,
@@ -4467,7 +4535,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Unaccented gebleg is a food product name and other Javanese homonyms exist; evaluative sense is not shown abusive. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [
             {
               "riskIndex": 0,
@@ -4657,7 +4727,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Unresolved legacy string with no sense evidence; closest known form is gebleg (itself guard/remove material). Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -4839,7 +4911,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Unresolved legacy string with no sense evidence; resembles jambret (snatcher), which is an ordinary theft-related word. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -4947,7 +5021,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Unresolved legacy string with no sense evidence found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -5070,7 +5146,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Javanese descriptive adjective for poor understanding or mental instability; the dictionary gives no coarse label. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -6037,7 +6115,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Genital-reference term from a taboo-language study; no benign sense found, but coarse register is unverified. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -6261,11 +6341,38 @@
           "explanation": "Exact documented form; no additional variants or general derivation rule are implied.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
           "severityRationale": "Editorial register assessment for the indicated coarse use; not a measured probability or assessment of the current speaker.",
-          "literalUseRisks": [],
+          "literalUseRisks": [
+            "KBBI Daring cross-refers tai to tahi and lists a separate regional (label Bkt) noun tai for dried rice ready to be milled; ordinary compounds such as tahi lalat use the tahi spelling."
+          ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form or explicitly scoped compound claims document coarse use; this does not assess a new message.",
-          "notes": [],
-          "literalRiskEvidence": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Excrement-reference insult attested for the standard family; the rare regional dried-rice noun is the only verified literal homonym. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
+          "literalRiskEvidence": [
+            {
+              "riskIndex": 0,
+              "claims": [
+                {
+                  "sourceId": "kbbi-tai",
+                  "url": "https://kbbi.kemendikdasmen.go.id/entri/tai",
+                  "locator": "Entries tai1 (cross-reference) and tai2 (label Bkt)",
+                  "supports": [
+                    "sense",
+                    "literal-use"
+                  ],
+                  "statement": "Lists a cross-reference to tahi and a separate regional rice-related noun.",
+                  "verification": "read",
+                  "subjectForms": [
+                    "tai"
+                  ],
+                  "subjectSense": "regional rice term",
+                  "usageScope": "literal-use",
+                  "scope": "exact-surface"
+                }
+              ]
+            }
+          ],
           "evidence": [
             {
               "sourceId": "sajak2023",
@@ -6571,7 +6678,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Breast-slang term attested only as an acronym constituent; descriptive or sexual-health mentions are plausible. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -6623,7 +6732,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Unresolved legacy string with no sense evidence found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -6823,7 +6934,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested spelling one edit from coli with no benign sense found; harmless to keep until reviewed. Inherits coli collisions only if read as coli. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -6857,7 +6970,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested spelling one edit from coli with no benign sense found; harmless to keep until reviewed. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -6891,7 +7006,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested short spelling of ngentot with no benign sense found; harmless to keep until reviewed. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -6925,7 +7042,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested spelling of ngentot/ngenthu with no benign sense found; harmless to keep until reviewed. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -6947,27 +7066,58 @@
           "id": "ibwv-0074",
           "senseId": "ibw-0905",
           "surface": "goblik",
-          "categories": [],
-          "severity": null,
-          "attestation": "unresolved",
-          "registerEvidence": "unverified",
+          "categories": [
+            "insult"
+          ],
+          "severity": 1,
+          "attestation": "attested",
+          "registerEvidence": "attested",
           "abusiveRegionIds": [],
           "profiles": [],
-          "explanation": "Exact spelling or intended sense remains unresolved in the read evidence. Scoped lead description: The legacy spelling has no sufficiently verified exact sense or canonical family relationship in the consulted sources. A visually possible transformation is not an attested lexical relationship.",
-          "presetReason": "Excluded from reviewed profiles because the exact spelling or intended sense remains unresolved in the read evidence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "explanation": "Softened Surabaya form of goblok recorded in a euphemism study; it is a spelling variant of the stupidity word, not a separate sense.",
+          "presetReason": "Not accepted into a reviewed profile in this draft: new exact-surface evidence was added for #35 and awaits maintainer native review. Profiles are unchanged.",
+          "severityRationale": "Editorial level 1 (2026-10-29): the paper presents goblik as a softened form of goblok (level 2) used in light, self-directed or teasing remarks. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
-          "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "registerRationale": "The attached exact-form claim records goblik in Surabaya messages as a euphemism; it does not assess a new message.",
+          "notes": [
+            "Evidence upgraded 2026-10-29 (#35 draft): previously an unresolved legacy string; now attested by the Surabaya euphemism paper. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Now attested as a softened form of goblok in a euphemism paper; no benign sense found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
-          "evidence": [],
+          "evidence": [
+            {
+              "sourceId": "permita-2020-surabaya",
+              "url": "https://widyaparwa.kemendikdasmen.go.id/index.php/widyaparwa/article/download/296/pdf_1/1822",
+              "locator": "Printed pp.44-45; §3.2.1, utterances iii-iv",
+              "supports": [
+                "surface",
+                "sense",
+                "variant-relation",
+                "register"
+              ],
+              "statement": "The paper records goblik in messages as a euphemistic replacement for the stupidity word goblok, used as self-deprecation and light accusation.",
+              "verification": "read",
+              "subjectForms": [
+                "goblik"
+              ],
+              "subjectSense": "softened stupidity word",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
+            }
+          ],
           "literalSenseEvidence": [],
           "abusiveRegions": [],
           "literalSenseRegions": [],
           "lexicalSenseRegions": [],
           "unverifiedRegionLeads": [],
-          "derivation": null
+          "derivation": {
+            "baseSenseId": "ibw-0017",
+            "baseSurface": "goblok",
+            "operation": "Replace the final o of goblok with i; the Surabaya euphemism paper records this change as an observed softening.",
+            "basis": "Observed in the cited paper; the paper reports the sound change, not a historical derivation.",
+            "exactSurfaceAttested": true
+          }
         }
       ]
     },
@@ -6993,7 +7143,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested spelling one edit from kontol with no benign sense found; harmless to keep until reviewed. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -7275,7 +7427,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -7286,7 +7438,7 @@
           ],
           "explanation": "Softened -ik counterpart of dancuk.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the thesis says the vowel-lenited dancik is smoother than dancuk (level 3); one step below the base is an editorial reading of that comparison. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -7313,6 +7465,24 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form analysis; observed token only where locator specifies dialogue"
+            },
+            {
+              "sourceId": "winiasih-2010-surabaya",
+              "url": "https://repositori.kemendikdasmen.go.id/436/1/132140608201011591.pdf",
+              "locator": "PDF p.190 (printed p. cxci), lenition and sound-play paragraphs",
+              "supports": [
+                "register",
+                "variant-relation"
+              ],
+              "statement": "The thesis states that lenition makes dancik, jancik and hancik smoother than dancuk, jancuk and hancuk.",
+              "verification": "read",
+              "subjectForms": [
+                "dancik",
+                "dancuk"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -7360,7 +7530,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -7371,7 +7541,7 @@
           ],
           "explanation": "Softened -ik counterpart of hancuk; also observed as a surprised exclamation.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the thesis says hancik is smoother than hancuk (level 3); one step below the base is an editorial reading. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -7398,6 +7568,24 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form analysis; observed token only where locator specifies dialogue"
+            },
+            {
+              "sourceId": "winiasih-2010-surabaya",
+              "url": "https://repositori.kemendikdasmen.go.id/436/1/132140608201011591.pdf",
+              "locator": "PDF p.190 (printed p. cxci), lenition and sound-play paragraphs",
+              "supports": [
+                "register",
+                "variant-relation"
+              ],
+              "statement": "The thesis states that lenition makes hancik smoother than hancuk.",
+              "verification": "read",
+              "subjectForms": [
+                "hancik",
+                "hancuk"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -7706,7 +7894,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -7717,7 +7905,7 @@
           ],
           "explanation": "Explicitly linked sound-play form of dancuk; not assigned an independent etymology here.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the thesis calls damput a play on dancuk that is smoother than dancuk (level 3). Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -7744,6 +7932,24 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form analysis; observed token only where locator specifies dialogue"
+            },
+            {
+              "sourceId": "winiasih-2010-surabaya",
+              "url": "https://repositori.kemendikdasmen.go.id/436/1/132140608201011591.pdf",
+              "locator": "PDF p.190 (printed p. cxci), lenition and sound-play paragraphs",
+              "supports": [
+                "register",
+                "variant-relation"
+              ],
+              "statement": "The thesis states that the sound play producing damput, hamput and jamput makes them smoother than dancuk.",
+              "verification": "read",
+              "subjectForms": [
+                "damput",
+                "dancuk"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -7793,7 +7999,7 @@
             "insult",
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 3,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -7804,7 +8010,7 @@
           ],
           "explanation": "Explicitly discussed intensified jancuk form; no separate token count is inferred.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): the thesis describes inserting i before the penultimate syllable (jancuk to jiancuk) as intensification, so the form is at least as strong as jancuk; capped at 3 because no family-directed use is documented for it. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -7831,6 +8037,24 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form analysis; observed token only where locator specifies dialogue"
+            },
+            {
+              "sourceId": "winiasih-2010-surabaya",
+              "url": "https://repositori.kemendikdasmen.go.id/436/1/132140608201011591.pdf",
+              "locator": "PDF p.190 (printed p. cxci), lenition and sound-play paragraphs",
+              "supports": [
+                "register",
+                "variant-relation"
+              ],
+              "statement": "The thesis states that inserting i in the penultimate syllable intensifies the expletive (jancuk to jiancuk).",
+              "verification": "read",
+              "subjectForms": [
+                "jiancuk",
+                "jancuk"
+              ],
+              "subjectSense": "intensified sexual-base expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -7961,7 +8185,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -7972,7 +8196,7 @@
           ],
           "explanation": "Attested softened variant; attenuation does not erase its expletive role.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the thesis and the Surabaya euphemism paper both describe jancik as a softer substitute for jancok; the paper says speakers swap in jancik because jancok is judged harsh. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -7998,6 +8222,41 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form; jancur is analytical prose, while observed tokens there are cur"
+            },
+            {
+              "sourceId": "winiasih-2010-surabaya",
+              "url": "https://repositori.kemendikdasmen.go.id/436/1/132140608201011591.pdf",
+              "locator": "PDF p.190 (printed p. cxci), lenition and sound-play paragraphs",
+              "supports": [
+                "register",
+                "variant-relation"
+              ],
+              "statement": "The thesis states that lenition makes jancik smoother than jancuk.",
+              "verification": "read",
+              "subjectForms": [
+                "jancik",
+                "jancuk"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
+            },
+            {
+              "sourceId": "permita-2020-surabaya",
+              "url": "https://widyaparwa.kemendikdasmen.go.id/index.php/widyaparwa/article/download/296/pdf_1/1822",
+              "locator": "Printed p.44; §3.2.1",
+              "supports": [
+                "register"
+              ],
+              "statement": "The paper reports that Surabaya speakers often replace jancok with jancik because jancok is considered harsh.",
+              "verification": "read",
+              "subjectForms": [
+                "jancik",
+                "jancok"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -8044,7 +8303,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -8055,7 +8314,7 @@
           ],
           "explanation": "Attested euphemistic final-consonant alteration.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the paper classes the r-final jancur as a euphemistic alteration of jancok; one step below the base is an editorial reading. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -8081,6 +8340,23 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form; jancur is analytical prose, while observed tokens there are cur"
+            },
+            {
+              "sourceId": "permita-2020-surabaya",
+              "url": "https://widyaparwa.kemendikdasmen.go.id/index.php/widyaparwa/article/download/296/pdf_1/1822",
+              "locator": "Printed p.46; §3.2.5",
+              "supports": [
+                "register"
+              ],
+              "statement": "The paper classes jancur as a euphemistic sound change of jancok that masks the harsh original.",
+              "verification": "read",
+              "subjectForms": [
+                "jancur",
+                "jancok"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -8127,7 +8403,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -8138,7 +8414,7 @@
           ],
           "explanation": "Attested clipping with a separate ordinary lexical homonym.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the paper classes ancik as a clipped, softened form of hancik/jancik (level 2 by the thesis comparison above). Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "The independently recorded ancik headword can concern footing or support. That ordinary meaning belongs to this exact spelling."
           ],
@@ -8260,7 +8536,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -8271,7 +8547,7 @@
           ],
           "explanation": "Attested short clipping that can serve as familiar address.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the paper describes cuk as a clipping of jancuk used among peers, with the u vowel chosen to disguise the original sound. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "The cited clipping occurs in conversational address. A token may serve familiarity rather than an attack; no separate acronym collision is documented here."
           ],
@@ -8299,6 +8575,23 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "explicit form; jancur is analytical prose, while observed tokens there are cur"
+            },
+            {
+              "sourceId": "permita-2020-surabaya",
+              "url": "https://widyaparwa.kemendikdasmen.go.id/index.php/widyaparwa/article/download/296/pdf_1/1822",
+              "locator": "Printed pp.44-45; §3.2.2",
+              "supports": [
+                "register"
+              ],
+              "statement": "The paper describes cuk as a clipping of jancuk whose vowel is chosen to disguise the original sound, used mostly between peers.",
+              "verification": "read",
+              "subjectForms": [
+                "cuk",
+                "jancuk"
+              ],
+              "subjectSense": "clipped softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -8347,7 +8640,7 @@
             "insult",
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 3,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [],
@@ -8356,7 +8649,7 @@
           ],
           "explanation": "The review lists Ancok and the independently located dialogue contains bare ancok. Its mother-directed compound is separately scoped.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): bare ancok is recorded as an expletive in the same sexual-base family as jancok and dancok (both level 3) with no attenuation described; sibling consistency, not an independent calibration. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -8671,19 +8964,26 @@
           "id": "ibw-1001-v21",
           "senseId": "ibw-1001",
           "surface": "jiancok",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "sexual-vulgarity",
+            "insult",
+            "coarse-exclamation"
+          ],
+          "severity": 3,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Editorial -ok counterpart of explicitly discussed jiancuk; exact surface attestation was not established.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): editorial alias of jiancuk; the level is inherited from the base and the alias itself has no usage attestation. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial alias of jiancuk; categories follow the base sense because the operation changes spelling only. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial o-for-u spelling of attested jiancuk; no benign sense found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -8773,7 +9073,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested spelling close to jancok/dancok with no benign sense found; harmless to keep until reviewed. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -8807,7 +9109,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Unattested spelling one edit from jancok with no benign sense found; harmless to keep until reviewed. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -8841,7 +9145,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Unresolved legacy string with no sense or family evidence found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [],
           "literalSenseEvidence": [],
@@ -8997,19 +9303,25 @@
           "id": "ibw-1005-v02",
           "senseId": "ibw-1005",
           "surface": "asyu",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "insult",
+            "coarse-exclamation"
+          ],
+          "severity": 2,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Possible expressive spelling of asu. The proposed link is editorial; no primary linguistic exact-form example was verified.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): editorial alias of asu; the level is inherited from the base and the alias itself has no usage attestation. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial alias of asu; categories follow the base sense because the operation changes spelling only. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial spelling of asu (dog word); the base also names the animal, but this exact spelling has no benign sense documented. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -9068,21 +9380,26 @@
           "id": "ibw-1005-v03",
           "senseId": "ibw-1005",
           "surface": "asw",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "insult",
+            "coarse-exclamation"
+          ],
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Observed slang alteration of asu, with an unrelated military acronym collision.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): inherited from asu; the table verifies the mapping but not the register of the altered form. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "The official acronym ASW denotes anti-submarine warfare; lowercased matching can collide with this exact letter sequence."
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The exact asw→asu spelling mapping is verified, and coarse asu is independently verified. Applying the base register to asw remains editorial; the row itself supplies no independent coarse-register analysis.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): an Instagram slang table maps asw to asu; the spelling is attested but its coarse register is an editorial inference. Draft assignment for #35; awaiting maintainer native review."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -9341,7 +9658,7 @@
           "categories": [
             "insult"
           ],
-          "severity": null,
+          "severity": 1,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -9352,7 +9669,7 @@
           ],
           "explanation": "Attested modified -ik spelling.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 1 (2026-10-29): the paper presents congik as a softened form of congok (level 2), recorded in laughing, non-angry banter. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "The cited exact-form message includes laughter; this is documented banter rather than proof of angry intent."
           ],
@@ -9621,7 +9938,7 @@
             "coarse-exclamation",
             "insult"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -9632,7 +9949,7 @@
           ],
           "explanation": "Observed coarse expletive; origin disputed in consulted analyses.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): the thesis calls jamput a play on dancuk that is smoother than dancuk; the paper separately reports contested speaker views of its meaning. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
@@ -9678,6 +9995,24 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "sound-play analysis"
+            },
+            {
+              "sourceId": "winiasih-2010-surabaya",
+              "url": "https://repositori.kemendikdasmen.go.id/436/1/132140608201011591.pdf",
+              "locator": "PDF p.190 (printed p. cxci), lenition and sound-play paragraphs",
+              "supports": [
+                "register",
+                "variant-relation"
+              ],
+              "statement": "The thesis states that the sound play producing damput, hamput and jamput makes them smoother than dancuk.",
+              "verification": "read",
+              "subjectForms": [
+                "jamput",
+                "dancuk"
+              ],
+              "subjectSense": "softened expletive",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -10144,7 +10479,7 @@
           "categories": [
             "insult"
           ],
-          "severity": null,
+          "severity": 1,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -10155,7 +10490,7 @@
           ],
           "explanation": "Attested softened stupidity taunt.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 1 (2026-10-29): the paper presents kopler as a softened form of the stupidity taunt koplo (level 2), recorded in laughing banter. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "The source records a laughing utterance with this exact softened form; a token can occur without a hostile attack."
           ],
@@ -10444,19 +10779,25 @@
           "id": "ibw-1016-v02",
           "senseId": "ibw-1016",
           "surface": "tempek",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "sexual-vulgarity",
+            "coarse-exclamation"
+          ],
+          "severity": 3,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Editorial vowel alteration of supported tempik; this pass did not independently verify a primary lexical definition for the exact surface.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): editorial alias of tempik; the level is inherited from the base and the alias itself has no usage attestation. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial alias of tempik; categories follow the base sense because the operation changes spelling only. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial spelling of tempik; no benign sense found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -11053,19 +11394,24 @@
           "id": "ibw-1020-v02",
           "senseId": "ibw-1020",
           "surface": "edun",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "insult",
+            "coarse-exclamation"
+          ],
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Observed written alteration of edan.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): inherited from edan; the table verifies the mapping but not the register of the altered form. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): a slang table maps edun to edan; categories follow the base sense. Draft assignment for #35; awaiting maintainer native review."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -12519,7 +12865,8 @@
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
           "notes": [
-            "The source nominates this form as coarse but does not establish a specific insulting or exclamatory sense. The literal dictionary meaning does not fill that gap."
+            "The source nominates this form as coarse but does not establish a specific insulting or exclamatory sense. The literal dictionary meaning does not fill that gap.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Survey-nominated coarse form with no stated sense and an unestablished relation to belegug. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [],
           "evidence": [
@@ -12928,7 +13275,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Sundanese evaluative expression; no benign sense documented. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -13015,7 +13364,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Sundanese playful evaluative expression; no benign sense documented. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -13091,7 +13442,9 @@
           "id": "ibw-1038-v01",
           "senseId": "ibw-1038",
           "surface": "heunceut",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "unverified",
@@ -13105,7 +13458,10 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): a community glossary labels it Sundanese female-genital slang; its coarse register is not independently verified. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Community glossary gives a female-genital slang sense; anatomical or sexual-health mentions need not attack anyone. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -13167,7 +13523,9 @@
           "id": "ibw-1038-v02",
           "senseId": "ibw-1038",
           "surface": "henceut",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
@@ -13179,7 +13537,10 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact coarse register remains unverified; lexical meaning, ordinary usage and source availability are recorded separately.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial spelling of heunceut (female-genital slang); register unverified. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Editorial spelling of heunceut; same mention-without-attack risk, no independent attestation. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -13218,7 +13579,9 @@
           "id": "ibw-1038-v03",
           "senseId": "ibw-1038",
           "surface": "hencet",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
@@ -13230,7 +13593,10 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact coarse register remains unverified; lexical meaning, ordinary usage and source availability are recorded separately.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial spelling of heunceut (female-genital slang); register unverified. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Editorial spelling of heunceut; same mention-without-attack risk, no independent attestation. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -13429,7 +13795,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Also a literal Sundanese descriptor for drooping animal ears. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -15294,7 +15662,7 @@
           "categories": [
             "sexual-vulgarity"
           ],
-          "severity": null,
+          "severity": 3,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -15305,13 +15673,15 @@
           ],
           "explanation": "Exact Ewe is directly listed as a coarse sexual-action clipping in the Bekasi study. English ewe is an independently supported ordinary homonym.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): the Bekasi study records ewe as a clipped form of ngewe (level 3) with no attenuation described; sibling consistency. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "The exact English word ewe denotes a female sheep; animal-husbandry discussion can be ordinary."
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact Ewe and its coarse sexual-action role are directly classified in the publisher PDF table; the English animal sense and accented Betawi dictionary forms remain separate claims.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: English ewe (female sheep) is an ordinary word; the Indonesian coarse clipping of ngewe is documented separately. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -15440,7 +15810,9 @@
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The author explicitly describes negative communicative meaning for the printed component. It is scholarly lexical discussion, not independently observed standalone usage.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Appears only inside an author-expanded taunt; no benign sense documented; register evidence is thin. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -15638,19 +16010,25 @@
           "id": "ibw-1504-v02",
           "senseId": "ibw-1504",
           "surface": "kentod",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "sexual-vulgarity",
+            "insult"
+          ],
+          "severity": 3,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Editorial final-consonant alternative of supported kentot.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): editorial alias of kentot; the level is inherited from the base and the alias itself has no usage attestation. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial alias of kentot; categories follow the base sense because the operation changes spelling only. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial spelling of attested kentot; no benign sense found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -15795,7 +16173,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Irritation expletive; the accented Betawi ngehe with a different meaning does not match under NFKC. Expression of frustration need not be an attack. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -15885,7 +16265,9 @@
           "id": "ibw-1507-v01",
           "senseId": "ibw-1507",
           "surface": "sepong",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "editorial-inference",
@@ -15901,7 +16283,10 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): a sexual-context interview and a podcast study place the oral-sex forms disepong/Nyepongmu among swear forms; the bare form is attested only in sexual reports. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Oral-sex verb; attested only in sexual-context reports, no benign sense found; register is inferred. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -15954,7 +16339,9 @@
           "id": "ibw-1507-v02",
           "senseId": "ibw-1507",
           "surface": "nyepong",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "editorial-inference",
@@ -15970,7 +16357,10 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): a sexual-context interview and a podcast study place the oral-sex forms disepong/Nyepongmu among swear forms; the bare form is attested only in sexual reports. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Oral-sex verb; attested only in sexual-context reports, no benign sense found; register is inferred. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -16050,7 +16440,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Sex-worker label that reports or discussion can mention without attacking; accented Betawi pecun (boat festival) is distinct only when diacritics are kept. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -16243,19 +16635,24 @@
           "id": "ibw-1509-v02",
           "senseId": "ibw-1509",
           "surface": "peju",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "sexual-vulgarity"
+          ],
+          "severity": 3,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Editorial final-h deletion of the supported semen term.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): editorial alias of pejuh; the level is inherited from the base and the alias itself has no usage attestation. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "No independently verified exact-surface coarse claim here. Base/related-form coarse evidence supports only an editorial register inference.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): editorial alias of pejuh; categories follow the base sense because the operation changes spelling only. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial final-h deletion of attested pejuh; no benign sense found. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -16321,7 +16718,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Colloquial KBBI-listed acronym that journalism and research mention descriptively; insulting use is context-dependent. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -16359,6 +16758,22 @@
               "usageScope": "coarse-use",
               "scope": "exact-surface",
               "method": "observed disparaging comment; source theoretical function claims not adopted"
+            },
+            {
+              "sourceId": "kbbi-pelakor",
+              "url": "https://kbbi.kemendikdasmen.go.id/entri/pelakor",
+              "locator": "Entry pelakor (labels n, cak, akr)",
+              "supports": [
+                "sense"
+              ],
+              "statement": "Lists pelakor as a colloquial acronym noun for a person who takes another person's husband.",
+              "verification": "read",
+              "subjectForms": [
+                "pelakor"
+              ],
+              "subjectSense": "colloquial acronym label",
+              "usageScope": "lexical-sense",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -16488,7 +16903,7 @@
           "categories": [
             "sexual-vulgarity"
           ],
-          "severity": null,
+          "severity": 3,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [
@@ -16499,7 +16914,7 @@
           ],
           "explanation": "Exact source-spelled Pler is an explicitly reported shortened coarse male-genital form.",
           "presetReason": "Included in reviewed-core for the coarse use documented by the scoped claims. A lexical match does not determine intent.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): the Bekasi study records pler as a shortened form of peler (level 3) with no attenuation described; sibling consistency. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "Possible anatomical, sexual or linguistic description can mention this exact documented form without attacking someone. This is a contextual-use possibility, not a verified unrelated neutral homonym."
           ],
@@ -16619,7 +17034,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Exact source-spelled form is used or explicitly classified as coarse. The evidence method distinguishes utterance, taxonomy, review and nomination.",
-          "notes": [],
+          "notes": [
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Ordinary Sundanese word for completeness shares the spelling; the genital swear is documented for Jambi Malay. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -16759,7 +17176,9 @@
           "id": "ibw-1513-v01",
           "senseId": "ibw-1513",
           "surface": "sange",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "unverified",
@@ -16773,7 +17192,10 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): sources gloss it as sexual-desire/arousal slang; standalone coarse register is not established. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Sexual-desire slang attested in descriptive discourse; coarse register is not established. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -18625,7 +19047,8 @@
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
           "notes": [
-            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense."
+            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Balinese expletive in observed speech and a related-form study; no benign sense found, though the exact-form reading is inherited. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [],
           "evidence": [
@@ -19175,21 +19598,27 @@
           "id": "ibwv-2020",
           "senseId": "ibw-2007",
           "surface": "pukimae",
-          "categories": [],
-          "severity": null,
+          "categories": [
+            "insult",
+            "sexual-vulgarity",
+            "coarse-exclamation"
+          ],
+          "severity": 3,
           "attestation": "editorial-alias",
           "registerEvidence": "editorial-inference",
           "abusiveRegionIds": [],
           "profiles": [],
           "explanation": "Legacy ending could be a regional form or a separate spelling choice; the base association remains provisional.",
           "presetReason": "Excluded from reviewed profiles under the conservative lexical policy. The scoped source uses and documented literal risks remain available for inspection.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 3 (2026-10-29): editorial alias of pukimai; the level is inherited from the base and the alias itself has no usage attestation. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The coarse-base interpretation is editorially extended to this spelling; no exact-surface usage or region is attested.",
           "notes": [
             "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
-            "This exact editor-derived spelling has no independent usage attestation here; observed functions of its base are not inherited as actual use of this alias."
+            "This exact editor-derived spelling has no independent usage attestation here; observed functions of its base are not inherited as actual use of this alias.",
+            "Categories assigned 2026-10-29 (#35 draft): editorial alias of pukimai; categories follow the base sense because the operation changes spelling only. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Editorial spelling of pukimai; observed functions of the base are not evidence for this alias. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [],
           "evidence": [
@@ -22686,7 +23115,9 @@
           "id": "ibwv-2047",
           "senseId": "ibw-2024",
           "surface": "cuki",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "unverified",
@@ -22701,7 +23132,8 @@
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
           "notes": [
-            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense."
+            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
+            "Categories assigned 2026-10-29 (#35 draft): the Ambon Malay dictionary gives a sexual-act verb sense; the Bugis board-game homograph is a separate sense. Draft assignment for #35; awaiting maintainer native review."
           ],
           "literalRiskEvidence": [
             {
@@ -22855,7 +23287,8 @@
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
           "notes": [
             "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
-            "Unreviewed possible names or other-language meanings are uncertainty, not documented literal-use risks."
+            "Unreviewed possible names or other-language meanings are uncertainty, not documented literal-use risks.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Relation to the sourced compound cukimai is unverified; no sense evidence for this spelling. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [],
           "evidence": [
@@ -23042,7 +23475,9 @@
           "id": "ibwv-2503",
           "senseId": "ibw-2503",
           "surface": "bedegong",
-          "categories": [],
+          "categories": [
+            "insult"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "unverified",
@@ -23057,7 +23492,9 @@
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
           "notes": [
-            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense."
+            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
+            "Categories assigned 2026-10-29 (#35 draft): the Sundanese dictionary gives a negative-character adjective sense with no coarse-register label; low confidence. Draft assignment for #35; awaiting maintainer native review.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Sundanese negative-character adjective with no coarse-register label in the dictionary. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [
             {
@@ -24149,12 +24586,14 @@
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
           "severityRationale": "Editorial level 2 applies to the direct coarse-insult sense; it is not a universal harm score or an inference of intent from a match.",
           "literalUseRisks": [
-            "The paper explicitly discusses the exact form idiot in a scientific register as well as in insulting address. This documents a register contrast; it does not establish current clinical appropriateness."
+            "The paper explicitly discusses the exact form idiot in a scientific register as well as in insulting address. This documents a register contrast; it does not establish current clinical appropriateness.",
+            "KBBI Daring lists idiot as a noun for very low intelligence (IQ below 20, synonym tunagrahita), a clinical-descriptive sense that is separate from insulting address."
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The scoped evidence attests coarse register for this form or the explicitly identified compound use; it is not an intent inference.",
           "notes": [
-            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense."
+            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: KBBI lists a clinical-descriptive sense and the paper documents a scientific register alongside insulting address. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [
             {
@@ -24177,6 +24616,28 @@
                   "usageScope": "literal-use",
                   "scope": "exact-surface",
                   "attestationType": "author-register-discussion"
+                }
+              ]
+            },
+            {
+              "riskIndex": 1,
+              "claims": [
+                {
+                  "sourceId": "kbbi-idiot",
+                  "url": "https://kbbi.kemendikdasmen.go.id/entri/idiot",
+                  "locator": "Entry idiot (single noun sense)",
+                  "supports": [
+                    "sense",
+                    "literal-use"
+                  ],
+                  "statement": "Lists a clinical-descriptive noun sense for very low intelligence.",
+                  "verification": "read",
+                  "subjectForms": [
+                    "idiot"
+                  ],
+                  "subjectSense": "clinical-descriptive noun",
+                  "usageScope": "literal-use",
+                  "scope": "exact-surface"
                 }
               ]
             }
@@ -24276,7 +24737,8 @@
           "registerRationale": "The scoped evidence attests coarse register for this form or the explicitly identified compound use; it is not an intent inference.",
           "notes": [
             "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
-            "The dictionary redirects numbered sinting to numbered senteng. The short/insufficient meanings are directly documented under senteng; an independent literal-use token of sinting in those meanings has not been verified. Any same-sense extension is an editorial possibility, not an exact risk claim."
+            "The dictionary redirects numbered sinting to numbered senteng. The short/insufficient meanings are directly documented under senteng; an independent literal-use token of sinting in those meanings has not been verified. Any same-sense extension is an editorial possibility, not an exact risk claim.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation KEEP. Literal-use risk: Mental-state insult with a restrictive dictionary label; no benign sense verified, but sinting redirects to senteng whose short/insufficient senses are unverified for sinting. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [],
           "evidence": [
@@ -24351,6 +24813,22 @@
               "usageScope": "lexical-sense",
               "scope": "related-form",
               "attestationType": "related-headword-meaning"
+            },
+            {
+              "sourceId": "kbbi-sinting",
+              "url": "https://kbbi.kemendikdasmen.go.id/entri/sinting",
+              "locator": "Entries sinting1 (cross-reference to senteng1) and sinting2 (label kas)",
+              "supports": [
+                "sense"
+              ],
+              "statement": "Lists sinting2 as an adjective for a disordered mental state with the label kas, which the page does not expand.",
+              "verification": "read",
+              "subjectForms": [
+                "sinting"
+              ],
+              "subjectSense": "mental-state adjective with a restrictive label",
+              "usageScope": "lexical-sense",
+              "scope": "exact-surface"
             }
           ],
           "literalSenseEvidence": [],
@@ -24392,7 +24870,8 @@
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The scoped evidence attests coarse register for this form or the explicitly identified compound use; it is not an intent inference.",
           "notes": [
-            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense."
+            "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation GUARD. Literal-use risk: Complete traditional dance name Tari Sontoloyo contains the token; the dictionary labels the bare word an insult. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [
             {
@@ -24750,7 +25229,8 @@
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
           "notes": [
             "Editorial interpretation caution: a lexical match alone does not establish the speaker’s intent; quoted or reported material requires context. This is not an unrelated benign sense.",
-            "Unreviewed possible names or other-language meanings are uncertainty, not documented literal-use risks."
+            "Unreviewed possible names or other-language meanings are uncertainty, not documented literal-use risks.",
+            "Default-list review for #35 (draft, awaiting maintainer native review): recommendation REMOVE. Literal-use risk: Resembles tolol only by spelling; no sense evidence. Metadata only; the default dictionary is unchanged in this release and 2.8.0 may apply it (see #21)."
           ],
           "literalRiskEvidence": [],
           "evidence": [
@@ -24852,7 +25332,7 @@
           "categories": [
             "coarse-exclamation"
           ],
-          "severity": null,
+          "severity": 1,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [],
@@ -24861,7 +25341,7 @@
           ],
           "explanation": "An inherited anjing-related slang form overlaps with an ordinary smell adjective.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 1 (2026-10-29): the compiled modification list places anyir among altered forms of the anjing expletive, whose documented modifications are mostly level 1; weak inference. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [
             "Documented exact-form lexical sense: anyir is a smell/taste adjective; a literal description need not be a slang exclamation."
           ],
@@ -26560,11 +27040,36 @@
           "explanation": "Exact spelling or intended sense remains unresolved in the read evidence. Scoped lead description: The cited claim is another term’s acronym expansion, not a standalone homo register judgment.",
           "presetReason": "Excluded from reviewed profiles because the exact spelling or intended sense remains unresolved in the read evidence.",
           "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
-          "literalUseRisks": [],
+          "literalUseRisks": [
+            "KBBI Daring lists homo1 as the biological family Hominidae and homo2 as a word for a homosexual person; scientific mentions (for example Homo sapiens) and neutral mentions are ordinary."
+          ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
           "notes": [],
-          "literalRiskEvidence": [],
+          "literalRiskEvidence": [
+            {
+              "riskIndex": 0,
+              "claims": [
+                {
+                  "sourceId": "kbbi-homo",
+                  "url": "https://kbbi.kemendikdasmen.go.id/entri/homo",
+                  "locator": "Entries homo1 and homo2",
+                  "supports": [
+                    "sense",
+                    "literal-use"
+                  ],
+                  "statement": "Lists a biological sense and a homosexuality-related sense, neither labelled coarse on the page.",
+                  "verification": "read",
+                  "subjectForms": [
+                    "homo"
+                  ],
+                  "subjectSense": "biological term and neutral dictionary sense",
+                  "usageScope": "literal-use",
+                  "scope": "exact-surface"
+                }
+              ]
+            }
+          ],
           "evidence": [
             {
               "sourceId": "contextual-gemilang2017",
@@ -26972,7 +27477,7 @@
           "categories": [
             "sexual-vulgarity"
           ],
-          "severity": null,
+          "severity": 2,
           "attestation": "attested",
           "registerEvidence": "attested",
           "abusiveRegionIds": [],
@@ -26981,7 +27486,7 @@
           ],
           "explanation": "A documented softened spelling for a male-genital slang word.",
           "presetReason": "Included in reviewed-contextual for explicit opt-in matching because interpretation depends on the sense or context of the occurrence.",
-          "severityRationale": "Editorial intensity remains unknown for this spelling. Null is neither zero nor a toxicity probability.",
+          "severityRationale": "Editorial level 2 (2026-10-29): documented as softened slang for a male-genital word whose base kontol is level 3; one step below the base is an editorial reading. Not a toxicity probability. Draft assignment for #35; awaiting maintainer native review.",
           "literalUseRisks": [],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form coarse-use claim applies only to its stated sense/context; other literal or quoted occurrences are not thereby profane.",
@@ -27523,7 +28028,8 @@
           "senseId": "ibw-3045",
           "surface": "monyet",
           "categories": [
-            "insult"
+            "insult",
+            "identity-slur"
           ],
           "severity": 2,
           "attestation": "attested",
@@ -27540,7 +28046,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "The attached exact-form coarse-use claim applies only to its stated sense/context; other literal or quoted occurrences are not thereby profane.",
-          "notes": [],
+          "notes": [
+            "identity-slur added 2026-10-29 (#35 draft): two news/statement sources report the animal word used as a racist slur against Papuan students in 2019 (reported as alleged). The animal sense and ordinary insult use remain separate; most occurrences are not identity-directed. Draft assignment for #35; awaiting maintainer native review."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -27576,6 +28084,38 @@
               "subjectSense": "monkey animal name",
               "usageScope": "lexical-sense",
               "scope": "exact-surface"
+            },
+            {
+              "sourceId": "greenpeace-papua-statement-2019",
+              "url": "https://www.greenpeace.org/indonesia/siaran-pers/3564/hentikan-rasisme-diskriminasi-dan-kekerasan-pada-rakyat-papua/",
+              "locator": "Statement dated 20 August 2019; paragraph on the Surabaya events",
+              "supports": [
+                "register"
+              ],
+              "statement": "A joint civil-society statement lists monyet among racist words allegedly directed at Papuan students in Surabaya in August 2019; it presents these as allegations.",
+              "verification": "read",
+              "subjectForms": [
+                "monyet"
+              ],
+              "subjectSense": "alleged racist insult directed at an ethnic group",
+              "usageScope": "coarse-use",
+              "scope": "exact-surface"
+            },
+            {
+              "sourceId": "jakartapost-papua-racism-2019",
+              "url": "https://www.thejakartapost.com/news/2019/08/26/elephant-room-racism-indonesia",
+              "locator": "Lead sentence; article of 26 August 2019",
+              "supports": [
+                "register"
+              ],
+              "statement": "The newspaper lead calls monkey a derogatory slur used against Papuan students in Surabaya, citing a viral video; this is a report of an alleged incident.",
+              "verification": "read",
+              "subjectForms": [
+                "monkey"
+              ],
+              "subjectSense": "derogatory slur against an ethnic group (English rendering)",
+              "usageScope": "coarse-use",
+              "scope": "related-form"
             }
           ],
           "literalSenseEvidence": [],
@@ -27755,7 +28295,9 @@
           "id": "ibw-3048-v1",
           "senseId": "ibw-3048",
           "surface": "ngocok",
-          "categories": [],
+          "categories": [
+            "sexual-vulgarity"
+          ],
           "severity": null,
           "attestation": "attested",
           "registerEvidence": "unverified",
@@ -27769,7 +28311,9 @@
           ],
           "literalUseRiskCoverage": "Empty risk arrays mean no risk documented in this review, not proof that benign names, compounds, senses or quotations do not exist.",
           "registerRationale": "Current read claims do not verify coarse use of this exact spelling.",
-          "notes": [],
+          "notes": [
+            "Categories assigned 2026-10-29 (#35 draft): a health review lists it as masturbation slang; register not classified. Draft assignment for #35; awaiting maintainer native review."
+          ],
           "literalRiskEvidence": [],
           "evidence": [
             {
@@ -29299,6 +29843,78 @@
       "type": "primary sociolinguistic thesis",
       "license": null,
       "rightsNote": "No explicit reuse license verified. Only assigned isolated lexical facts and original paraphrases are used; no definitions, dialogue passages, or lexical inventory are reproduced. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "kbbi-bodoh",
+      "title": "KBBI Daring (Kemendikdasmen): bodoh entry",
+      "url": "https://kbbi.kemendikdasmen.go.id/entri/bodoh",
+      "alternateUrls": [],
+      "type": "government-online-dictionary",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "kbbi-sinting",
+      "title": "KBBI Daring (Kemendikdasmen): sinting entries",
+      "url": "https://kbbi.kemendikdasmen.go.id/entri/sinting",
+      "alternateUrls": [],
+      "type": "government-online-dictionary",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "kbbi-idiot",
+      "title": "KBBI Daring (Kemendikdasmen): idiot entry",
+      "url": "https://kbbi.kemendikdasmen.go.id/entri/idiot",
+      "alternateUrls": [],
+      "type": "government-online-dictionary",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "kbbi-pelakor",
+      "title": "KBBI Daring (Kemendikdasmen): pelakor entry",
+      "url": "https://kbbi.kemendikdasmen.go.id/entri/pelakor",
+      "alternateUrls": [],
+      "type": "government-online-dictionary",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "kbbi-tai",
+      "title": "KBBI Daring (Kemendikdasmen): tai entries",
+      "url": "https://kbbi.kemendikdasmen.go.id/entri/tai",
+      "alternateUrls": [],
+      "type": "government-online-dictionary",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "kbbi-homo",
+      "title": "KBBI Daring (Kemendikdasmen): homo entries",
+      "url": "https://kbbi.kemendikdasmen.go.id/entri/homo",
+      "alternateUrls": [],
+      "type": "government-online-dictionary",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "greenpeace-papua-statement-2019",
+      "title": "Hentikan Rasisme, Diskriminasi dan Kekerasan pada Rakyat Papua (joint civil-society statement hosted by Greenpeace Indonesia, 20 August 2019)",
+      "url": "https://www.greenpeace.org/indonesia/siaran-pers/3564/hentikan-rasisme-diskriminasi-dan-kekerasan-pada-rakyat-papua/",
+      "alternateUrls": [],
+      "type": "civil-society joint statement; allegations, not a verified finding",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
+    },
+    {
+      "id": "jakartapost-papua-racism-2019",
+      "title": "The Jakarta Post (26 August 2019, Ghina Ghaliya and Fadli): elephant-in-the-room racism in Indonesia",
+      "url": "https://www.thejakartapost.com/news/2019/08/26/elephant-room-racism-indonesia",
+      "alternateUrls": [],
+      "type": "news report; allegation context",
+      "license": null,
+      "rightsNote": "Original paraphrases of isolated facts and bibliographic citations only; no source definitions, passages or tables imported. Source license is not inferred from hosting. Isolated lexical facts, spellings, exact claim locators and original explanations only; source availability is not treated as a redistribution grant."
     }
   ]
 }
