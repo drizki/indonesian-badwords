@@ -15,7 +15,8 @@ const entries = {
     metadata: 'dictionary/metadata',
     catalog: 'dictionary/catalog',
     evasion: 'evasion/policy',
-    fuzzy: 'fuzzy/policy'
+    fuzzy: 'fuzzy/policy',
+    evaluate: 'evaluate/evaluate'
 };
 
 // Publish one compact runtime. tsc's individual modules remain available in the
@@ -53,7 +54,7 @@ for (const [entry, name, value] of [
 }
 
 // Optional behavior bundles import only types from the root.
-for (const optional of ['censor', 'evasion', 'fuzzy']) await build({
+for (const optional of ['censor', 'evasion', 'fuzzy', 'evaluate']) await build({
     entryPoints: [fileURLToPath(new URL(`../src/${entries[optional]}.ts`, import.meta.url))],
     outfile: fileURLToPath(new URL(`../dist/cjs/${optional}.js`, import.meta.url)),
     bundle: true,

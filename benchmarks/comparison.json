@@ -1,0 +1,3893 @@
+{
+ "schema": 2,
+ "date": "2026-10-30",
+ "pinsCheckedOn": "2026-10-30",
+ "quick": false,
+ "command": "npm run benchmark:compare -- --write",
+ "environment": {
+  "node": "v26.10.0",
+  "v8": "14.6.202.34-node.34",
+  "zlib": "1.3.2",
+  "os": "Linux 7.2.6-arch2-1",
+  "architecture": "x64",
+  "cpuModel": "AMD Ryzen 7 9700X 8-Core Processor",
+  "cpuCount": 16,
+  "libraryVersion": "2.6.0",
+  "build": "built from the repository working tree"
+ },
+ "packages": [
+  {
+   "package": "indonesian-badwords",
+   "version": "2.6.0"
+  },
+  {
+   "package": "@sideid/id-profanity-filter",
+   "version": "1.13.0"
+  },
+  {
+   "package": "@fldx/sopan",
+   "version": "1.0.1"
+  },
+  {
+   "package": "censorship-id",
+   "version": "2.0.3"
+  }
+ ],
+ "definitions": {
+  "references": [
+   "@sideid/id-profanity-filter@1.13.0",
+   "@fldx/sopan@1.0.1",
+   "censorship-id@2.0.3"
+  ],
+  "configs": [
+   {
+    "id": "ours",
+    "package": "indonesian-badwords",
+    "title": "indonesian-badwords",
+    "options": "defaults (word mode, standard normalization, leetspeak folding)",
+    "policy": {}
+   },
+   {
+    "id": "ours-evasion",
+    "package": "indonesian-badwords",
+    "title": "indonesian-badwords + evasion",
+    "options": "`boundedEvasion`: single separators `- _ . *`, up to 2 repeated letters per letter",
+    "policy": {
+     "evasion": {
+      "separators": {
+       "characters": [
+        "-",
+        "_",
+        ".",
+        "*"
+       ],
+       "maxGap": 1,
+       "maxTotal": 8
+      },
+      "repetitions": {
+       "maxExtraPerLetter": 2,
+       "maxTotal": 8
+      }
+     }
+    }
+   },
+   {
+    "id": "sideid",
+    "package": "@sideid/id-profanity-filter",
+    "title": "@sideid/id-profanity-filter",
+    "options": "defaults",
+    "policy": {}
+   },
+   {
+    "id": "sideid-split",
+    "package": "@sideid/id-profanity-filter",
+    "title": "@sideid/id-profanity-filter + split",
+    "options": "`detectSplit: true`",
+    "policy": {
+     "options": {
+      "detectSplit": true
+     }
+    }
+   },
+   {
+    "id": "sopan",
+    "package": "@fldx/sopan",
+    "title": "@fldx/sopan",
+    "options": "defaults",
+    "policy": {}
+   },
+   {
+    "id": "censorship",
+    "package": "censorship-id",
+    "title": "censorship-id",
+    "options": "defaults",
+    "policy": {}
+   },
+   {
+    "id": "censorship-smart",
+    "package": "censorship-id",
+    "title": "censorship-id + smart",
+    "options": "`smartMode: true`",
+    "policy": {
+     "call": {
+      "smartMode": true
+     }
+    }
+   }
+  ],
+  "operations": [
+   {
+    "id": "flag",
+    "title": "Boolean check",
+    "ours": "`flag()`"
+   },
+   {
+    "id": "censor",
+    "title": "Censor",
+    "ours": "`censor()`"
+   },
+   {
+    "id": "locate",
+    "title": "Locate",
+    "ours": "`find()`"
+   }
+  ],
+  "groups": [
+   [
+    "chat",
+    "Chat-sized (32 and 280 characters)"
+   ],
+   [
+    "paragraph",
+    "Paragraph (4,000 characters)"
+   ],
+   [
+    "long",
+    "Long text (64,000 characters)"
+   ],
+   [
+    "adversarial",
+    "Adversarial inputs"
+   ]
+  ],
+  "cases": [
+   {
+    "id": "clean-short",
+    "group": "chat",
+    "length": 32,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "clean-chat",
+    "group": "chat",
+    "length": 280,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "match-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "goblok",
+    "what": "one plain match in the middle"
+   },
+   {
+    "id": "leet-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "g0bl0k",
+    "what": "one leetspeak match"
+   },
+   {
+    "id": "unicode-clean-chat",
+    "group": "chat",
+    "length": 280,
+    "seed": "😀 Terima kasih, café baru itu nyaman. Pengiriman sudah sampai. ",
+    "what": "clean, accents and emoji"
+   },
+   {
+    "id": "unicode-match-chat",
+    "group": "chat",
+    "length": 280,
+    "seed": "😀 Terima kasih, café baru itu nyaman. Pengiriman sudah sampai. ",
+    "position": "middle",
+    "term": "goblok",
+    "what": "one match, accents and emoji"
+   },
+   {
+    "id": "fullwidth-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "ＧＯＢＬＯＫ",
+    "what": "one full-width match"
+   },
+   {
+    "id": "invisible-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "kon​tol",
+    "what": "one match split by a zero-width space"
+   },
+   {
+    "id": "separator-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "k-o-n-t-o-l",
+    "what": "one match spelled with hyphens"
+   },
+   {
+    "id": "clean-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "unicode-clean-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "seed": "😀 Terima kasih, café baru itu nyaman. Pengiriman sudah sampai. ",
+    "what": "clean, accents and emoji"
+   },
+   {
+    "id": "match-start-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "position": "start",
+    "term": "goblok",
+    "what": "one match at the start"
+   },
+   {
+    "id": "match-middle-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "position": "middle",
+    "term": "goblok",
+    "what": "one match at the middle"
+   },
+   {
+    "id": "match-end-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "position": "end",
+    "term": "goblok",
+    "what": "one match at the end"
+   },
+   {
+    "id": "clean-long",
+    "group": "long",
+    "length": 64000,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "clean-long-token",
+    "group": "adversarial",
+    "length": 64000,
+    "seed": "pengembanganinfrastrukturpendidikan",
+    "what": "one unbroken 64,000-letter token"
+   },
+   {
+    "id": "dense-paragraph",
+    "group": "adversarial",
+    "length": 4000,
+    "seed": "goblok kontol ",
+    "whole": true,
+    "what": "a match every 7 characters"
+   },
+   {
+    "id": "bang-dense-paragraph",
+    "group": "adversarial",
+    "length": 4000,
+    "seed": "!",
+    "what": "`!` repeated (no letters)"
+   },
+   {
+    "id": "separator-run-paragraph",
+    "group": "adversarial",
+    "length": 4000,
+    "seed": "a-",
+    "what": "letters joined by hyphens, no match"
+   }
+  ],
+  "probes": [
+   [
+    "Plain match (`goblok`)",
+    "dasar goblok kamu"
+   ],
+   [
+    "Leetspeak (`g0bl0k`)",
+    "dasar g0bl0k kamu"
+   ],
+   [
+    "Full-width letters (`ＧＯＢＬＯＫ`)",
+    "dasar ＧＯＢＬＯＫ kamu"
+   ],
+   [
+    "Zero-width space inside a word",
+    "dasar kon​tol kamu"
+   ],
+   [
+    "Hyphen-separated letters (`k-o-n-t-o-l`)",
+    "dasar k-o-n-t-o-l kamu"
+   ],
+   [
+    "Repeated letters (`gooobloook`)",
+    "dasar gooobloook kamu"
+   ],
+   [
+    "One-letter typo (`goblox`)",
+    "dasar goblox kamu"
+   ],
+   [
+    "Clean sentence not flagged (control)",
+    "Pesanan sudah sampai, terima kasih atas bantuannya."
+   ]
+  ],
+  "method": {
+   "warmupMs": 100,
+   "samples": 31,
+   "variants": 257,
+   "minimumBatchMs": 2
+  },
+  "identifierSet": {
+   "scheme": "q + two letters + q, followed by a space",
+   "variants": 257,
+   "first": "qaaq",
+   "last": "qjxq",
+   "rejected": [
+    "qcdq",
+    "qmlq",
+    "qsuq"
+   ],
+   "sha256": "3bec632221d0102d03a639271710eb2445cae619ac44d6281d157d9e1f5e1dbc"
+  }
+ },
+ "method": {
+  "warmupMs": 100,
+  "samples": 31,
+  "variants": 257,
+  "minimumBatchMs": 2
+ },
+ "results": {
+  "ours": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 0.4081,
+     "p95Us": 0.4386
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 2.46,
+     "p95Us": 3.012
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 1.464,
+     "p95Us": 1.54
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 3.997,
+     "p95Us": 4.374
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 1.759,
+     "p95Us": 1.796
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 2.639,
+     "p95Us": 2.671
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 6.217,
+     "p95Us": 6.341
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 7.937,
+     "p95Us": 7.992
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 31.98,
+     "p95Us": 32.22
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 19.2,
+     "p95Us": 20
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 3.333,
+     "p95Us": 3.613
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 17.43,
+     "p95Us": 17.96
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 31.47,
+     "p95Us": 32.23
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 507.3,
+     "p95Us": 539.2
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 80.66,
+     "p95Us": 81.55
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 3.321,
+     "p95Us": 3.457
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 75.61,
+     "p95Us": 89.16
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 41.34,
+     "p95Us": 42.25
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 0.09692,
+     "p95Us": 0.09918
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 0.4482,
+     "p95Us": 0.455
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 0.4557,
+     "p95Us": 0.4773
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 5.28,
+     "p95Us": 5.728
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 1.518,
+     "p95Us": 1.571
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 2.873,
+     "p95Us": 2.981
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 7.219,
+     "p95Us": 7.716
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 9.02,
+     "p95Us": 9.487
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 4.864,
+     "p95Us": 5.321
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 14.73,
+     "p95Us": 15.13
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 4.934,
+     "p95Us": 5.041
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 4.909,
+     "p95Us": 4.981
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 4.984,
+     "p95Us": 5.057
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 79.25,
+     "p95Us": 91.23
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 72.24,
+     "p95Us": 72.74
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 7.839,
+     "p95Us": 9.805
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 74.87,
+     "p95Us": 78.74
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 4.069,
+     "p95Us": 4.377
+    }
+   },
+   "locate": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 0.1338,
+     "p95Us": 0.1626
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 0.6193,
+     "p95Us": 0.6922
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 0.7787,
+     "p95Us": 0.8228
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 5.674,
+     "p95Us": 5.923
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 1.614,
+     "p95Us": 1.743
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 2.837,
+     "p95Us": 3.025
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 7.691,
+     "p95Us": 8.699
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 9.34,
+     "p95Us": 9.934
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 7.383,
+     "p95Us": 8.207
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 15.98,
+     "p95Us": 17.69
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 7.584,
+     "p95Us": 10.03
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 7.533,
+     "p95Us": 7.926
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 7.4,
+     "p95Us": 7.501
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 125,
+     "p95Us": 133.6
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 62.48,
+     "p95Us": 63.08
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 60.62,
+     "p95Us": 68.35
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 70.89,
+     "p95Us": 79.08
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 11.49,
+     "p95Us": 11.63
+    }
+   }
+  },
+  "ours-evasion": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 0.3276,
+     "p95Us": 0.3321
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 2.174,
+     "p95Us": 2.508
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 2.381,
+     "p95Us": 2.659
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 6.949,
+     "p95Us": 7.547
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 12.58,
+     "p95Us": 13.49
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 19.97,
+     "p95Us": 32.64
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 9.456,
+     "p95Us": 11.67
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 21.14,
+     "p95Us": 22.96
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 11.1,
+     "p95Us": 13.95
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 44.6,
+     "p95Us": 48.97
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 183.2,
+     "p95Us": 253
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 26.15,
+     "p95Us": 31.5
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 29.32,
+     "p95Us": 34.62
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 32.2,
+     "p95Us": 35.27
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 466.9,
+     "p95Us": 551.6
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 397.5,
+     "p95Us": 446.4
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 27.94,
+     "p95Us": 30.39
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 168.7,
+     "p95Us": 207.6
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 43.13,
+     "p95Us": 45.47
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 0.3489,
+     "p95Us": 0.3684
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 2.05,
+     "p95Us": 2.849
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 2.262,
+     "p95Us": 2.406
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 8.246,
+     "p95Us": 12.14
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 12.21,
+     "p95Us": 14.88
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 17.05,
+     "p95Us": 17.86
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 9.872,
+     "p95Us": 10.34
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 21.56,
+     "p95Us": 23.65
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 12.72,
+     "p95Us": 13.31
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 25.43,
+     "p95Us": 27.29
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 173.6,
+     "p95Us": 228.8
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 30,
+     "p95Us": 42.06
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 29.69,
+     "p95Us": 60.68
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 27.87,
+     "p95Us": 29.42
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 382.7,
+     "p95Us": 405.7
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 353.7,
+     "p95Us": 413.9
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 31.43,
+     "p95Us": 34.11
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 162.1,
+     "p95Us": 167.8
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 35.46,
+     "p95Us": 36.9
+    }
+   },
+   "locate": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 0.336,
+     "p95Us": 0.3693
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 2.042,
+     "p95Us": 2.27
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 2.605,
+     "p95Us": 2.759
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 8.473,
+     "p95Us": 9.942
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 12.53,
+     "p95Us": 12.68
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 16.56,
+     "p95Us": 19.89
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 10.04,
+     "p95Us": 10.95
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 21.33,
+     "p95Us": 21.96
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 13.01,
+     "p95Us": 14.69
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 26.49,
+     "p95Us": 26.78
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 165.4,
+     "p95Us": 180.1
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 31.55,
+     "p95Us": 33.22
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 30.37,
+     "p95Us": 31.88
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 29.99,
+     "p95Us": 31.29
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 414.1,
+     "p95Us": 433.1
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 354.4,
+     "p95Us": 373
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 89.22,
+     "p95Us": 96.8
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 163.7,
+     "p95Us": 172.1
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 42.16,
+     "p95Us": 44.34
+    }
+   }
+  },
+  "sideid": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 289,
+     "p95Us": 293.4
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 311.6,
+     "p95Us": 381.6
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 321.2,
+     "p95Us": 342.3
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 313.3,
+     "p95Us": 317.5
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 307,
+     "p95Us": 326
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 311.8,
+     "p95Us": 322
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 302.6,
+     "p95Us": 315.6
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 302.3,
+     "p95Us": 311.8
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 525.6,
+     "p95Us": 559.3
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 511.8,
+     "p95Us": 575.4
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 527.2,
+     "p95Us": 547.6
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 532.9,
+     "p95Us": 570.7
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 537.3,
+     "p95Us": 578.6
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 4084,
+     "p95Us": 4538
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 3983,
+     "p95Us": 4032
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 2192,
+     "p95Us": 2827
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 485.1,
+     "p95Us": 501.3
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 477.2,
+     "p95Us": 527.1
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 292,
+     "p95Us": 337.5
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 301.8,
+     "p95Us": 323.5
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 657.5,
+     "p95Us": 787.8
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 620.1,
+     "p95Us": 658.7
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 305.4,
+     "p95Us": 322.8
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 626.1,
+     "p95Us": 656.2
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 537.5,
+     "p95Us": 600.9
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 511.3,
+     "p95Us": 543.4
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 1101,
+     "p95Us": 1271
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 1092,
+     "p95Us": 1200
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 1122,
+     "p95Us": 1424
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 4005,
+     "p95Us": 4189
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 3999,
+     "p95Us": 4364
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 4776,
+     "p95Us": 5546
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 477.9,
+     "p95Us": 517.4
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 473.5,
+     "p95Us": 495.2
+    }
+   },
+   "locate": "unsupported"
+  },
+  "sideid-split": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "different-output",
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "different-output",
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 515.4,
+     "p95Us": 554
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 507.9,
+     "p95Us": 551.4
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "different-output",
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 531.6,
+     "p95Us": 600.5
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "measured",
+     "medianUs": 531,
+     "p95Us": 568.9
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 514.2,
+     "p95Us": 545.6
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 509.4,
+     "p95Us": 526.6
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "different-output",
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "different-output",
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 1170,
+     "p95Us": 1233
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 1180,
+     "p95Us": 1247
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 1554,
+     "p95Us": 2208
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "different-output",
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 10130,
+     "p95Us": 10320
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 4512,
+     "p95Us": 5587
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 950.2,
+     "p95Us": 1051
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 955.4,
+     "p95Us": 1018
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 917.6,
+     "p95Us": 1013
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 1048,
+     "p95Us": 1482
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 1060,
+     "p95Us": 1183
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 1079,
+     "p95Us": 1393
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 1021,
+     "p95Us": 1142
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 1112,
+     "p95Us": 1334
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 1040,
+     "p95Us": 1127
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 2312,
+     "p95Us": 2695
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 2475,
+     "p95Us": 3086
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 2349,
+     "p95Us": 2532
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 2390,
+     "p95Us": 2541
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 2344,
+     "p95Us": 2526
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 21020,
+     "p95Us": 21430
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 10050,
+     "p95Us": 10160
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 7901,
+     "p95Us": 8342
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 895.8,
+     "p95Us": 948.2
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 909.5,
+     "p95Us": 1099
+    }
+   },
+   "locate": "unsupported"
+  },
+  "sopan": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 2.28,
+     "p95Us": 2.301
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 15.92,
+     "p95Us": 16.23
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 16.34,
+     "p95Us": 16.44
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 16.21,
+     "p95Us": 16.34
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 15.39,
+     "p95Us": 15.54
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 15.58,
+     "p95Us": 15.77
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 15.7,
+     "p95Us": 18.46
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 216.4,
+     "p95Us": 219.2
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 221.1,
+     "p95Us": 271.1
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 214.2,
+     "p95Us": 218.5
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 212.9,
+     "p95Us": 217.4
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 217.1,
+     "p95Us": 221.8
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 3640,
+     "p95Us": 3957
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 1363,
+     "p95Us": 1815
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 223.3,
+     "p95Us": 235.7
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 4.984,
+     "p95Us": 5.635
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 70.7,
+     "p95Us": 74.74
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 2.261,
+     "p95Us": 2.373
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 15.72,
+     "p95Us": 16.65
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 15.9,
+     "p95Us": 16.94
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 16.02,
+     "p95Us": 17.04
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 15.55,
+     "p95Us": 16.54
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 15.61,
+     "p95Us": 16.1
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 15.63,
+     "p95Us": 16.64
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 214,
+     "p95Us": 223
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 212.6,
+     "p95Us": 221.4
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 216.5,
+     "p95Us": 224.4
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 213.3,
+     "p95Us": 221.2
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 213.8,
+     "p95Us": 222
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 3832,
+     "p95Us": 4613
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 1400,
+     "p95Us": 1851
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 218.3,
+     "p95Us": 232.2
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 4.884,
+     "p95Us": 5.152
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 73.45,
+     "p95Us": 78.84
+    }
+   },
+   "locate": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 2.256,
+     "p95Us": 2.379
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 15.57,
+     "p95Us": 16.1
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 15.67,
+     "p95Us": 16.59
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 15.72,
+     "p95Us": 16.63
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 15.48,
+     "p95Us": 15.95
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 15.46,
+     "p95Us": 15.82
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 15.4,
+     "p95Us": 15.93
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 215,
+     "p95Us": 224.9
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 216.9,
+     "p95Us": 286
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 223,
+     "p95Us": 235.1
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 220.1,
+     "p95Us": 229.6
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 220.7,
+     "p95Us": 228.7
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 3601,
+     "p95Us": 3856
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 1374,
+     "p95Us": 2290
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 224.8,
+     "p95Us": 312.1
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 4.778,
+     "p95Us": 5.028
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 70.77,
+     "p95Us": 77.5
+    }
+   }
+  },
+  "censorship": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 15.72,
+     "p95Us": 16.73
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 15.85,
+     "p95Us": 16.29
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 16.19,
+     "p95Us": 16.43
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 15.65,
+     "p95Us": 15.72
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 16.13,
+     "p95Us": 16.17
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 27.58,
+     "p95Us": 29.79
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 26.66,
+     "p95Us": 27.01
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 27.31,
+     "p95Us": 27.61
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 27.43,
+     "p95Us": 27.86
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 27.42,
+     "p95Us": 28.05
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 212.9,
+     "p95Us": 213.3
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 123.3,
+     "p95Us": 124.7
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 182.9,
+     "p95Us": 210.8
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 15.64,
+     "p95Us": 16.31
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 15.5,
+     "p95Us": 15.92
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 14.36,
+     "p95Us": 15.61
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 15.07,
+     "p95Us": 15.63
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 15.67,
+     "p95Us": 16.6
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 15.13,
+     "p95Us": 15.72
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 15.76,
+     "p95Us": 17.23
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 26.54,
+     "p95Us": 27.44
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 26.43,
+     "p95Us": 32.94
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 27.28,
+     "p95Us": 38.42
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 27.2,
+     "p95Us": 28.17
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 27.13,
+     "p95Us": 28.34
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 212.8,
+     "p95Us": 215.3
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 154.5,
+     "p95Us": 155.8
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 194,
+     "p95Us": 203
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 15,
+     "p95Us": 15.39
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 16.43,
+     "p95Us": 18.62
+    }
+   },
+   "locate": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 17.33,
+     "p95Us": 21
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 19.6,
+     "p95Us": 27.86
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 20.03,
+     "p95Us": 21.27
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 19.44,
+     "p95Us": 21.71
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 20.01,
+     "p95Us": 24.3
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 33.06,
+     "p95Us": 42.65
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 33.62,
+     "p95Us": 44.75
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 34.04,
+     "p95Us": 48.23
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 34.44,
+     "p95Us": 45.73
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 33.87,
+     "p95Us": 49.46
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 248.5,
+     "p95Us": 320.5
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 146.3,
+     "p95Us": 150.2
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 210.3,
+     "p95Us": 288.5
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "medianUs": 20,
+     "p95Us": 22.97
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 19.69,
+     "p95Us": 20.65
+    }
+   }
+  },
+  "censorship-smart": {
+   "flag": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 580.5,
+     "p95Us": 625.3
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 366.7,
+     "p95Us": 536.6
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 373.8,
+     "p95Us": 537.8
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 370.7,
+     "p95Us": 536.9
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 354.8,
+     "p95Us": 537.8
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 354.7,
+     "p95Us": 375.6
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 352.7,
+     "p95Us": 411
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 343.9,
+     "p95Us": 377.3
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 438.4,
+     "p95Us": 459.1
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 439.5,
+     "p95Us": 461.2
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 431.1,
+     "p95Us": 470.3
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 444.7,
+     "p95Us": 664.8
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 475.4,
+     "p95Us": 712.2
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 2100,
+     "p95Us": 3199
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 540.5,
+     "p95Us": 593.1
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 1049,
+     "p95Us": 1165
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "reduced": true,
+     "medianUs": 10180000,
+     "p95Us": 11200000
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 378.9,
+     "p95Us": 384.9
+    }
+   },
+   "censor": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 288.4,
+     "p95Us": 292.4
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 295.7,
+     "p95Us": 322.2
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 295.1,
+     "p95Us": 300.4
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 295,
+     "p95Us": 322.2
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 296.7,
+     "p95Us": 301.6
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 305.1,
+     "p95Us": 312.2
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "text changed",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 292.8,
+     "p95Us": 300.4
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 296.6,
+     "p95Us": 299.7
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 367.4,
+     "p95Us": 390.5
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 373.7,
+     "p95Us": 390.5
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 370.2,
+     "p95Us": 392.3
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 377.9,
+     "p95Us": 415.3
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 377.6,
+     "p95Us": 401.5
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 1513,
+     "p95Us": 1560
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 436.3,
+     "p95Us": 454.2
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 551.4,
+     "p95Us": 599.7
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "reduced": true,
+     "medianUs": 8025000,
+     "p95Us": 8641000
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 821.5,
+     "p95Us": 852.6
+    }
+   },
+   "locate": {
+    "clean-short": {
+     "id": "clean-short",
+     "status": "measured",
+     "medianUs": 598.8,
+     "p95Us": 627.9
+    },
+    "clean-chat": {
+     "id": "clean-chat",
+     "status": "measured",
+     "medianUs": 537.2,
+     "p95Us": 599.2
+    },
+    "match-chat": {
+     "id": "match-chat",
+     "status": "measured",
+     "medianUs": 348.8,
+     "p95Us": 442.4
+    },
+    "leet-chat": {
+     "id": "leet-chat",
+     "status": "measured",
+     "medianUs": 354.7,
+     "p95Us": 602
+    },
+    "unicode-clean-chat": {
+     "id": "unicode-clean-chat",
+     "status": "measured",
+     "medianUs": 345.3,
+     "p95Us": 598.7
+    },
+    "unicode-match-chat": {
+     "id": "unicode-match-chat",
+     "status": "measured",
+     "medianUs": 348.5,
+     "p95Us": 546.5
+    },
+    "fullwidth-chat": {
+     "id": "fullwidth-chat",
+     "status": "different-output",
+     "expected": "1 occurrence",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
+    },
+    "invisible-chat": {
+     "id": "invisible-chat",
+     "status": "measured",
+     "medianUs": 596.4,
+     "p95Us": 656.6
+    },
+    "separator-chat": {
+     "id": "separator-chat",
+     "status": "measured",
+     "medianUs": 588.8,
+     "p95Us": 653.7
+    },
+    "clean-paragraph": {
+     "id": "clean-paragraph",
+     "status": "measured",
+     "medianUs": 729.4,
+     "p95Us": 777.1
+    },
+    "unicode-clean-paragraph": {
+     "id": "unicode-clean-paragraph",
+     "status": "measured",
+     "medianUs": 750.9,
+     "p95Us": 817.6
+    },
+    "match-start-paragraph": {
+     "id": "match-start-paragraph",
+     "status": "measured",
+     "medianUs": 728.2,
+     "p95Us": 798.3
+    },
+    "match-middle-paragraph": {
+     "id": "match-middle-paragraph",
+     "status": "measured",
+     "medianUs": 730,
+     "p95Us": 819.5
+    },
+    "match-end-paragraph": {
+     "id": "match-end-paragraph",
+     "status": "measured",
+     "medianUs": 738.1,
+     "p95Us": 798.2
+    },
+    "clean-long": {
+     "id": "clean-long",
+     "status": "measured",
+     "medianUs": 3012,
+     "p95Us": 3187
+    },
+    "clean-long-token": {
+     "id": "clean-long-token",
+     "status": "measured",
+     "medianUs": 865.9,
+     "p95Us": 925.4
+    },
+    "dense-paragraph": {
+     "id": "dense-paragraph",
+     "status": "measured",
+     "medianUs": 601.1,
+     "p95Us": 783.7
+    },
+    "bang-dense-paragraph": {
+     "id": "bang-dense-paragraph",
+     "status": "measured",
+     "reduced": true,
+     "medianUs": 8622000,
+     "p95Us": 8949000
+    },
+    "separator-run-paragraph": {
+     "id": "separator-run-paragraph",
+     "status": "measured",
+     "medianUs": 446.4,
+     "p95Us": 729.3
+    }
+   }
+  }
+ },
+ "startup": {
+  "ours": {
+   "loadAndConstructMs": 1.4270250000000004,
+   "firstFlagMs": 0.31648299999999807,
+   "retainedHeapMiB": 0.16490936279296875,
+   "processPeakRssMiB": 190.43359375
+  },
+  "ours-evasion": {
+   "loadAndConstructMs": 4.3300940000000026,
+   "firstFlagMs": 1.8644999999999996,
+   "retainedHeapMiB": 0.6091537475585938,
+   "processPeakRssMiB": 211.921875
+  },
+  "sideid": {
+   "loadAndConstructMs": 2.479405,
+   "firstFlagMs": 5.178224,
+   "retainedHeapMiB": 1.1597137451171875,
+   "processPeakRssMiB": 189.375
+  },
+  "sideid-split": {
+   "loadAndConstructMs": 2.3259140000000045,
+   "firstFlagMs": 27.740074,
+   "retainedHeapMiB": 2.57012939453125,
+   "processPeakRssMiB": 212.15234375
+  },
+  "sopan": {
+   "loadAndConstructMs": 1.5195659999999975,
+   "firstFlagMs": 0.12831100000000362,
+   "retainedHeapMiB": 0.10669708251953125,
+   "processPeakRssMiB": 187
+  },
+  "censorship": {
+   "loadAndConstructMs": 1.0678309999999982,
+   "firstFlagMs": 0.6152960000000007,
+   "retainedHeapMiB": 0.1040191650390625,
+   "processPeakRssMiB": 187.81640625
+  },
+  "censorship-smart": {
+   "loadAndConstructMs": 1.7535980000000038,
+   "firstFlagMs": 9.964561999999994,
+   "retainedHeapMiB": 0.23668670654296875,
+   "processPeakRssMiB": 189.91796875
+  }
+ },
+ "probes": {
+  "ours": [
+   true,
+   true,
+   true,
+   true,
+   false,
+   false,
+   false,
+   false
+  ],
+  "ours-evasion": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   false
+  ],
+  "sideid": [
+   true,
+   true,
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "sideid-split": [
+   true,
+   true,
+   false,
+   true,
+   true,
+   false,
+   false,
+   true
+  ],
+  "sopan": [
+   true,
+   true,
+   false,
+   false,
+   true,
+   true,
+   false,
+   false
+  ],
+  "censorship": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false
+  ],
+  "censorship-smart": [
+   true,
+   true,
+   false,
+   true,
+   true,
+   true,
+   false,
+   false
+  ]
+ },
+ "sideidContext": {
+  "text": "satu dua tiga anjing empat lima enam",
+  "window": 1,
+  "matchStart": 14,
+  "matchEnd": 20,
+  "results": 1,
+  "start": 9,
+  "end": 26,
+  "context": "tiga anjing empat"
+ },
+ "verifiedFeatures": [
+  {
+   "label": "Locates matches with offsets",
+   "values": {
+    "ours": "yes",
+    "sideid": "no",
+    "sopan": "yes",
+    "censorship": "yes"
+   }
+  },
+  {
+   "label": "Replaces matched text (`dasar goblok kamu` censored)",
+   "values": {
+    "ours": "yes: `dasar *** kamu`",
+    "sideid": "yes: `dasar ****** kamu`",
+    "sopan": "yes: `dasar *** kamu`",
+    "censorship": "yes: `dasar ****** kamu`"
+   }
+  },
+  {
+   "label": "Zero runtime dependencies (installed manifest)",
+   "values": {
+    "ours": "yes",
+    "sideid": "yes",
+    "sopan": "yes",
+    "censorship": "yes"
+   }
+  },
+  {
+   "label": "Ships TypeScript declarations (installed manifest)",
+   "values": {
+    "ours": "yes",
+    "sideid": "yes",
+    "sopan": "yes",
+    "censorship": "yes"
+   }
+  }
+ ],
+ "disagreements": [
+  {
+   "config": "ours",
+   "operation": "flag",
+   "case": "separator-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "ours",
+   "operation": "censor",
+   "case": "separator-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "ours",
+   "operation": "locate",
+   "case": "separator-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid",
+   "operation": "flag",
+   "case": "fullwidth-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid",
+   "operation": "censor",
+   "case": "fullwidth-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid",
+   "operation": "censor",
+   "case": "invisible-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid",
+   "operation": "censor",
+   "case": "separator-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "flag",
+   "case": "clean-short",
+   "expected": "false",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "flag",
+   "case": "clean-chat",
+   "expected": "false",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "flag",
+   "case": "unicode-clean-chat",
+   "expected": "false",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "flag",
+   "case": "clean-paragraph",
+   "expected": "false",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "flag",
+   "case": "unicode-clean-paragraph",
+   "expected": "false",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "flag",
+   "case": "clean-long",
+   "expected": "false",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "censor",
+   "case": "fullwidth-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sideid-split",
+   "operation": "censor",
+   "case": "invisible-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sopan",
+   "operation": "flag",
+   "case": "fullwidth-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sopan",
+   "operation": "flag",
+   "case": "invisible-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sopan",
+   "operation": "censor",
+   "case": "fullwidth-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sopan",
+   "operation": "censor",
+   "case": "invisible-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sopan",
+   "operation": "locate",
+   "case": "fullwidth-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "sopan",
+   "operation": "locate",
+   "case": "invisible-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "flag",
+   "case": "leet-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "flag",
+   "case": "fullwidth-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "flag",
+   "case": "invisible-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "flag",
+   "case": "separator-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "censor",
+   "case": "leet-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "censor",
+   "case": "fullwidth-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "censor",
+   "case": "invisible-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "censor",
+   "case": "separator-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "locate",
+   "case": "leet-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "locate",
+   "case": "fullwidth-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "locate",
+   "case": "invisible-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship",
+   "operation": "locate",
+   "case": "separator-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship-smart",
+   "operation": "flag",
+   "case": "fullwidth-chat",
+   "expected": "true",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship-smart",
+   "operation": "censor",
+   "case": "fullwidth-chat",
+   "expected": "text changed",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "config": "censorship-smart",
+   "operation": "locate",
+   "case": "fullwidth-chat",
+   "expected": "1 occurrence",
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  }
+ ],
+ "bundles": [
+  {
+   "id": "ours",
+   "title": "indonesian-badwords (default import)",
+   "minifiedBytes": 37290,
+   "gzipBytes": 13022
+  },
+  {
+   "id": "ours-evasion-fuzzy",
+   "title": "indonesian-badwords + evasion + fuzzy",
+   "minifiedBytes": 66114,
+   "gzipBytes": 22811
+  },
+  {
+   "id": "sideid",
+   "title": "@sideid/id-profanity-filter",
+   "minifiedBytes": 63083,
+   "gzipBytes": 13142
+  },
+  {
+   "id": "sopan",
+   "title": "@fldx/sopan",
+   "minifiedBytes": 3553,
+   "gzipBytes": 1622
+  },
+  {
+   "id": "censorship",
+   "title": "censorship-id",
+   "minifiedBytes": 8641,
+   "gzipBytes": 2006
+  }
+ ]
+}

@@ -88,6 +88,16 @@
         "default": "./dist/cjs/evasion.js"
       }
     },
+    "./evaluate": {
+      "import": {
+        "types": "./dist/esm/evaluate.d.ts",
+        "default": "./dist/esm/evaluate.js"
+      },
+      "require": {
+        "types": "./dist/cjs/evaluate.d.ts",
+        "default": "./dist/cjs/evaluate.js"
+      }
+    },
     "./fuzzy": {
       "import": {
         "types": "./dist/esm/fuzzy.d.ts",
@@ -131,18 +141,23 @@
     "dist/cjs/dictionary/metadata.d.ts",
     "dist/cjs/dictionary/catalog.d.ts",
     "dist/cjs/evasion/policy.d.ts",
-    "dist/cjs/fuzzy/policy.d.ts"
+    "dist/cjs/fuzzy/policy.d.ts",
+    "dist/cjs/evaluate.js",
+    "dist/cjs/evaluate.d.ts",
+    "dist/cjs/evaluate/evaluate.d.ts"
   ],
   "sideEffects": false,
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "build": "npm run clean && node scripts/catalog-data.mjs && tsc -p tsconfig.cjs.json && node scripts/postbuild.mjs",
     "catalog:generate": "node scripts/catalog-data.mjs --write",
-    "test": "npm run build && npm run test:unit",
+    "test": "npm run build && npm run test:unit && npm run test:budgets",
     "test:unit": "node --test",
     "test:coverage": "npm run build && node --test --experimental-test-coverage",
+    "test:budgets": "node scripts/check-budgets.mjs",
     "test:package": "node scripts/verify-package.mjs",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "benchmark:paired": "node scripts/benchmark-paired.mjs",
     "benchmark:compare": "npm run build && node scripts/benchmark-compare.mjs",
     "prepack": "npm run build",
     "prepublishOnly": "npm test",

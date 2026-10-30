@@ -71,6 +71,7 @@ decide('dasar gebleg'); // => 'review'
 - [Exceptions](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/exceptions.md): `allowPhrases` and `ignoreRanges`.
 - [Evasion](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/evasion.md): separators, repeated letters, lookalikes, limits.
 - [Fuzzy matching](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/fuzzy-matching.md): typos and swapped letters, limits.
+- [Evaluate and tune](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/evaluation.md): `evaluate()` and `compare()` on your own labelled examples.
 - [Browsers and frameworks](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/browser-and-frameworks.md): browser, React, Vue and Svelte examples.
 - [Troubleshooting](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/troubleshooting.md): missed words, false positives, limit errors.
 

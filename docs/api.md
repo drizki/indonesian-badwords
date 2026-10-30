@@ -7,6 +7,7 @@ shared default instance. All text methods use the same matching policy.
 
 - [Constructor options](#constructor-options) and [methods](#methods)
 - [Instances and dictionaries](#instances-and-dictionaries)
+- [Evaluating a checker](#evaluating-a-checker)
 - [Results and errors](#results-and-errors)
 - [Matching and normalization](#matching)
 - [Scoped exceptions](#scoped-exceptions)
@@ -150,6 +151,82 @@ in a sparse array.
 The score measures the register intensity of matched words. It is not a toxicity
 probability and infers no intent. The formula, score bands, and how to gate on
 `level` and `summary.unrated` are in the [metadata guide](metadata.md#classify-matches).
+
+## Evaluating a checker
+
+`evaluate()` and `compare()` come from the optional `indonesian-badwords/evaluate`
+entry point, which has no runtime dependencies and does not load the root import
+or the catalog. The [evaluation guide](guides/evaluation.md) walks through a
+tuning loop.
+
+```text
+evaluate(
+    checker: { find(text, options?): { word, index, end, via? }[] },
+    cases: readonly EvaluateCase[],
+    options?: { classify?: typeof classify; top?: number },
+): EvaluateResult
+
+compare(before: EvaluateResult, after: EvaluateResult): EvaluateComparison
+```
+
+A `checker` is a `Badwords` instance or any object with a compatible `find()`.
+The options are `classify` (the function from `indonesian-badwords/metadata`) and
+`top` (a non-negative integer or `Infinity`, default 10).
+
+| Case field | Value |
+| --- | --- |
+| `id` | Optional unique string; defaults to `case-N` by 1-based position. |
+| `text` | The string to check. |
+| `expected` | `boolean` (should it be flagged), `string[]` (exact set of reported dictionary words), or `{ index, end }[]` (exact set of source spans). An empty array means nothing should match and counts at both the word level and the span level. |
+| `ignoreRanges` | Optional ranges passed to `find()`; must satisfy `0 <= index <= end <= text.length`. |
+
+Expected words are the `word` that `find()` reports: the dictionary key after the
+checker's `normalization`, not the matched text. `GOBLOK` and fullwidth `Ｇｏｂｌｏｋ`
+both report `goblok`, so label `['goblok']`; `['GOBLOK']` never matches. When you label
+raw text, use spans or a boolean instead.
+
+Malformed cases throw `TypeError` before the checker runs: duplicate ids, a
+non-string `text`, an `expected` of the wrong type, sparse arrays, duplicate or empty
+words, duplicate, empty, out-of-range or surrogate-splitting spans, `ignoreRanges`
+outside the text, and bad options. Errors raised by `find()` during the run propagate
+unchanged (for example the `RangeError` for an `ignoreRanges` bound inside a grapheme),
+and a checker whose `find()` returns a malformed or out-of-range location throws
+`TypeError` naming the case.
+
+Matches on identical or overlapping spans form one **detection**: `find()` with fuzzy
+matching can report `goblik`, `goblo` and `goblok` on the same 6-12 span. A detection is a
+true positive when its case expects a flag, or when any of its words (words mode) or
+spans (spans mode) is expected; otherwise it is a false positive. Each detection is
+counted once in `byVia`, under its strongest kind in the order `exact`, `normalized`,
+`leetspeak`, `evasion`, `fuzzy`, and once in `byCategory` and `bySeverity` by the word
+that carries that kind. At the word level, `tp` is the expected words that were reported,
+`fn` the expected words reported nowhere, and `fp` the unique words on detections with no
+expected member. Spans work the same way with unique spans. Spans that only touch (one ends
+where the next begins) are separate detections. `failures[].matches` keeps every match.
+
+| Result field | Value |
+| --- | --- |
+| `schemaVersion`, `total`, `correct` | `1`, the number of cases, and how many were correct. |
+| `counts` | Case-level `{ tp, fp, fn, tn }`: flagged versus expected to be flagged. |
+| `precision`, `recall`, `falsePositiveRate` | `{ count, n, value, low, high }`: `TP/(TP+FP)`, `TP/(TP+FN)`, and `FP/(FP+TN)`, with a 95% Wilson interval (z = 1.96) rounded to six decimals. `value`, `low` and `high` are `null` when `n` is 0. |
+| `words`, `spans` | `{ cases, tp, fp, fn, precision, recall }` over the cases whose `expected` is a word list or a span list. |
+| `byVia` | `{ truePositives, falsePositives }` per detection, per `via.kind` (`exact`, `normalized`, `leetspeak`, `evasion` and `fuzzy` are always present; `unknown` appears when the checker gives no `via`). |
+| `byCategory`, `bySeverity` | The same counts per category and per severity (`1`-`4`, `unrated`, `unclassified`); `null` unless `options.classify` is given. |
+| `topFalsePositiveWords` | `{ word, cases }[]`: words on false-positive detections, each counted once per case, by cases descending then word ascending (code-unit order), at most `top` (default 10). |
+| `cases` | `{ id, expected, outcome, correct, words }` for every case, in input order. |
+| `failures` | The incorrect cases, in input order, with `text` and `matches` as `{ word, index, end, match, via }`. |
+
+The case outcome is `tp` when something was flagged
+and a flag was expected, even if the words are wrong; `correct` is the exact check.
+
+`compare()` returns `{ schemaVersion, delta, fixed, broken, shifted, added, removed }`.
+Each change is `{ id, before: { outcome, words }, after: { outcome, words } }`; every
+list is sorted by id (code-unit order). `shifted` lists cases wrong in both results with a
+different outcome or a different set of reported words (order is ignored). `delta` is
+after minus before over only the ids present in both results; `added` and `removed`
+list the other ids. Cases are identified by id alone, so text edited under the same id
+shows up as a change. It throws `TypeError` for values that are not `evaluate()`
+results, for duplicate ids in a result, and when a shared id has a different `expected`.
 
 ## Results and errors
 
