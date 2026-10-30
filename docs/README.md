@@ -20,6 +20,7 @@ matching and result contracts.
 | Allow a phrase or ignore an app-identified part of a message | [Exceptions](guides/exceptions.md) |
 | Catch inserted separators, repeated letters, or selected lookalikes | [Evasion](guides/evasion.md) |
 | Catch typos or letter swaps, including alongside evasion | [Fuzzy matching](guides/fuzzy-matching.md) |
+| Measure precision, recall and false positives on your own examples, and compare two configurations | [Evaluate and tune](guides/evaluation.md) |
 
 ## Look up behavior
 

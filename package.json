@@ -88,6 +88,16 @@
         "default": "./dist/cjs/evasion.js"
       }
     },
+    "./evaluate": {
+      "import": {
+        "types": "./dist/esm/evaluate.d.ts",
+        "default": "./dist/esm/evaluate.js"
+      },
+      "require": {
+        "types": "./dist/cjs/evaluate.d.ts",
+        "default": "./dist/cjs/evaluate.js"
+      }
+    },
     "./fuzzy": {
       "import": {
         "types": "./dist/esm/fuzzy.d.ts",
@@ -128,7 +138,10 @@
     "dist/cjs/dictionary/metadata.d.ts",
     "dist/cjs/dictionary/catalog.d.ts",
     "dist/cjs/evasion/policy.d.ts",
-    "dist/cjs/fuzzy/policy.d.ts"
+    "dist/cjs/fuzzy/policy.d.ts",
+    "dist/cjs/evaluate.js",
+    "dist/cjs/evaluate.d.ts",
+    "dist/cjs/evaluate/evaluate.d.ts"
   ],
   "sideEffects": false,
   "scripts": {
