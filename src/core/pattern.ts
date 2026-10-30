@@ -102,3 +102,46 @@ export function potentialPattern(words: readonly string[], bangOnly = false, pre
     }
     return new RegExp(patterns.length ? patterns.join('|') : '(?!)', 'i');
 }
+
+/**
+ * A cheap necessary test for the bang rewrite: a folded exclamation can only belong to a dictionary word as an
+ * `i` with that word's own letters beside it (two either side, fewer past punctuation). The left and right
+ * contexts are tested independently, which keeps the check a superset but lets the engine scan for `!` directly.
+ * Undefined when the dictionary has characters this cannot reason about.
+ */
+export function bangCandidates(words: readonly string[]): RegExp | undefined {
+    const both = { left: new Set<string>(), right: new Set<string>() };
+    const open = { left: new Set<string>(), right: new Set<string>() };
+    const side = (word: string, from: number, step: number): string => {
+        const parts: string[] = [];
+        for (let at = from; parts.length < 2 && at >= 0 && at < word.length; at += step) {
+            const alphanumeric = /[a-z0-9]/i.test(word[at]);
+            parts.push(ALIASES[word[at]] ?? (alphanumeric ? word[at] : '[^a-z0-9]'));
+            if (!alphanumeric) break;
+        }
+        return (step < 0 ? parts.reverse() : parts).join('');
+    };
+    let bare = false;
+    for (const word of words) {
+        if (!/^[\x00-\x7f]*$/.test(word)) return;
+        for (let index = word.indexOf('i'); index >= 0; index = word.indexOf('i', index + 1)) {
+            const left = side(word, index - 1, -1), right = side(word, index + 1, 1);
+            if (!left && !right) bare = true;
+            else if (!left) open.right.add(right);
+            else if (!right) open.left.add(left);
+            else { both.left.add(left); both.right.add(right); }
+        }
+    }
+    if (bare) return /!/;
+    const alternatives: string[] = [];
+    if (both.left.size) alternatives.push(`(?<=(?:${[...both.left].join('|')})!)(?=${[...both.right].join('|')})`);
+    if (open.right.size) alternatives.push(`(?=${[...open.right].join('|')})`);
+    if (open.left.size) alternatives.push(`(?<=(?:${[...open.left].join('|')})!)`);
+    return new RegExp(alternatives.length ? `!(?:${alternatives.join('|')})` : '(?!)', 'i');
+}
+
+/** Matches any text holding an alphanumeric run as long as the shortest entry's longest run; null when that proves nothing. */
+export function minimumRun(words: readonly string[]): RegExp | null {
+    const length = Math.min(...words.map((word) => Math.max(0, ...word.split(/[^a-z0-9]+/i).map((part) => part.length))));
+    return length > 1 && length < Infinity ? new RegExp(`[a-z0-9]{${length}}`, 'i') : null;
+}
