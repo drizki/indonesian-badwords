@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Badwords, dictionary, expandedDictionary } from '../dist/esm/index.js';
+import { evaluate } from '../dist/esm/evaluate.js';
 import { bare } from './bare.mjs';
 
 const corpus = JSON.parse(readFileSync(new URL('./fixtures/accuracy-corpus.json', import.meta.url), 'utf8'));
@@ -73,6 +74,61 @@ describe('handcrafted Bahasa Indonesia regression corpus', () => {
             assert.deepEqual(bare(analysis.locations), expectedLocations);
         });
     }
+
+    test('scores every fixture through evaluate() as exact spans and words', () => {
+        const groups = new Map();
+        for (const fixture of corpus.cases) {
+            const key = JSON.stringify([fixture.dictionary ?? null, fixture.mode ?? null, fixture.normalization ?? null, fixture.ignoreRepeatedLetters ?? false]);
+            groups.set(key, [...(groups.get(key) ?? []), fixture]);
+        }
+        let total = 0;
+        let flagged = 0;
+        for (const fixtures of groups.values()) {
+            const [{ dictionary: preset, mode, normalization, ignoreRepeatedLetters }] = fixtures;
+            const detector = new Badwords({
+                ...(preset === 'expanded' ? { dictionary: expandedDictionary } : {}),
+                ...(mode ? { mode } : {}),
+                ...(normalization ? { normalization } : {}),
+                ...(ignoreRepeatedLetters ? { ignoreRepeatedLetters: true } : {})
+            });
+            for (const expectation of ['spans', 'words']) {
+                const result = evaluate(detector, fixtures.map(({ id, text, expected }) => ({
+                    id, text,
+                    expected: expectation === 'spans'
+                        ? expected.matches.map(({ index, end }) => ({ index, end }))
+                        : [...new Set(expected.matches.map(({ word }) => word))]
+                })));
+                assert.deepEqual(result.failures, [], `${expectation} failures`);
+                assert.equal(result.correct, fixtures.length);
+                if (expectation === 'spans') {
+                    total += result.total;
+                    flagged += result.counts.tp;
+                    assert.equal(result.counts.fp + result.counts.fn, 0);
+                    assert.equal(result.counts.tn, fixtures.filter(({ expected }) => expected.matches.length === 0).length);
+                }
+            }
+        }
+        assert.equal(total, corpus.cases.length);
+        assert.equal(flagged, corpus.cases.filter(({ expected }) => expected.matches.length > 0).length);
+    });
+
+    test('scores a deliberately incomplete checker with exact counts and rates', () => {
+        const checker = new Badwords({ dictionary: ['goblok'] });
+        const spans = evaluate(checker, corpus.cases.map(({ id, text, expected }) => ({
+            id, text, expected: expected.matches.map(({ index, end }) => ({ index, end }))
+        })));
+        const flags = evaluate(checker, corpus.cases.map(({ id, text, expected }) => ({ id, text, expected: expected.matches.length > 0 })));
+        assert.deepEqual(flags.counts, { tp: 6, fp: 1, fn: 37, tn: 36 });
+        assert.deepEqual(spans.counts, flags.counts);
+        assert.deepEqual(flags.precision, { count: 6, n: 7, value: 0.857143, low: 0.486865, high: 0.974321 });
+        assert.deepEqual(flags.recall, { count: 6, n: 43, value: 0.139535, low: 0.065556, high: 0.272639 });
+        assert.deepEqual(flags.falsePositiveRate, { count: 1, n: 37, value: 0.027027, low: 0.004787, high: 0.138244 });
+        assert.deepEqual([spans.spans.cases, spans.spans.tp, spans.spans.fp, spans.spans.fn], [80, 6, 1, 41]);
+        assert.deepEqual(spans.spans.recall, { count: 6, n: 47, value: 0.12766, low: 0.059845, high: 0.251742 });
+        assert.equal(spans.correct, 42);
+        assert.equal(flags.correct, 42);
+        assert.equal(flags.failures.length, 38);
+    });
 
     test('preserves terminal punctuation for every literal bundled term', () => {
         const detector = new Badwords();
