@@ -156,7 +156,8 @@
     "benchmark:compare": "npm run build && node scripts/benchmark-compare.mjs",
     "prepack": "npm run build",
     "prepublishOnly": "npm test",
-    "test:docs": "node scripts/verify-docs.mjs"
+    "test:docs": "node scripts/verify-docs.mjs",
+    "evaluate:corpus": "npm run build && node scripts/evaluate-corpus.mjs"
   },
   "repository": {
     "type": "git",
