@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- Adds `evaluate(checker, cases)` and `compare(before, after)` in the optional `indonesian-badwords/evaluate` entry point (#42): score a checker on your own labelled examples (an expected flag, words, or exact spans) for case-level and word/span-level counts, precision, recall and false-positive rate with 95% Wilson intervals, failures with matched words and `via`, the top false-positive words, breakdowns by `via` (and by category and severity when you pass `classify`), and a stable before/after list of fixed and broken cases. It is pure local computation with deterministic, JSON-serializable output; the root import is unchanged.
+
 ## [2.6.0] - 2026-10-30
 
 - Docs: the READMEs, `package.json` description and keywords, and a new `llms.txt` now lead with capabilities (classification, `via`, evasion, fuzzy matching, exceptions, censoring, offsets) before performance; `test:docs` checks `llms.txt` links and recipes.

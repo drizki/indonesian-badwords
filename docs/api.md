@@ -8,6 +8,7 @@ shared default instance. All text methods use the same matching policy.
 - [Constructor options](#constructor-options) and [methods](#methods)
 - [Instances and dictionaries](#instances-and-dictionaries)
 - [Results and errors](#results-and-errors)
+- [Evaluating a checker](#evaluating-a-checker)
 - [Matching and normalization](#matching)
 - [Scoped exceptions](#scoped-exceptions)
 - [Custom censorship](#custom-censorship)
@@ -137,6 +138,58 @@ in a sparse array.
 The score measures the register intensity of matched words. It is not a toxicity
 probability and infers no intent. The formula, score bands, and how to gate on
 `level` and `summary.unrated` are in the [metadata guide](metadata.md#classify-matches).
+
+## Evaluating a checker
+
+`evaluate()` and `compare()` come from the optional `indonesian-badwords/evaluate`
+entry point, which has no runtime dependencies and does not load the root import
+or the catalog. The [evaluation guide](guides/evaluation.md) walks through a
+tuning loop.
+
+```text
+evaluate(
+    checker: { find(text, options?): { word, index, end, via? }[] },
+    cases: readonly EvaluateCase[],
+    options?: { classify?: typeof classify; top?: number },
+): EvaluateResult
+
+compare(before: EvaluateResult, after: EvaluateResult): EvaluateComparison
+```
+
+A `checker` is a `Badwords` instance or any object with a compatible `find()`.
+Errors thrown by `find()` propagate unchanged.
+
+| Case field | Value |
+| --- | --- |
+| `id` | Optional unique string; defaults to `case-N` by 1-based position. |
+| `text` | The string to check. |
+| `expected` | `boolean` (should it be flagged), `string[]` (exact set of matched dictionary words), or `{ index, end }[]` (exact set of source spans). An empty array means nothing should match. |
+| `ignoreRanges` | Optional ranges passed to `find()`; must satisfy `0 <= index <= end <= text.length`. |
+
+Invalid input throws `TypeError` before the checker runs: duplicate ids, a
+non-string `text`, an `expected` of the wrong type, duplicate or empty words,
+duplicate, empty, out-of-range or surrogate-splitting spans, and bad options.
+
+| Result field | Value |
+| --- | --- |
+| `schemaVersion`, `total`, `correct` | `1`, the number of cases, and how many were correct. |
+| `counts` | Case-level `{ tp, fp, fn, tn }`: flagged versus expected to be flagged. |
+| `precision`, `recall`, `falsePositiveRate` | `{ count, n, value, low, high }`: `TP/(TP+FP)`, `TP/(TP+FN)`, and `FP/(FP+TN)`, with a 95% Wilson interval rounded to six decimals. `value`, `low` and `high` are `null` when `n` is 0. |
+| `words`, `spans` | `{ cases, tp, fp, fn, precision, recall }` over the cases whose `expected` is a word list or a span list. |
+| `byVia` | `{ truePositives, falsePositives }` per `via.kind` (`exact`, `normalized`, `leetspeak`, `evasion` and `fuzzy` are always present; `unknown` appears when the checker gives no `via`). |
+| `byCategory`, `bySeverity` | The same counts per category and per severity (`1`-`4`, `unrated`, `unclassified`); `null` unless `options.classify` is given. |
+| `topFalsePositiveWords` | `{ word, cases }[]`, by cases descending then word ascending, at most `top` (default 10). |
+| `cases` | `{ id, expected, outcome, correct, words }` for every case, in input order. |
+| `failures` | The incorrect cases, in input order, with `text` and `matches` as `{ word, index, end, match, via }`. |
+
+A match is a true positive when its case expects a flag or lists its word or span,
+and a false positive otherwise. The case outcome is `tp` when something was flagged
+and a flag was expected, even if the words are wrong; `correct` is the exact check.
+
+`compare()` returns `{ schemaVersion, delta, fixed, broken, shifted, added, removed }`.
+Each change is `{ id, before: { outcome, words }, after: { outcome, words } }`; every
+list is sorted by id. It throws `TypeError` for values that are not `evaluate()`
+results or when a shared id has a different `expected`.
 
 ## Results and errors
 

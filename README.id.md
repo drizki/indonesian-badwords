@@ -56,6 +56,7 @@ Memerlukan Node.js 22+ (bundle browser memerlukan ES2022 dan `Intl.Segmenter`). 
 | Pengecualian pada lingkup tersempit: satu frasa, atau satu rentang dalam satu panggilan | opsi `allowPhrases`, opsi panggilan `ignoreRanges` |
 | Sensor dengan `***`, `mask()`, `grawlix()`, atau callback sendiri | `indonesian-badwords/censor` |
 | Offset UTF-16 yang tepat pada teks asli, untuk highlight | `find()`, `analyze()` |
+| Presisi, recall, dan false positive pada contoh berlabel milik Anda sendiri, serta perbandingan sebelum dan sesudah | `evaluate()`, `compare()` dari `indonesian-badwords/evaluate` |
 | Error bertipe dan batas kerja yang pasti untuk input tak tepercaya | `maxMatches` dan `limits` pada tiap kebijakan |
 
 Metode: `flag`, `find`, `badwords`, `censor`, `filter`, `analyze`. Evasion dan fuzzy tidak aktif sampai Anda memberikan kebijakannya.

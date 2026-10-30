@@ -56,6 +56,7 @@ Requires Node.js 22+ (browser bundles need ES2022 and `Intl.Segmenter`). ESM, Co
 | Exceptions at the narrowest scope: a phrase, or a range in one call | `allowPhrases` option, `ignoreRanges` call option |
 | Censoring with `***`, `mask()`, `grawlix()` or your own callback | `indonesian-badwords/censor` |
 | Exact UTF-16 offsets into your original text, for highlights | `find()`, `analyze()` |
+| Precision, recall and false positives on your own labelled examples, and a before/after comparison | `evaluate()`, `compare()` from `indonesian-badwords/evaluate` |
 | Typed errors and finite work limits on untrusted input | `maxMatches` and the `limits` of each policy |
 
 Methods: `flag`, `find`, `badwords`, `censor`, `filter`, `analyze`. Evasion and fuzzy matching are off unless you pass a policy.
