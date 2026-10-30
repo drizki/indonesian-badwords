@@ -33,7 +33,7 @@ const checker = new Badwords();
 | Standard normalization recognizes Unicode compatibility forms and invisible obfuscation. Numeric-only runs and terminal punctuation stay literal. | Test your accepted spelling variants. Use `normalization: 'none'` when you need exact spelling and case. |
 | Locations include exclusive `end` and original `match`; analysis includes `occurrenceCount`. | Distinguish unique-term `count` from occurrence count and use UTF-16 offsets for locations. |
 | `find` and `analyze` cap detailed results at 10,000 occurrences by default. | Handle `RangeError`, set `onMaxMatches: 'truncate'`, or choose a positive safe integer or `Infinity` for `maxMatches`. This cap does not apply to `flag`, `badwords`, `censor`, or `filter`; optional scanner work limits are separate. |
-| `dict` returns a normalized copy. | Use `addWords` and `removeWords` to change a checker's dictionary. |
+| `dict` returns a normalized copy. | Use `addWords` and `removeWords` on your own `new Badwords()` instance to change its dictionary. The module-level functions and the default export share one process-wide checker; the functions are deprecated. |
 
 See the [API reference](api.md) for current matching rules, optional policies, and
 result types, or the [dictionary guide](guides/dictionaries.md) for source-reviewed selection.

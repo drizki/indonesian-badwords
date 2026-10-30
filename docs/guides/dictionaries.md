@@ -69,10 +69,16 @@ checker.flag('anotherterm'); // => true
 
 Supplying `dictionary` replaces the initial list. To extend the default list,
 create a default checker and call `addWords`. Mutations affect that instance;
-`dict` returns a copy. The module-level `addWords` and `removeWords` mutate a
-shared checker and are deprecated; prefer your own `new Badwords()` instance. Removing a word removes it everywhere. Use a [phrase
-exception](exceptions.md) if the word should remain detectable outside a known
-name or expression.
+`dict` returns a copy. The module-level `addWords` and `removeWords` (and
+`badwords.addWords` on the default export) mutate a process-wide shared checker; the
+functions are deprecated, so prefer your own `new Badwords()` instance. Removing a word
+removes it everywhere. Use a [phrase exception](exceptions.md) if the word should remain
+detectable outside a known name or expression.
+
+With a bounded `evasion` or `fuzzy` policy, `addWords` and `removeWords` still throw
+the policy's limit error (for example `maxCompileStates`) from the call that would
+exceed it, and leave the dictionary unchanged, so loading words one at a time and
+skipping the rejected ones works. The matcher itself is built once, on the next scan.
 
 ## Inspect why a term is included
 

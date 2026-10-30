@@ -33,7 +33,7 @@ checker.flag('dasar g0bl0k!'); // => true
 | `normalization` | `'standard'` | Unicode normalization and substitutions. `'none'` keeps exact spelling and case. |
 | `ignoreRepeatedLetters` | `false` | Collapse repeated letters in dictionary keys and input. Incompatible with bounded evasion. |
 | `maxMatches` | `10_000` | Maximum accepted occurrences for `find` and `analyze`; positive safe integer or `Infinity`. |
-| `onMaxMatches` | `'throw'` | What `find` and `analyze` do past `maxMatches`: `'throw'` a `RangeError`, or `'truncate'` and report `truncated`. See [match limits](#match-limits-and-truncation). |
+| `onMaxMatches` | `'throw'` | What `find` and `analyze` do past `maxMatches`: `'throw'` a `RangeError`, or `'truncate'` and report `truncated`. Also applies to `censor()` callbacks' `context.occurrences()`. See [match limits](#match-limits-and-truncation). |
 | `evasion` | Disabled | Policy created by the optional [`boundedEvasion`](#bounded-evasion) helper. |
 | `fuzzy` | Disabled | Policy created by the optional [`boundedFuzzy`](#bounded-fuzzy-matching) helper. |
 
@@ -55,8 +55,8 @@ per-call `ignoreRanges`; `filter`, `find` and `analyze` accept extensions of it
 | `censor(text, replacement?, options?)` | `string` | Replace matching spans; default replacement is `'***'`. |
 | `filter(text, options?)` | `string` | Remove matching spans, collapse whitespace, and trim. `options.preserveLineBreaks` keeps [line breaks](#filter-and-line-breaks). |
 | `analyze(text, options?)` | `AnalysisReport` | Original text, censorship (`options.replacement`), counts, unique terms, and locations. An `AnalysisResult` plus an optional `truncated`. |
-| `addWords(words)` | `void` | Add a string or readonly string array to this checker. Validates now; [compiles on the next scan](#dictionary-updates). |
-| `removeWords(words)` | `void` | Remove a string or readonly string array from this checker. Validates now; [compiles on the next scan](#dictionary-updates). |
+| `addWords(words)` | `void` | Add a string or readonly string array to this checker. Enforces every limit now; [builds the matcher on the next scan](#dictionary-updates). |
+| `removeWords(words)` | `void` | Remove a string or readonly string array from this checker. Enforces every limit now; [builds the matcher on the next scan](#dictionary-updates). |
 | `dict` | `string[]` | A normalized dictionary snapshot; changing the array does not change the checker. |
 
 All methods above are also named exports except the `dict` property. Named
@@ -74,7 +74,10 @@ The module-level `addWords` and `removeWords` are **deprecated**: they mutate a
 process-wide checker, so one dependency can change another's results. Create an
 isolated checker instead (`new Badwords()` keeps the default list; pass
 `dictionary` to replace it) and call its own `addWords`. The deprecated functions
-keep working, with no warning, throughout 2.x.
+keep working, with no warning, throughout 2.x. The default export is the same
+shared instance, so `import badwords from 'indonesian-badwords'; badwords.addWords(...)`
+mutates it just as the module-level function does, but TypeScript and editors
+show no deprecation hint for it.
 
 The package exports three frozen lists:
 
@@ -198,9 +201,11 @@ policy: `g0ooblok` is `leetspeak` for the former and `evasion` for the latter.
 has a non-enumerable `occurrences()` method (type `DetailedCensorContext`)
 returning the `MatchedLocation`s inside that merged span, as `find` reports them.
 Call it as `context.occurrences()`. It scans once per `censor` call, only when first used,
-applies the same `allowPhrases` and `ignoreRanges`, can throw the same
-`RangeError` as `find`, and throws `TypeError` if the dictionary changed during
-the call. The context's enumerable fields, spreads and equality checks are
+applies the same `allowPhrases` and `ignoreRanges`, follows the checker's
+[overflow mode](#match-limits-and-truncation) (past `maxMatches` it throws the same
+`RangeError` as `find`, or with `onMaxMatches: 'truncate'` lists only the kept
+occurrences and may carry `truncated`), and throws `TypeError` if the dictionary
+changed during the call. The context's enumerable fields, spreads and equality checks are
 unchanged. See
 [act on how a word matched](guides/chat-moderation.md#act-on-how-a-word-matched).
 
@@ -275,11 +280,25 @@ input. `onMaxMatches: 'truncate'` returns a bounded, usable result instead:
 - `classify()` accepts truncated `find()` output and `analyze()` results and
   classifies only what they contain; check `truncated` first if a partial answer
   is not acceptable.
-- `flag`, `badwords`, `censor` and `filter` are not capped. `context.occurrences()`
-  follows the checker's mode (or the `analyze` call's mode): when truncating, it
-  returns only the kept occurrences.
-- Truncation does not reduce scanning work: the whole input is still scanned, and
-  at most twice `maxMatches` occurrences are buffered.
+- `flag`, `badwords`, `censor` and `filter` are not capped. A `censor()` callback's
+  `context.occurrences()` follows the checker's mode, so a constructor
+  `onMaxMatches: 'truncate'` also affects `censor()` callbacks: it returns only the
+  kept occurrences instead of throwing. For `analyze()` callbacks, the call's own
+  `onMaxMatches` decides.
+- When `occurrences()` truncates and the span reaches the last kept occurrence or
+  beyond, so a dropped occurrence could lie inside it, the frozen array carries a
+  non-enumerable `truncated: true` (read it as `context.occurrences().truncated`),
+  like `find()`. An empty list without the flag really is empty. Spans that end before
+  the last kept occurrence starts are complete and unmarked. Check the flag before
+  treating a short or empty list as clean, for example
+  `occurrences().length || occurrences().truncated`.
+- Truncation does not scan the whole input when it can prove it need not: the
+  general matcher and the native word pattern stop once no later occurrence can
+  be among the first `maxMatches` (about 5 to 35 ms instead of 300 ms for 1 MB of
+  `a` against `a` to `aaaaa` in substring mode). `analyze()` without a callback still
+  scans on, because `censored` covers every match. The evasion, fuzzy and Unicode-view
+  scanners have no safe bound on where later occurrences start, so they scan the
+  whole input; at most twice `maxMatches` occurrences are buffered.
 
 ```ts
 import { Badwords } from 'indonesian-badwords';
@@ -293,18 +312,19 @@ checker.analyze('goblok goblok goblok').censored; // => '*** *** ***'
 
 ### Dictionary updates
 
-`addWords` and `removeWords` validate immediately: a wrong type, or a list that
-exceeds a policy's `maxDictionaryLength`, throws before anything changes, and a
-failed call leaves the dictionary untouched, pending updates included. `dict`
-reflects every update at once. With `evasion` or `fuzzy`, compiling the
-dictionary is deferred to the next scan, so loading many words one call at a
-time costs one compile instead of one per call. Without those policies the
-matcher was already built lazily.
+`addWords` and `removeWords` enforce every limit when you call them, exactly as
+they did before 2.7: a wrong type, a list that exceeds a policy's
+`maxDictionaryLength`, or a dictionary that no longer fits a compile budget
+(`maxCompileStates`, `maxIndexPostings`, `maxStateCells`) throws the usual typed
+error from that call. A failed call changes nothing: the dictionary keeps every
+earlier update, including pending removals. `dict` reflects every update at once.
 
-Limits that only compilation can detect (for example `maxCompileStates` or
-`maxIndexPostings`) are therefore reported by the next scan, which throws the
-usual typed error and restores the last compiled dictionary, discarding the
-pending updates. Call `flag('')` after a batch to surface such an error at a known point.
+With `evasion` or `fuzzy`, only building the matcher is deferred to the next
+scan, so loading many words one call at a time costs one build instead of one per
+call (300 single-word calls with a fuzzy policy: a few milliseconds of checks instead of
+about 300 ms of compiles). The deferred build cannot fail on a budget, because
+the same budgets were already checked, call by call, on the exact quantities the
+compiler counts. Without those policies the matcher was already built lazily.
 
 Empty strings return no matches, zero counts, and unchanged text. Non-string
 inputs and invalid options throw `TypeError`.

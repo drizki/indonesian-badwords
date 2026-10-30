@@ -53,8 +53,8 @@ examples](browser-and-frameworks.md).
 | --- | --- | --- |
 | `TypeError` | Invalid input/options or a non-string callback result | Validate the caller and read the relevant contract. |
 | `RangeError` from `find`/`analyze` | Accepted occurrences exceeded `maxMatches` | Set `onMaxMatches: 'truncate'` and check `truncated`, handle the error, or deliberately choose a new cap. |
-| `EvasionLimitError` | An evasion input, compilation, or scan quota was exceeded | Inspect `limit`, `maximum`, and `used`; narrow the policy or adjust that bound. |
-| `FuzzyLimitError` | A fuzzy input, compilation, index, or scan quota was exceeded | Inspect the typed fields and review edit breadth and workload size. |
+| `EvasionLimitError` | An evasion input, compilation, or scan quota was exceeded. Compile budgets are thrown by `addWords`/`removeWords` themselves, which then change nothing | Inspect `limit`, `maximum`, and `used`; narrow the policy or adjust that bound. |
+| `FuzzyLimitError` | A fuzzy input, compilation, index, or scan quota was exceeded. Compile and index budgets are thrown by `addWords`/`removeWords` themselves, which then change nothing | Inspect the typed fields and review edit breadth and workload size. |
 | `RangeError` with ignored ranges | Numeric bounds or grapheme boundaries are invalid | Recompute offsets in the original text. |
 
 Optional limit errors extend `RangeError`, so check the specific class first.
