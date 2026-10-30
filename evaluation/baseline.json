@@ -378,7 +378,7 @@
               "reg-pantek-minang",
               "abuse-kampret-lu",
               "phrase-anak-setan",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-kontol-cyrillic",
@@ -599,7 +599,7 @@
                 "falseNegatives": [
                   "abuse-kampret-lu",
                   "phrase-anak-setan",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -1114,7 +1114,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -2173,7 +2173,7 @@
               "phrase-anak-setan",
               "phrase-anak-haram",
               "compound-bangsatlah",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-anjing-dots",
@@ -2486,7 +2486,7 @@
                   "phrase-anak-setan",
                   "phrase-anak-haram",
                   "compound-bangsatlah",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -3097,7 +3097,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -3319,7 +3319,7 @@
             ],
             "falseNegatives": [
               "phrase-anak-setan",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-kontol-cyrillic",
@@ -3543,7 +3543,7 @@
                 ],
                 "falseNegatives": [
                   "phrase-anak-setan",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -4063,7 +4063,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -5109,7 +5109,7 @@
               "phrase-anak-setan",
               "phrase-anak-haram",
               "compound-bangsatlah",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-anjing-dots",
@@ -5424,7 +5424,7 @@
                   "phrase-anak-setan",
                   "phrase-anak-haram",
                   "compound-bangsatlah",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -6035,7 +6035,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -6238,7 +6238,7 @@
               "reg-pantek-minang",
               "abuse-kampret-lu",
               "phrase-anak-setan",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-kontol-cyrillic",
@@ -6460,7 +6460,7 @@
                 "falseNegatives": [
                   "abuse-kampret-lu",
                   "phrase-anak-setan",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -6968,7 +6968,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -8016,7 +8016,7 @@
               "phrase-anak-setan",
               "phrase-anak-haram",
               "compound-bangsatlah",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-anjing-dots",
@@ -8328,7 +8328,7 @@
                   "phrase-anak-setan",
                   "phrase-anak-haram",
                   "compound-bangsatlah",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -8931,7 +8931,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -9150,7 +9150,7 @@
             "falseNegatives": [
               "reg-naskeleng-cai",
               "phrase-anak-setan",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-kontol-cyrillic",
@@ -9372,7 +9372,7 @@
                 ],
                 "falseNegatives": [
                   "phrase-anak-setan",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -9885,7 +9885,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-kontol-cyrillic",
@@ -10929,7 +10929,7 @@
               "phrase-anak-setan",
               "phrase-anak-haram",
               "compound-bangsatlah",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-anjing-dots",
@@ -11242,7 +11242,7 @@
                   "phrase-anak-setan",
                   "phrase-anak-haram",
                   "compound-bangsatlah",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -11846,7 +11846,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -14980,7 +14980,7 @@
               "reg-pantek-minang",
               "abuse-kampret-lu",
               "phrase-anak-setan",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-ngentot-stretched",
@@ -15204,7 +15204,7 @@
                 "falseNegatives": [
                   "abuse-kampret-lu",
                   "phrase-anak-setan",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-ngentot-stretched",
@@ -15726,7 +15726,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-ngentot-stretched"
@@ -16810,7 +16810,7 @@
               "phrase-anak-setan",
               "phrase-anak-haram",
               "compound-bangsatlah",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-goblok-hyphen",
               "obf-kontol-spaced",
               "obf-anjing-dots",
@@ -17130,7 +17130,7 @@
                   "phrase-anak-setan",
                   "phrase-anak-haram",
                   "compound-bangsatlah",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -17752,7 +17752,7 @@
               "failures": {
                 "falsePositives": [],
                 "falseNegatives": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-goblok-hyphen",
                   "obf-kontol-spaced",
                   "obf-anjing-dots",
@@ -17982,7 +17982,7 @@
               "social-muka-tembok"
             ],
             "spanMismatches": [
-              "compound-goblokkk"
+              "obf-goblokkk-stretched"
             ]
           },
           "varieties": {
@@ -18208,7 +18208,7 @@
                   "social-muka-tembok"
                 ],
                 "spanMismatches": [
-                  "compound-goblokkk"
+                  "obf-goblokkk-stretched"
                 ]
               }
             },
@@ -18730,7 +18730,7 @@
                   "obf-ngentot-stretched"
                 ],
                 "spanMismatches": [
-                  "compound-goblokkk"
+                  "obf-goblokkk-stretched"
                 ]
               }
             },
@@ -19790,7 +19790,7 @@
             ],
             "spanMismatches": [
               "compound-bangsatlah",
-              "compound-goblokkk",
+              "obf-goblokkk-stretched",
               "obf-anjing-stretched"
             ]
           },
@@ -20107,7 +20107,7 @@
                 ],
                 "spanMismatches": [
                   "compound-bangsatlah",
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-anjing-stretched"
                 ]
               }
@@ -20721,7 +20721,7 @@
                   "obf-ngentot-stretched"
                 ],
                 "spanMismatches": [
-                  "compound-goblokkk",
+                  "obf-goblokkk-stretched",
                   "obf-anjing-stretched"
                 ]
               }
