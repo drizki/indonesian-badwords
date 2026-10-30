@@ -105,8 +105,10 @@ describe('evaluate: expectations', () => {
         assert.deepEqual([result.words.cases, result.words.tp, result.words.fp, result.words.fn], [4, 3, 2, 1]);
         assert.equal(result.words.precision.value, 0.6);
         assert.equal(result.words.recall.value, 0.75);
-        assert.equal(result.spans.cases, 0);
-        assert.equal(result.spans.precision.value, null);
+        // The empty expectation of case d also counts at the span level: one case, one false positive.
+        assert.deepEqual([result.spans.cases, result.spans.tp, result.spans.fp, result.spans.fn], [1, 0, 1, 0]);
+        assert.equal(result.spans.precision.value, 0);
+        assert.equal(result.spans.recall.value, null);
         // c is flagged and expected flagged: a case-level TP with wrong words, so correct is false.
         assert.equal(result.cases[2].outcome, 'tp');
         assert.deepEqual(result.cases[0].expected, ['goblok', 'tolol']);
@@ -126,7 +128,7 @@ describe('evaluate: expectations', () => {
         assert.deepEqual(result.failures[0].matches, [{ word: 'goblok', index: 6, end: 12, match: 'goblok', via: 'exact' }]);
     });
 
-    test('overlapping expected spans and overlapping matches are judged per span', () => {
+    test('overlapping matches form one detection, judged by any expected span', () => {
         const overlapping = new Badwords({ dictionary: ['goblok', 'blok'], mode: 'substring' });
         const text = 'goblok';
         const spans = overlapping.find(text).map(({ index, end }) => ({ index, end }));
@@ -135,9 +137,13 @@ describe('evaluate: expectations', () => {
             { id: 'both', text, expected: spans },
             { id: 'one', text, expected: [{ index: 0, end: 6 }] }
         ]);
-        assert.deepEqual(result.cases.map(({ correct }) => correct), [true, false]);
-        assert.deepEqual([result.spans.tp, result.spans.fp, result.spans.fn], [3, 1, 0]);
-        assert.deepEqual(result.topFalsePositiveWords, [{ word: 'blok', cases: 1 }]);
+        // The cluster 0-6 / 2-6 is one detection: expecting either span (or both) is correct.
+        assert.deepEqual(result.cases.map(({ correct }) => correct), [true, true]);
+        assert.deepEqual([result.spans.tp, result.spans.fp, result.spans.fn], [3, 0, 0]);
+        assert.deepEqual(result.topFalsePositiveWords, []);
+        const unmatched = evaluate(overlapping, [{ id: 'elsewhere', text, expected: [{ index: 0, end: 2 }] }]);
+        assert.deepEqual([unmatched.spans.tp, unmatched.spans.fp, unmatched.spans.fn], [0, 2, 1]);
+        assert.deepEqual(unmatched.topFalsePositiveWords, [{ word: 'blok', cases: 1 }, { word: 'goblok', cases: 1 }]);
     });
 
     test('Unicode: spans are UTF-16 offsets and surrogate splits are rejected', () => {
@@ -366,7 +372,7 @@ describe('compare', () => {
         const shuffled = compare(evaluate(before, [...cases].reverse()), evaluate(after, [...cases].reverse()));
         assert.deepEqual(shuffled, forward);
         const backward = compare(evaluate(after, cases), evaluate(before, cases));
-        assert.deepEqual(backward.fixed.map(({ id }) => id), forward.broken.map(({ id }) => id).concat(['a-fn', 'c-fp']).filter((id) => id === 'b-ok'));
+        assert.deepEqual(backward.fixed.map(({ id }) => id), ['b-ok']);
         assert.deepEqual(backward.broken.map(({ id }) => id), forward.fixed.map(({ id }) => id));
     });
 
@@ -397,5 +403,249 @@ describe('compare', () => {
         assert.throws(() => compare(a, c), /different expectation/);
         assert.throws(() => compare({}, a), /before must be an evaluate\(\) result/);
         assert.throws(() => compare(a, null), /after must be an evaluate\(\) result/);
+    });
+});
+
+describe('evaluate: detections (overlapping matches on one span)', () => {
+    const fuzzy = new Badwords({ fuzzy: boundedFuzzy({ model: 'osa', maxEdits: 1 }) });
+    const evasive = new Badwords({
+        dictionary: ['goblok'],
+        fuzzy: boundedFuzzy({ model: 'osa', maxEdits: 1 }),
+        evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } })
+    });
+
+    test('a real fuzzy checker reports several words on one span', () => {
+        const kinds = fuzzy.find('dasar goblok').map(({ word, index, end, via }) => [word, index, end, via.kind]);
+        assert.ok(kinds.length > 1, 'the premise: fuzzy neighbours share the exact span');
+        assert.ok(kinds.every(([, index, end]) => index === 6 && end === 12));
+        assert.ok(kinds.some(([word, , , kind]) => word === 'goblok' && kind === 'exact'));
+    });
+
+    test('an expected word makes its whole detection a true positive, without blaming the neighbours', () => {
+        const result = evaluate(fuzzy, [
+            { id: 'bool', text: 'dasar goblok', expected: true },
+            { id: 'words', text: 'dasar goblok', expected: ['goblok'] },
+            { id: 'span', text: 'dasar goblok', expected: [{ index: 6, end: 12 }] }
+        ]);
+        assert.deepEqual(result.cases.map(({ correct }) => correct), [true, true, true]);
+        assert.deepEqual([result.words.tp, result.words.fp, result.words.fn, result.words.precision.value], [1, 0, 0, 1]);
+        assert.deepEqual([result.spans.tp, result.spans.fp, result.spans.fn], [1, 0, 0]);
+        assert.deepEqual(result.topFalsePositiveWords, []);
+        // Three detections, each credited once, all to the strongest kind.
+        assert.deepEqual(result.byVia.exact, { truePositives: 3, falsePositives: 0 });
+        assert.deepEqual(result.byVia.fuzzy, { truePositives: 0, falsePositives: 0 });
+        // The per-match detail is still there when a case fails.
+        const failing = evaluate(fuzzy, [{ id: 'f', text: 'dasar goblok', expected: false }]);
+        assert.equal(failing.failures[0].matches.length, fuzzy.find('dasar goblok').length);
+        assert.ok(failing.failures[0].matches.length > 1);
+    });
+
+    test('a detection nothing expected is one false positive, with each word listed once', () => {
+        const matches = fuzzy.find('goblox');
+        assert.ok(matches.length >= 1 && matches.every(({ via }) => via.kind === 'fuzzy'));
+        const result = evaluate(fuzzy, [{ id: 'typo', text: 'goblox', expected: false }, { id: 'typo2', text: 'goblox', expected: false }]);
+        assert.deepEqual(result.byVia.fuzzy, { truePositives: 0, falsePositives: 2 });
+        assert.deepEqual(result.byVia.exact, { truePositives: 0, falsePositives: 0 });
+        assert.deepEqual(result.topFalsePositiveWords, [...new Set(matches.map(({ word }) => word))].sort().map((word) => ({ word, cases: 2 })));
+    });
+
+    test('a wrong expected word is a false positive and a false negative at the word level', () => {
+        const result = evaluate(fuzzy, [{ id: 'w', text: 'dasar goblok', expected: ['tolol'] }]);
+        const reported = new Set(fuzzy.find('dasar goblok').map(({ word }) => word));
+        assert.deepEqual([result.words.tp, result.words.fp, result.words.fn], [0, reported.size, 1]);
+        assert.equal(result.cases[0].correct, false);
+    });
+
+    test('evasion plus fuzzy: one spelling is one detection, credited to evasion', () => {
+        const found = evasive.find('g-o-b-l-o-k');
+        assert.deepEqual(found.map(({ index, end, via }) => [index, end, via.kind]), [[0, 9, 'fuzzy'], [0, 11, 'evasion'], [2, 11, 'fuzzy']]);
+        const result = evaluate(evasive, [
+            { id: 'bool', text: 'g-o-b-l-o-k', expected: true },
+            { id: 'span', text: 'g-o-b-l-o-k', expected: [{ index: 0, end: 11 }] },
+            { id: 'word', text: 'g-o-b-l-o-k', expected: ['goblok'] },
+            { id: 'plain', text: 'dasar goblok', expected: true }
+        ]);
+        assert.deepEqual(result.cases.map(({ correct }) => correct), [true, true, true, true]);
+        assert.deepEqual(result.byVia.evasion, { truePositives: 3, falsePositives: 0 });
+        assert.deepEqual(result.byVia.fuzzy, { truePositives: 0, falsePositives: 0 });
+        assert.deepEqual(result.byVia.exact, { truePositives: 1, falsePositives: 0 });
+        assert.deepEqual([result.spans.tp, result.spans.fp, result.spans.fn], [1, 0, 0]);
+        // Only touching, not overlapping, spans stay separate detections.
+        const touching = scripted({ ab: [['a', 0, 1, 'exact'], ['b', 1, 2, 'exact']] });
+        assert.deepEqual(evaluate(touching, [{ text: 'ab', expected: false }]).byVia.exact, { truePositives: 0, falsePositives: 2 });
+    });
+
+    test('via is credited to the strongest kind in the documented order', () => {
+        const order = ['fuzzy', 'evasion', 'leetspeak', 'normalized', 'exact'];
+        for (let at = 0; at < order.length; at++) {
+            const kinds = order.slice(at);
+            const checker = { find: () => kinds.map((kind, i) => ({ word: `w${i}`, index: 0, end: 3, via: { kind } })) };
+            const result = evaluate(checker, [{ text: 'abc', expected: true }]);
+            const credited = Object.entries(result.byVia).filter(([, row]) => row.truePositives > 0);
+            assert.deepEqual(credited, [[order[order.length - 1], { truePositives: 1, falsePositives: 0 }]]);
+        }
+        const mixed = evaluate({ find: () => [{ word: 'a', index: 0, end: 1, via: { kind: 'fuzzy' } }, { word: 'b', index: 0, end: 1, via: { kind: 'leetspeak' } }] }, [{ text: 'a', expected: false }]);
+        assert.deepEqual(mixed.byVia.leetspeak, { truePositives: 0, falsePositives: 1 });
+        assert.deepEqual(mixed.byVia.fuzzy, { truePositives: 0, falsePositives: 0 });
+    });
+
+    test('span false positives count unique spans in unexpected detections, not matches', () => {
+        const checker = scripted({ abcdef: [['x', 3, 6, 'exact'], ['y', 3, 6, 'exact'], ['z', 0, 1, 'exact']] });
+        const result = evaluate(checker, [{ id: 's', text: 'abcdef', expected: [{ index: 0, end: 1 }] }]);
+        assert.deepEqual([result.spans.tp, result.spans.fp, result.spans.fn], [1, 1, 0]);
+        assert.deepEqual(result.topFalsePositiveWords, [{ word: 'x', cases: 1 }, { word: 'y', cases: 1 }]);
+        assert.deepEqual(result.byVia.exact, { truePositives: 1, falsePositives: 1 });
+        assert.equal(result.cases[0].correct, false);
+    });
+
+    test('an empty expectation counts at both the word and the span level', () => {
+        const checker = scripted({ abcdef: [['x', 3, 6, 'exact'], ['y', 3, 6, 'exact']] });
+        const result = evaluate(checker, [{ id: 'none', text: 'abcdef', expected: [] }, { id: 'quiet', text: 'ab', expected: [] }]);
+        assert.deepEqual([result.words.cases, result.words.tp, result.words.fp, result.words.fn], [2, 0, 2, 0]);
+        assert.deepEqual([result.spans.cases, result.spans.tp, result.spans.fp, result.spans.fn], [2, 0, 1, 0]);
+        assert.deepEqual(result.cases.map(({ correct }) => correct), [false, true]);
+        assert.deepEqual(result.counts, { tp: 0, fp: 1, fn: 0, tn: 1 });
+    });
+
+    test('expected words are the reported dictionary key, not the matched text', () => {
+        const checker = new Badwords({ dictionary: ['goblok'] });
+        assert.equal(checker.find('dasar GOBLOK')[0].word, 'goblok');
+        const result = evaluate(checker, [
+            { id: 'key', text: 'dasar GOBLOK', expected: ['goblok'] },
+            { id: 'wide', text: 'dasar Ｇｏｂｌｏｋ', expected: ['goblok'] },
+            { id: 'raw', text: 'dasar GOBLOK', expected: ['GOBLOK'] }
+        ]);
+        assert.deepEqual(result.cases.map(({ correct }) => correct), [true, true, false]);
+    });
+});
+
+describe('evaluate: ordering, tallies and the classify buckets', () => {
+    test('uses code-unit ordering for ids and words, not locale ordering', () => {
+        const checker = scripted({ ttt: [['zeta', 0, 1, 'exact'], ['éta', 1, 2, 'exact']] });
+        const result = evaluate(checker, [{ id: 'a', text: 'ttt', expected: false }]);
+        assert.deepEqual(result.topFalsePositiveWords.map(({ word }) => word), ['zeta', 'éta']);
+        const reference = (words) => scripted({ xxx: words.map((word, i) => [word, 0, 1, 'exact']) });
+        const cases = ['B', 'a', 'A', 'b'].map((id) => ({ id, text: 'xxx', expected: false }));
+        const none = evaluate(scripted({}), cases);
+        const flagged = evaluate(reference(['one']), cases);
+        assert.deepEqual(compare(none, flagged).broken.map(({ id }) => id), ['A', 'B', 'a', 'b']);
+        assert.deepEqual(compare(flagged, none).fixed.map(({ id }) => id), ['A', 'B', 'a', 'b']);
+        const table = scripted({ xxx: [['w', 0, 1, 'zz'], ['v', 2, 3, 'Zz']] });
+        assert.deepEqual(Object.keys(evaluate(table, [{ text: 'xxx', expected: false }]).byVia).slice(0, 2), ['Zz', 'evasion']);
+    });
+
+    test('categories and severities are counted once per detection, with exact counts', () => {
+        const checker = new Badwords({ dictionary: ['goblok', 'kontol', 'bodo', 'zzzcustom'] });
+        const result = evaluate(checker, [
+            { text: 'goblok', expected: true },
+            { text: 'kontol', expected: true },
+            { text: 'bodo', expected: false },
+            { text: 'zzzcustom', expected: false }
+        ], { classify });
+        // goblok: insult/2; kontol: insult + sexual-vulgarity/3; bodo: insult/unrated; zzzcustom: unclassified.
+        assert.deepEqual(result.byCategory, {
+            insult: { truePositives: 2, falsePositives: 1 },
+            'sexual-vulgarity': { truePositives: 1, falsePositives: 0 }
+        });
+        assert.deepEqual(result.bySeverity, {
+            2: { truePositives: 1, falsePositives: 0 },
+            3: { truePositives: 1, falsePositives: 0 },
+            unclassified: { truePositives: 0, falsePositives: 1 },
+            unrated: { truePositives: 0, falsePositives: 1 }
+        });
+    });
+
+    test('classifies a detection by its strongest-kind word', () => {
+        const checker = { find: () => [{ word: 'kontol', index: 0, end: 3, via: { kind: 'fuzzy' } }, { word: 'bodo', index: 0, end: 3, via: { kind: 'exact' } }] };
+        const result = evaluate(checker, [{ text: 'abc', expected: false }], { classify });
+        assert.deepEqual(result.bySeverity, { unrated: { truePositives: 0, falsePositives: 1 } });
+    });
+
+    test('prototype-looking keys neither pollute nor vanish', () => {
+        const keys = ['__proto__', 'toString', 'constructor', 'hasOwnProperty'];
+        const checker = { find: () => keys.map((kind, i) => ({ word: kind, index: i, end: i + 1, via: { kind } })) };
+        const classifier = () => ({ occurrences: [{ classified: true, categories: keys, severity: 2 }] });
+        const result = evaluate(checker, [{ text: 'abcd', expected: false }], { classify: classifier });
+        for (const key of keys) {
+            assert.ok(Object.hasOwn(result.byVia, key), key);
+            assert.deepEqual(result.byVia[key], { truePositives: 0, falsePositives: 1 }, key);
+            assert.ok(Object.hasOwn(result.byCategory, key), key);
+            assert.deepEqual(result.byCategory[key], { truePositives: 0, falsePositives: 4 }, key);
+        }
+        assert.equal(Object.getPrototypeOf(result.byVia), Object.prototype);
+        assert.equal(Object.prototype.falsePositives, undefined);
+        assert.equal(Object.prototype.truePositives, undefined);
+        assert.deepEqual(result.topFalsePositiveWords.map(({ word }) => word), [...keys].sort());
+        assert.equal(JSON.parse(JSON.stringify(result)).byVia.toString.falsePositives, 1);
+    });
+
+    test('top accepts Infinity', () => {
+        const words = Array.from({ length: 12 }, (_, i) => ['w' + String(i).padStart(2, '0'), 0, 1, 'exact']);
+        const checker = scripted({ xxx: words });
+        assert.equal(evaluate(checker, [{ text: 'xxx', expected: false }]).topFalsePositiveWords.length, 10);
+        assert.equal(evaluate(checker, [{ text: 'xxx', expected: false }], { top: Infinity }).topFalsePositiveWords.length, 12);
+        assert.throws(() => evaluate(checker, [], { top: NaN }), /top/);
+    });
+});
+
+describe('evaluate: strict inputs', () => {
+    test('rejects sparse arrays naming the case', () => {
+        assert.throws(() => evaluate(plain, [{ text: 'a', expected: false }, , { text: 'b', expected: false }]), /case 1 is missing/);
+        assert.throws(() => evaluate(plain, [{ id: 'w', text: 'a', expected: [, 'x'] }]), /"w".*sparse/);
+        assert.throws(() => evaluate(plain, [{ id: 's', text: 'abc', expected: [{ index: 0, end: 1 }, ,] }]), /"s".*sparse/);
+        assert.throws(() => evaluate(plain, [{ id: 'r', text: 'abc', expected: false, ignoreRanges: [, { index: 0, end: 1 }] }]), /"r".*sparse/);
+    });
+
+    test('rejects find() locations that are not valid offsets, naming the case', () => {
+        for (const bad of [{ index: 0.5, end: 1 }, { index: -1, end: 1 }, { index: 2, end: 1 }, { index: 0, end: 4 }, { index: 0, end: Infinity }]) {
+            const checker = { find: () => [{ word: 'x', ...bad }] };
+            assert.throws(() => evaluate(checker, [{ id: 'named', text: 'abc', expected: false }]), (error) => error instanceof TypeError && /"named"/.test(error.message), JSON.stringify(bad));
+        }
+        evaluate({ find: () => [{ word: 'x', index: 3, end: 3 }] }, [{ text: 'abc', expected: false }]);
+    });
+
+    test('find() errors during the run propagate unchanged', () => {
+        const checker = { find: () => { throw new RangeError('boom'); } };
+        assert.throws(() => evaluate(checker, [{ text: 'a', expected: false }]), RangeError);
+        assert.throws(() => evaluate(new Badwords(), [{ text: '👨‍👩‍👧', expected: false, ignoreRanges: [{ index: 2, end: 3 }] }]), RangeError);
+    });
+});
+
+describe('compare: inputs and deltas', () => {
+    test('delta counts only ids present in both results', () => {
+        const base = [{ id: 'a', text: 'goblok', expected: true }, { id: 'b', text: 'halo', expected: false }];
+        const small = evaluate(new Badwords(), base);
+        const large = evaluate(new Badwords(), [...base, { id: 'c', text: 'tolol', expected: true }, { id: 'd', text: 'pagi', expected: false }]);
+        const diff = compare(small, large);
+        assert.deepEqual(diff.delta, { tp: 0, fp: 0, fn: 0, tn: 0, correct: 0 });
+        assert.deepEqual(diff.added, ['c', 'd']);
+        assert.deepEqual(compare(large, small).removed, ['c', 'd']);
+    });
+
+    test('shifted compares word sets, not order', () => {
+        const at = (words) => scripted({ ttt: words.map((word, i) => [word, i, i + 1, 'exact']) });
+        const only = [{ id: 'x', text: 'ttt', expected: ['tolol'] }];
+        const first = evaluate(at(['anjing', 'babi']), only);
+        const second = evaluate(at(['babi', 'anjing']), only);
+        const third = evaluate(at(['babi', 'celeng']), only);
+        assert.deepEqual(compare(first, second).shifted, []);
+        assert.deepEqual(compare(first, third).shifted.map(({ id }) => id), ['x']);
+    });
+
+    test('validates its inputs', () => {
+        const result = evaluate(plain, [{ id: 'a', text: 'goblok', expected: true }]);
+        const duplicate = JSON.parse(JSON.stringify(result));
+        duplicate.cases.push(duplicate.cases[0]);
+        assert.throws(() => compare(result, duplicate), /after lists case id "a" twice/);
+        const { counts, ...withoutCounts } = result;
+        assert.throws(() => compare(withoutCounts, result), /before must be an evaluate\(\) result/);
+        assert.throws(() => compare(result, { schemaVersion: 1, counts }), /after must be an evaluate\(\) result/);
+        assert.throws(() => compare(result, { ...result, cases: [{ id: 'a' }] }), /malformed case entry/);
+    });
+
+    test('identifies cases by id only: edited text under one id is a change', () => {
+        const before = evaluate(plain, [{ id: 'z', text: 'goblok', expected: true }]);
+        const after = evaluate(plain, [{ id: 'z', text: 'halo', expected: true }]);
+        assert.deepEqual(compare(before, after).broken.map(({ id }) => id), ['z']);
     });
 });
