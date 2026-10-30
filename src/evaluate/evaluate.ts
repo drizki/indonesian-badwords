@@ -265,7 +265,7 @@ export function evaluate(checker: EvaluateChecker, cases: readonly EvaluateCase[
     for (const { id, text, expected, ignoreRanges } of prepared) {
         const label = `case ${JSON.stringify(id)}`;
         const found = checker.find(text, ignoreRanges ? { ignoreRanges } : undefined);
-        if (!Array.isArray(found)) throw new TypeError(`${label}: checker.find must return an array`);
+        if (!Array.isArray(found) || sparse(found)) throw new TypeError(`${label}: checker.find must return a dense array`);
         const matches: EvaluateMatch[] = found.map((location) => {
             if (location === null || typeof location !== 'object' || typeof location.word !== 'string' || !isInteger(location.index) || !isInteger(location.end)) {
                 throw new TypeError(`${label}: checker.find must return { word, index, end } locations`);

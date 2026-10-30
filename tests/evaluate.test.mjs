@@ -335,7 +335,8 @@ describe('evaluate: validation', () => {
         assert.throws(() => evaluate(plain, [], { top: -1 }), /top/);
         assert.throws(() => evaluate(plain, [], { top: 1.5 }), /top/);
         assert.throws(() => evaluate(plain, [], null), /options/);
-        assert.throws(() => evaluate({ find: () => 'x' }, [{ text: 'a', expected: false }]), /return an array/);
+        assert.throws(() => evaluate({ find: () => 'x' }, [{ text: 'a', expected: false }]), /return a dense array/);
+        assert.throws(() => evaluate({ find: () => [, { word: 'a', index: 0, end: 1 }] }, [{ id: 'gap', text: 'a', expected: false }]), /case "gap": checker.find must return a dense array/);
         assert.throws(() => evaluate({ find: () => [{ word: 'x' }] }, [{ text: 'a', expected: false }]), /locations/);
     });
 
