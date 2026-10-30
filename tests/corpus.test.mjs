@@ -50,14 +50,14 @@ describe('evaluation corpus', () => {
 
 describe('split', () => {
   test('follows the documented rule with the pinned salt', () => {
-    assert.equal(SALT, 429);
-    assert.equal(corpus.split.salt, 429);
+    assert.equal(SALT, 831);
+    assert.equal(corpus.split.salt, 831);
     for (const c of corpus.cases) assert.equal(c.split, splitFor(c.family), c.id);
   });
 
   test('rejects any other salt (T8)', () => {
-    assert.match(problemsAfter(c => { c.split.salt = 430; }).join('\n'), /salt 429/);
-    assert.match(problemsAfter(c => { c.split.salt = '429'; }).join('\n'), /salt 429/);
+    assert.match(problemsAfter(c => { c.split.salt = 832; }).join('\n'), /salt 831/);
+    assert.match(problemsAfter(c => { c.split.salt = '831'; }).join('\n'), /salt 831/);
   });
 
   test('puts every spelling of a catalog sense in one family', () => {

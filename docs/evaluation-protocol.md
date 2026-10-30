@@ -26,7 +26,7 @@ and is not part of the npm package. Results are on the [accuracy page](accuracy.
 
 <!-- generated:status:start -->
 
-103 of 142 labels have been reviewed by the maintainer, a single native-speaker reviewer; 39 are still `proposed`: drafted by an AI agent and not yet reviewed. A result that depends on a proposed label is provisional and cannot support a release-note claim (threshold T6). The tables count proposed labels like any other. 2 case texts were revised by the maintainer during review (the `revisions` field). A reviewed label is one reviewer's judgement, not ground truth.
+All 142 labels have been reviewed by the maintainer, a single native-speaker reviewer. 2 case texts were revised by the maintainer during review (the `revisions` field). A reviewed label is one reviewer's judgement, not ground truth.
 
 <!-- generated:status:end -->
 
@@ -69,7 +69,11 @@ is listed so it is visible, not so it is considered covered.
 **Maintainer policy (native-speaker review, 2026-10-30), paraphrased from the maintainer's answers:**
 
 - Mentions, quoted and reported speech (phenomenon `quoted-or-reported`): label `uncertain`.
-  These are excluded from precision and recall and reported separately.
+  These are excluded from precision and recall and reported separately. Exception: news or
+  reported use of a social-category noun that attacks no one ("Berita soal pelakor ramai di media
+  sosial.") is `benign`, so guards for such words can be tested.
+- Directed insults that use words the 2.6.0 review marked for removal (for example "Dasar kemplu!"):
+  label `flag`. Removing such a word shows up as a listed recall loss, not as a free change.
 - Friendly or positive exclamations (phenomenon `friendly-exclamation`): label `flag`.
 - Social insults (phenomenon `social-insult`): directed insults are `flag`. The self-deprecating
   "Maaf, saya bodoh soal teknologi." is `benign`.
@@ -153,15 +157,18 @@ is a judgement the validator cannot check.
   modulo 10 is below 3. About 30% of families land in the holdout; the share of cases varies. The salt
   is recorded in the corpus (`split.salt`). The validator recomputes every `split`, so it cannot be
   edited by hand.
-- **The salt is pinned to 429** (threshold T8) and the validator fails for any other value. It was
-  chosen by a search over the integers 0 to 4999 on an earlier version of the corpus (103 cases, with
-  families named by term rather than catalog sense), before any recipe was scored. That search script
-  was not kept, so its exact penalty is not recorded. [`scripts/corpus-salt.mjs`](../scripts/corpus-salt.mjs)
-  states one explicit rule instead: a salt is *eligible* when its holdout holds at least 10 scored
-  flag and at least 10 scored benign cases and every phenomenon with two or more families appears
-  in both splits; eligible salts rank by how far the holdout size is from 30% of all cases, ties to the
-  smaller salt. It reports where the pinned salt stands and never changes anything. A different salt
-  would reshuffle the holdout, so the salt is not re-picked, even if the corpus has since grown.
+- **The salt is pinned to 831** (threshold T8) and the validator fails for any other value.
+  [`scripts/corpus-salt.mjs`](../scripts/corpus-salt.mjs) states the selection rule: a salt is
+  *eligible* when its holdout holds at least 10 scored flag and at least 10 scored benign cases and
+  every phenomenon with two or more families appears in both splits; eligible salts rank by how far
+  the holdout size is from 30% of all cases, ties to the smaller salt. Salt 831 is the first under
+  that rule for the corpus as first merged.
+- **Salt history.** The first draft used salt 429, chosen by an earlier search whose script was not
+  kept. Before the first merge, deriving families from catalog senses and adding the #56 evidence
+  cases left five phenomena with no holdout case at 429, so the salt was re-picked once, on
+  2026-10-30, by the rule above alone. Baseline scores at salt 429 had been seen by then; the pick
+  used only the rule's split-shape criteria, never scores. From the first merged baseline the salt
+  does not change, even if the corpus grows.
 - Use **dev** to design and tune a change. Treat **holdout** as a test set: score it once per
   proposal, after the change is fixed. A change redesigned after looking at holdout failures has used
   up the holdout for that decision; add new families to restore an unseen test set.
@@ -212,13 +219,13 @@ Cases whose text contains the term at a word start, from the corpus (40 of 49 te
 
 | #56 decision | Terms (flag / benign / uncertain) |
 | --- | --- |
-| GUARD | `cibay` 1/1/0, `coli` 1/1/0, `ewe` 2/2/0, `pecun` 1/0/0, `pelakor` 1/0/1, `sontoloyo` 1/1/0, `bodoh` 1/1/1, `idiot` 1/1/0, `koplok` 1/1/0, `pepek` 1/1/0, `heunceut` 1/0/0, `balegug` 1/0/0, `bedegong` 1/0/0, `tai` 1/2/0 |
+| GUARD | `cibay` 1/1/0, `coli` 1/1/0, `ewe` 2/2/0, `pecun` 1/0/0, `pelakor` 1/1/0, `sontoloyo` 1/1/0, `bodoh` 1/1/1, `idiot` 1/1/0, `koplok` 1/1/0, `pepek` 1/1/0, `heunceut` 1/0/0, `balegug` 1/0/0, `bedegong` 1/0/0, `tai` 1/2/0 |
 | REMOVE (default list) | `bodo` 2/3/1, `kemplu` 1/0/0, `gebleh` 1/0/0, `tolir` 1/0/0, `tiembokne` 1/0/0 |
 | REMOVE (expanded list) | `cibrit` 0/1/0, `mukil` 0/0/0, `bengek` 1/1/0, `benges` 0/1/0, `buntal` 0/1/0, `cepu` 1/1/0, `cilaka` 0/1/0, `jambret` 0/1/0, `mewek` 0/1/0, `nggateli` 1/1/0 |
 | KEEP | `gebleg` 1/1/0, `cibai` 1/0/0, `ewean` 1/0/0, `bispak` 1/0/0, `sinting` 1/0/0, `nyepong` 1/0/0, `sepong` 1/0/0, `bujug` 1/0/0, `buset` 1/0/0, `ngehe` 1/0/0, `araranjay` 1/0/0, `goblik` 1/0/0, `ngentu` 0/0/0, `ngentd` 0/0/0, `kontil` 0/0/0, `cukimak` 0/0/0, `wancok` 0/0/0, `dyancok` 0/0/0, `colai` 0/0/0, `colay` 0/0/0 |
 
 - No case at all: `mukil`, `ngentu`, `ngentd`, `kontil`, `cukimak`, `wancok`, `dyancok`, `colai`, `colay`.
-- GUARD terms with no benign case (the harmless use the guard is for is not yet evidenced): `pecun`, `pelakor`, `heunceut`, `balegug`, `bedegong`.
+- GUARD terms with no benign case (the harmless use the guard is for is not yet evidenced): `pecun`, `heunceut`, `balegug`, `bedegong`.
 - KEEP terms with no flag case: `ngentu`, `ngentd`, `kontil`, `cukimak`, `wancok`, `dyancok`, `colai`, `colay`.
 
 <!-- generated:coverage-56:end -->
@@ -241,16 +248,16 @@ The thresholds are written as formulas over these counts, which the generator re
 
 <!-- generated:sizes:start -->
 
-Generated from the corpus (salt 429):
+Generated from the corpus (salt 831):
 
 |  | Flag | Benign | Uncertain |
 | --- | --- | --- | --- |
-| Dev | 65 | 37 | 5 |
-| Holdout | 16 | 18 | 1 |
+| Dev | 55 | 41 | 3 |
+| Holdout | 26 | 15 | 2 |
 
-- Let F = 16 (scored holdout flag cases) and B = 18 (scored holdout benign cases). One extra holdout false positive moves the holdout false-positive rate by 100/B = 5.6 points. One holdout flag case that stops being flagged moves holdout recall by 100/F = 6.3 points.
+- Let F = 26 (scored holdout flag cases) and B = 15 (scored holdout benign cases). One extra holdout false positive moves the holdout false-positive rate by 100/B = 6.7 points. One holdout flag case that stops being flagged moves holdout recall by 100/F = 3.8 points.
 - The qualification floor is 10. At n = 10 the 95% Wilson interval for 0 of 10 still runs up to 28%.
-- Phenomena with two or more families that are missing from one split at salt 429: `compound` (3 families, none in holdout), `obfuscation` (7 families, none in holdout), `abbreviation` (2 families, none in holdout), `near-neighbour` (11 families, none in holdout), `friendly-exclamation` (4 families, none in holdout). The salt is pinned, so these are reported here, not repaired; results for them rest on one split only.
+- Every phenomenon with two or more families appears in both splits at salt 831.
 
 <!-- generated:sizes:end -->
 

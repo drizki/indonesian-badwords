@@ -7,7 +7,7 @@ import { evaluate } from '../dist/esm/evaluate.js';
 export const corpusUrl = new URL('../evaluation/corpus.json', import.meta.url);
 export const catalogUrl = new URL('../data/catalog.json', import.meta.url);
 /** The split salt is pinned (threshold T8): changing it would reshuffle the holdout. */
-export const SALT = 429;
+export const SALT = 831;
 /** Strata with fewer cases than this (flag cases for recall, benign cases for the false-positive rate) are qualified. */
 export const QUALIFIED_FLOOR = 10;
 export const LABELS = ['flag', 'benign', 'uncertain'];
