@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Badwords, dictionary, expandedDictionary } from '../dist/esm/index.js';
+import { evaluate } from '../dist/esm/evaluate.js';
 import { bare } from './bare.mjs';
 
 const corpus = JSON.parse(readFileSync(new URL('./fixtures/accuracy-corpus.json', import.meta.url), 'utf8'));
@@ -73,6 +74,43 @@ describe('handcrafted Bahasa Indonesia regression corpus', () => {
             assert.deepEqual(bare(analysis.locations), expectedLocations);
         });
     }
+
+    test('scores every fixture through evaluate() as exact spans and words', () => {
+        const groups = new Map();
+        for (const fixture of corpus.cases) {
+            const key = JSON.stringify([fixture.dictionary ?? null, fixture.mode ?? null, fixture.normalization ?? null, fixture.ignoreRepeatedLetters ?? false]);
+            groups.set(key, [...(groups.get(key) ?? []), fixture]);
+        }
+        let total = 0;
+        let flagged = 0;
+        for (const fixtures of groups.values()) {
+            const [{ dictionary: preset, mode, normalization, ignoreRepeatedLetters }] = fixtures;
+            const detector = new Badwords({
+                ...(preset === 'expanded' ? { dictionary: expandedDictionary } : {}),
+                ...(mode ? { mode } : {}),
+                ...(normalization ? { normalization } : {}),
+                ...(ignoreRepeatedLetters ? { ignoreRepeatedLetters: true } : {})
+            });
+            for (const expectation of ['spans', 'words']) {
+                const result = evaluate(detector, fixtures.map(({ id, text, expected }) => ({
+                    id, text,
+                    expected: expectation === 'spans'
+                        ? expected.matches.map(({ index, end }) => ({ index, end }))
+                        : [...new Set(expected.matches.map(({ word }) => word))]
+                })));
+                assert.deepEqual(result.failures, [], `${expectation} failures`);
+                assert.equal(result.correct, fixtures.length);
+                if (expectation === 'spans') {
+                    total += result.total;
+                    flagged += result.counts.tp;
+                    assert.equal(result.counts.fp + result.counts.fn, 0);
+                    assert.equal(result.counts.tn, fixtures.filter(({ expected }) => expected.matches.length === 0).length);
+                }
+            }
+        }
+        assert.equal(total, corpus.cases.length);
+        assert.equal(flagged, corpus.cases.filter(({ expected }) => expected.matches.length > 0).length);
+    });
 
     test('preserves terminal punctuation for every literal bundled term', () => {
         const detector = new Badwords();

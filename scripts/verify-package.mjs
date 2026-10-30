@@ -40,13 +40,16 @@ verifyTargets(manifest.exports);
 for (const field of ['main', 'module', 'types']) verifyTargets(manifest[field]);
 assert.equal(JSON.parse(run('tar', ['-xOf', archivePath, 'package/dist/cjs/package.json'])).type, 'commonjs');
 assert.deepEqual([...files].filter(path => path.endsWith('.js')).sort(),
-    ['dist/cjs/catalog.js', 'dist/cjs/censor.js', 'dist/cjs/evasion.js', 'dist/cjs/fuzzy.js', 'dist/cjs/index.js', 'dist/cjs/metadata.js',
-        'dist/esm/catalog.js', 'dist/esm/censor.js', 'dist/esm/evasion.js', 'dist/esm/fuzzy.js', 'dist/esm/index.js', 'dist/esm/metadata.js'],
+    ['dist/cjs/catalog.js', 'dist/cjs/censor.js', 'dist/cjs/evaluate.js', 'dist/cjs/evasion.js', 'dist/cjs/fuzzy.js', 'dist/cjs/index.js', 'dist/cjs/metadata.js',
+        'dist/esm/catalog.js', 'dist/esm/censor.js', 'dist/esm/evaluate.js', 'dist/esm/evasion.js', 'dist/esm/fuzzy.js', 'dist/esm/index.js', 'dist/esm/metadata.js'],
     'Publish each optional runtime with its ESM facade');
 const evasionSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/evasion.js']);
 assert.ok(!evasionSource.includes('kontol') && !evasionSource.includes('defaultDictionary'), 'Evasion must share the supplied dictionary');
 const fuzzySource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/fuzzy.js']);
 assert.ok(!fuzzySource.includes('kontol') && !fuzzySource.includes('defaultDictionary'), 'Fuzzy must share the supplied dictionary');
+const evaluateSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/evaluate.js']);
+assert.ok(!evaluateSource.includes('kontol') && !evaluateSource.includes('defaultDictionary') && !evaluateSource.includes('reviewedDictionary'),
+    'Evaluate must not embed the dictionary or catalog data');
 const rootSource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/index.js']);
 assert.ok(!rootSource.includes('maxExtraPerLetter') && !rootSource.includes('maxConfusables') && !rootSource.includes('maxIndexPostings'), 'Root must not embed the optional scanner or config');
 const strategySource = run('tar', ['-xOf', archivePath, 'package/dist/cjs/censor.js']);
@@ -66,11 +69,23 @@ import { boundedEvasion, latinLookalikes, EvasionLimitError } from 'indonesian-b
 import { boundedFuzzy, FuzzyLimitError } from 'indonesian-badwords/fuzzy';
 import * as metadataApi from 'indonesian-badwords/metadata';
 import * as catalogApi from 'indonesian-badwords/catalog';
+import { evaluate, compare } from 'indonesian-badwords/evaluate';
 const require = createRequire(import.meta.url);
 const cjs = require('indonesian-badwords');
 const strategies = require('indonesian-badwords/censor');
 const cjsMetadata = require('indonesian-badwords/metadata');
 const cjsCatalog = require('indonesian-badwords/catalog');
+const cjsEvaluate = require('indonesian-badwords/evaluate');
+assert.equal(evaluate, cjsEvaluate.evaluate);
+assert.equal(compare, cjsEvaluate.compare);
+{
+    const cases = [{ id: 'a', text: 'dasar goblok', expected: ['goblok'] }, { id: 'b', text: 'terima kasih', expected: false }];
+    const result = evaluate(new api.Badwords(), cases, { classify: metadataApi.classify });
+    assert.deepEqual([result.total, result.correct, result.failures.length], [2, 2, 0]);
+    assert.equal(typeof result.bySeverity['2'], 'object');
+    assert.equal(cjsEvaluate.evaluate(new cjs.Badwords(), cases).counts.tp, 1);
+    assert.deepEqual(compare(result, result).fixed, []);
+}
 for (const name of Object.keys(metadataApi)) assert.equal(metadataApi[name], cjsMetadata[name]);
 for (const name of Object.keys(catalogApi)) assert.equal(catalogApi[name], cjsCatalog[name]);
 assert.ok(metadataApi.reviewedDictionary.length > 0);
@@ -163,6 +178,8 @@ const api = require('indonesian-badwords');
 const { mask, grawlix } = require('indonesian-badwords/censor');
 const { boundedEvasion } = require('indonesian-badwords/evasion');
 const { boundedFuzzy } = require('indonesian-badwords/fuzzy');
+const evaluation = require('indonesian-badwords/evaluate');
+assert.equal(evaluation.evaluate(api, [{ text: 'dasar goblok', expected: true }]).counts.tp, 1);
 assert.equal(new api.Badwords({ fuzzy: boundedFuzzy() }).flag('goblox'), true);
 assert.equal(new api.Badwords({ evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).flag('g-o-b-l-o-k'), true);
 const metadataApi = require('indonesian-badwords/metadata');
@@ -287,7 +304,7 @@ globalThis.browserResults = {
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
         write: false, metafile: true, logLevel: 'silent'
     });
-    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion|fuzzy|metadata|catalog)\.js$/.test(path)),
+    assert.ok(Object.keys(rootOnly.metafile.inputs).every(path => !/[/\\](?:censor|evasion|fuzzy|metadata|catalog|evaluate)\.js$/.test(path)),
         'Default imports must not load optional strategies, evasion, metadata, or rich sources');
     const strategyOnly = await build({
         stdin: { contents: "export { mask, grawlix } from 'indonesian-badwords/censor';", resolveDir: workspace },
@@ -322,6 +339,14 @@ globalThis.browserResults = {
         'Optional fuzzy must stay independent of other runtimes');
     for (const output of Object.values(fuzzyOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
 
+    const evaluateOnly = await build({
+        stdin: { contents: "export { evaluate, compare } from 'indonesian-badwords/evaluate';", resolveDir: workspace },
+        bundle: true, platform: 'browser', target: 'es2022', format: 'esm', write: false, metafile: true, logLevel: 'silent'
+    });
+    assert.ok(Object.keys(evaluateOnly.metafile.inputs).every(path => !/[/\\](?:index|censor|evasion|fuzzy|metadata|catalog)\.js$/.test(path)),
+        'Optional evaluate must stay independent of other runtimes');
+    for (const output of Object.values(evaluateOnly.metafile.outputs)) assert.deepEqual(output.imports, []);
+
     const evasionOnly = await build({
         stdin: { contents: "export { boundedEvasion } from 'indonesian-badwords/evasion';", resolveDir: workspace },
         bundle: true, platform: 'browser', target: 'es2022', format: 'esm',
@@ -344,6 +369,8 @@ import { metadata, reviewedDictionary, reviewedExpandedDictionary, selectDiction
     type ReviewedProfileId, type Severity, type VariantMetadata, type DictionarySelection,
     classify, type ClassificationResult, type ClassificationLevel, type ClassificationSummary,
     type ClassifiedOccurrence, type ClassifyInput } from 'indonesian-badwords/metadata';
+import { evaluate, compare, type EvaluateCase, type EvaluateChecker, type EvaluateResult, type EvaluateComparison,
+    type EvaluateOptions, type EvaluateClassifier, type EvaluateExpectation, type EvaluateRate } from 'indonesian-badwords/evaluate';
 import { catalog, sources, getCatalogEntry, getSource, catalogReview, severityRubric,
     type CatalogEntry, type CatalogClaim, type CatalogSource } from 'indonesian-badwords/catalog';
 const region: UsageRegionId = 'javanese';
@@ -428,6 +455,27 @@ const options: BadwordsOptions = { dictionary: ['customterm'] as const, mode,
 const checker = new Badwords(options);
 new Badwords({ normalization: 'none', dictionary: expandedDictionary });
 new Badwords({ maxMatches: Infinity });
+const evalCases: readonly EvaluateCase[] = [
+    { id: 'a', text: 'dasar goblok', expected: true },
+    { text: 'dasar goblok', expected: ['goblok'] as const },
+    { text: 'dasar goblok', expected: [{ index: 6, end: 12 }] as const, ignoreRanges: [{ index: 0, end: 1 }] as const }
+];
+const evalChecker: EvaluateChecker = checker;
+const evalClassifier: EvaluateClassifier = classify;
+const evalOptions: EvaluateOptions = { classify: evalClassifier, top: 5 };
+const evaluated: EvaluateResult = evaluate(evalChecker, evalCases, evalOptions);
+const evalExpected: EvaluateExpectation = evalCases[0]!.expected;
+const evalRate: EvaluateRate = evaluated.precision;
+const evalValue: number | null = evalRate.value;
+const evalDiff: EvaluateComparison = compare(evaluated, evaluate(new Badwords(), evalCases));
+const evalFixed: string | undefined = evalDiff.fixed[0]?.id;
+evaluate({ find: (text: string) => [{ word: 'x', index: 0, end: 1 }] }, []);
+// @ts-expect-error a checker needs find()
+evaluate({}, []);
+// @ts-expect-error expectations are booleans, words or spans
+evaluate(checker, [{ text: 'a', expected: 1 }]);
+// @ts-expect-error case text is required
+evaluate(checker, [{ expected: true }]);
 const defaultPreset: readonly string[] = dictionary;
 const contextualPreset: readonly string[] = contextualDictionary;
 const expandedPreset: readonly string[] = expandedDictionary;
