@@ -220,3 +220,10 @@ Any object with a `find(text, options?)` method returning `{ word, index, end }`
 locations works as a checker, and `via` is optional. See the
 [API reference](../api.md#evaluating-a-checker) for the exact shapes and
 [Allow phrases and source ranges](exceptions.md) for the exceptions you can tune.
+
+## A worked example
+
+The repository's own [measured accuracy](../accuracy.md) page is this workflow at scale: a labelled
+corpus of flag, benign and uncertain cases with a dev and holdout split, scored with `evaluate()` for each
+documented setup, with sample sizes and intervals. Its [evaluation protocol](../evaluation-protocol.md)
+shows how to define labels, spans and acceptance thresholds before measuring a change.
