@@ -13,9 +13,10 @@ evaluation corpus. Read the limits before the numbers.
 - **One native reviewer.** The maintainer, as a single native-speaker reviewer, labelled on
   2026-10-30. That is not a panel, and no agreement between annotators was measured, because that
   needs a second annotator.
-- **Labels are partly still proposed.** Cases marked `proposed` in the corpus carry the AI-drafted
-  label and still await the maintainer's review, which may change some of them. Only the cases
-  marked `reviewed` follow the maintainer's decisions. The counts are in the first table below.
+- **AI-drafted text.** An AI agent wrote every case and proposed the first labels. The maintainer
+  reviewed all of them on 2026-10-30, set the policy for mentions, friendly exclamations and
+  insults, and revised two sentences. Every label is now `reviewed`; the counts are in the first
+  table below.
 - **Small strata.** Most strata hold only a handful of cases. A figure marked † has fewer than 10
   cases behind it (flag cases for recall, benign cases for the false-positive rate); it shows what
   happened to those cases and supports no claim. The sample size `n` is shown with every rate,
@@ -52,7 +53,7 @@ in the [evaluation protocol](evaluation-protocol.md). The data is
 | All | 103 |
 | Flag / benign / uncertain | 54 / 44 / 5 |
 | Dev / holdout | 72 / 31 |
-| Labels still proposed / reviewed | 85 / 18 |
+| Labels still proposed / reviewed | 0 / 103 |
 
 ### Cases by phenomenon and split
 
@@ -84,11 +85,11 @@ Each cell: flag / benign / uncertain.
 | batak | 1 / 0 / 0 | 0 / 0 / 0 |
 | betawi | 1 / 0 / 0 | 0 / 0 / 0 |
 | bugis | 0 / 1 / 0 | 0 / 0 / 0 |
-| eastern-indonesia | 0 / 0 / 0 | 1 / 0 / 0 |
 | english | 0 / 0 / 0 | 0 / 1 / 0 |
 | general | 22 / 26 / 2 | 12 / 9 / 2 |
 | javanese | 7 / 4 / 1 | 2 / 1 / 0 |
 | makassar | 0 / 0 / 0 | 1 / 0 / 0 |
+| malay-influenced | 0 / 0 / 0 | 1 / 0 / 0 |
 | minang | 1 / 0 / 0 | 0 / 0 / 0 |
 | papua | 0 / 0 / 0 | 1 / 0 / 0 |
 | sundanese | 3 / 2 / 0 | 1 / 0 / 0 |
@@ -171,11 +172,11 @@ Each cell: recall (flag cases caught) and benign false positives. † marks a qu
 
 | Stratum | Flag / benign | Default | Expanded | Reviewed core | Reviewed + contextual | Default + evasion | Default + fuzzy | Expanded, substring mode |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| eastern-indonesia | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | english | 0 / 1 | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 0/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † |
 | general | 12 / 9 | R 6/12 · FP 3/9 † | R 7/12 · FP 4/9 † | R 4/12 · FP 1/9 † | R 7/12 · FP 4/9 † | R 7/12 · FP 3/9 † | R 7/12 · FP 8/9 † | R 9/12 · FP 4/9 † |
 | javanese | 2 / 1 | R 0/2 † · FP 0/1 † | R 2/2 † · FP 0/1 † | R 0/2 † · FP 0/1 † | R 2/2 † · FP 0/1 † | R 0/2 † · FP 0/1 † | R 0/2 † · FP 1/1 † | R 2/2 † · FP 1/1 † |
 | makassar | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
+| malay-influenced | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | papua | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | sundanese | 1 / 0 | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 
@@ -208,11 +209,11 @@ Each cell: recall (flag cases caught) and benign false positives. † marks a qu
 | batak | 1 / 0 | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | betawi | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | bugis | 0 / 1 | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 0/1 † | R 0/0 † · FP 0/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † |
-| eastern-indonesia | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | english | 0 / 1 | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 0/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † | R 0/0 † · FP 1/1 † |
 | general | 34 / 35 | R 20/34 · FP 9/35 | R 22/34 · FP 17/35 | R 16/34 · FP 3/35 | R 22/34 · FP 15/35 | R 25/34 · FP 9/35 | R 22/34 · FP 18/35 | R 25/34 · FP 18/35 |
 | javanese | 9 / 5 | R 4/9 † · FP 1/5 † | R 9/9 † · FP 4/5 † | R 4/9 † · FP 0/5 † | R 9/9 † · FP 3/5 † | R 4/9 † · FP 1/5 † | R 4/9 † · FP 3/5 † | R 9/9 † · FP 5/5 † |
 | makassar | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
+| malay-influenced | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | minang | 1 / 0 | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 0/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | papua | 1 / 0 | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † | R 1/1 † · FP 0/0 † |
 | sundanese | 4 / 2 | R 3/4 † · FP 1/2 † | R 4/4 † · FP 2/2 † | R 3/4 † · FP 0/2 † | R 4/4 † · FP 1/2 † | R 3/4 † · FP 1/2 † | R 4/4 † · FP 2/2 † | R 4/4 † · FP 2/2 † |

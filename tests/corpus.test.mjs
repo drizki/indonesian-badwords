@@ -52,14 +52,15 @@ describe('evaluation corpus', () => {
   });
 
   test('relabels by id and requires spans for a new flag', () => {
-    const benign = corpus.cases.find(c => c.label === 'flag' && c.labelStatus === 'proposed');
-    const changed = relabel(corpus, [{ id: benign.id, label: 'benign' }]);
+    const benign = { ...corpus.cases.find(c => c.label === 'flag'), labelStatus: 'proposed' };
+    const draft = { ...corpus, cases: corpus.cases.map(c => (c.id === benign.id ? benign : c)) };
+    const changed = relabel(draft, [{ id: benign.id, label: 'benign' }]);
     assert.deepEqual(validateCorpus(changed), []);
     assert.equal(changed.cases.find(c => c.id === benign.id).labelStatus, 'reviewed');
     assert.throws(() => relabel(changed, [{ id: benign.id, label: 'flag' }]), /needs the offending token/);
     const token = benign.text.slice(benign.spans[0].index, benign.spans[0].end);
     assert.deepEqual(relabel(changed, [{ id: benign.id, label: 'flag', tokens: [token] }]).cases.find(c => c.id === benign.id).spans, benign.spans);
-    assert.ok(reviewAll(corpus).cases.every(c => c.labelStatus === 'reviewed'));
+    assert.ok(reviewAll(draft).cases.every(c => c.labelStatus === 'reviewed'));
   });
 
   test('baseline.json and docs/accuracy.md match what this build computes', () => {

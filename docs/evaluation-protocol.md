@@ -61,8 +61,8 @@ is listed so it is visible, not so it is considered covered.
 - Friendly or positive exclamations (phenomenon `friendly-exclamation`): label `flag`.
 - Social insults (phenomenon `social-insult`): directed insults are `flag`. The self-deprecating
   "Maaf, saya bodoh soal teknologi." is `benign`.
-- All other cases: the label the AI agent proposed, marked `labelStatus: "proposed"` until the
-  maintainer confirms or corrects it.
+- All other cases: the label the AI agent proposed, confirmed by the maintainer. Definitions of a
+  word's literal sense ("Bangsat adalah nama lain kutu busuk.") are `benign`, not mentions.
 
 **Spans.** A `flag` case lists the UTF-16 offsets `{ index, end }` (end exclusive) of the
 offending token or phrase, in order and without overlap. A span covers the whole token as

@@ -10,8 +10,8 @@
       "uncertain": 5
     },
     "byLabelStatus": {
-      "proposed": 85,
-      "reviewed": 18
+      "proposed": 0,
+      "reviewed": 103
     },
     "bySplit": {
       "dev": 72,
@@ -232,13 +232,6 @@
           "uncertain": 0
         },
         {
-          "name": "eastern-indonesia",
-          "split": "holdout",
-          "flag": 1,
-          "benign": 0,
-          "uncertain": 0
-        },
-        {
           "name": "english",
           "split": "holdout",
           "flag": 0,
@@ -281,6 +274,13 @@
           "uncertain": 0
         },
         {
+          "name": "malay-influenced",
+          "split": "holdout",
+          "flag": 1,
+          "benign": 0,
+          "uncertain": 0
+        },
+        {
           "name": "minang",
           "split": "dev",
           "flag": 1,
@@ -316,7 +316,7 @@
       "labelledOn": "2026-10-30",
       "panel": false,
       "interAnnotatorAgreement": null,
-      "note": "One reviewer, so no agreement statistic exists. Cases with labelStatus \"proposed\" still carry the AI-drafted label and await the maintainer's review; \"reviewed\" labels follow the maintainer's 2026-10-30 policy answers."
+      "note": "One reviewer, so no agreement statistic exists. Every label was reviewed by the maintainer on 2026-10-30, following the maintainer's policy answers for mentions, friendly exclamations and insults; two texts were revised in that review."
     }
   },
   "recipes": [
@@ -1309,46 +1309,6 @@
             "spanMismatches": []
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -1486,6 +1446,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -2353,46 +2353,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -2549,6 +2509,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -4250,46 +4250,6 @@
             "spanMismatches": []
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -4424,6 +4384,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -5284,46 +5284,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -5483,6 +5443,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -7163,46 +7163,6 @@
             "spanMismatches": []
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -7338,6 +7298,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -8202,46 +8202,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -8392,6 +8352,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -10074,46 +10074,6 @@
             "spanMismatches": []
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -10248,6 +10208,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -11104,46 +11104,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -11300,6 +11260,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -12977,46 +12977,6 @@
             ]
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -13155,6 +13115,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -14020,46 +14020,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -14213,6 +14173,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -15926,46 +15926,6 @@
             "spanMismatches": []
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -16109,6 +16069,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -16988,46 +16988,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -17193,6 +17153,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -18914,46 +18914,6 @@
             ]
           },
           "varieties": {
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -19091,6 +19051,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
@@ -19957,46 +19957,6 @@
                 "spanMismatches": []
               }
             },
-            "eastern-indonesia": {
-              "cases": 1,
-              "flag": 1,
-              "benign": 0,
-              "recallQualified": true,
-              "fprQualified": true,
-              "precision": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "recall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "falsePositiveRate": {
-                "count": 0,
-                "n": 0,
-                "value": null,
-                "low": null,
-                "high": null
-              },
-              "spanRecall": {
-                "count": 1,
-                "n": 1,
-                "value": 1,
-                "low": 0.206543,
-                "high": 1
-              },
-              "failures": {
-                "falsePositives": [],
-                "falseNegatives": [],
-                "spanMismatches": []
-              }
-            },
             "english": {
               "cases": 1,
               "flag": 0,
@@ -20159,6 +20119,46 @@
               }
             },
             "makassar": {
+              "cases": 1,
+              "flag": 1,
+              "benign": 0,
+              "recallQualified": true,
+              "fprQualified": true,
+              "precision": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "recall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "falsePositiveRate": {
+                "count": 0,
+                "n": 0,
+                "value": null,
+                "low": null,
+                "high": null
+              },
+              "spanRecall": {
+                "count": 1,
+                "n": 1,
+                "value": 1,
+                "low": 0.206543,
+                "high": 1
+              },
+              "failures": {
+                "falsePositives": [],
+                "falseNegatives": [],
+                "spanMismatches": []
+              }
+            },
+            "malay-influenced": {
               "cases": 1,
               "flag": 1,
               "benign": 0,
