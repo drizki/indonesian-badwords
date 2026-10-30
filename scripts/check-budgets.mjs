@@ -74,5 +74,8 @@ if (measureOnly) {
         if (verified.status !== 0) { process.stderr.write(verified.stdout + verified.stderr); process.exit(1); }
         workloads = verified.stdout.trim().replace(/^Verified expected output for /, 'verified expected output of ').replace(/ \(no timing\)\.$/, '');
     }
+    // The public comparison page must still match its checked JSON (no install, no timing).
+    const page = spawnSync(process.execPath, [fileURLToPath(new URL('./benchmark-compare.mjs', import.meta.url)), '--check'], { encoding: 'utf8' });
+    if (page.status !== 0) { process.stderr.write(page.stdout + page.stderr); process.exit(1); }
     console.log(`Budgets met: ${correctness} correctness cases, ${sizes.length} bundle sizes, ${workloads}.`);
 }

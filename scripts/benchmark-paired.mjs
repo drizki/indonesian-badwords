@@ -17,7 +17,12 @@ import { fileURLToPath } from 'node:url';
 // Options: --head <spec> (default: the working tree, which must be built), --rounds <n>, --quick,
 //   --cases <id,id>, --json <file>, --list
 const root = fileURLToPath(new URL('../', import.meta.url));
-const argument = (name) => { const index = process.argv.indexOf(`--${name}`); return index < 0 ? null : process.argv[index + 1]; };
+const argument = (name) => {
+    const joined = process.argv.find((item) => item.startsWith(`--${name}=`));
+    if (joined) return joined.slice(name.length + 3);
+    const index = process.argv.indexOf(`--${name}`);
+    return index < 0 ? null : process.argv[index + 1];
+};
 const quick = process.argv.includes('--quick');
 const rounds = Number(argument('rounds') ?? (quick ? 9 : 31));
 const CLEAN = 'Pesanan sudah sampai. Terima kasih atas bantuan dan informasinya. ';
