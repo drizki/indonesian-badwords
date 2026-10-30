@@ -190,21 +190,21 @@ checker.find('👩🏽‍💻 g0bl0k!').map(({ word, index, end, match }) => ({ 
 
 ## Kecepatan
 
-Diukur dengan checker default di Node.js 24.22.1 (median benchmark sintetis setelah warmup, tanpa waktu setup).
+Diukur dengan checker default di Node.js 26.10.0 (AMD Ryzen 7 9700X, Linux; median benchmark sintetis setelah warmup, tanpa waktu setup).
 
 <table>
   <tr>
-    <td align="center" width="33%"><h3>1,77 µs</h3>Cek pesan ASCII tanpa kata kasar<br />280 karakter</td>
-    <td align="center" width="33%"><h3>~12 KB</h3>Bundle browser default<br />minifikasi + gzip</td>
+    <td align="center" width="33%"><h3>1,05 µs</h3>Cek pesan ASCII tanpa kata kasar<br />280 karakter</td>
+    <td align="center" width="33%"><h3>~14 KB</h3>Bundle browser default<br />minifikasi + gzip</td>
     <td align="center" width="33%"><h3>0</h3>Dependensi runtime</td>
   </tr>
 </table>
 
 | Teks | Operasi | Median |
 | --- | --- | ---: |
-| Paragraf ASCII tanpa kata kasar, 4.000 karakter | `flag` | 24,45 µs |
-| Paragraf ASCII tanpa kata kasar, 4.000 karakter | `censor` | 5,56 µs |
-| Aksen, emoji, dan satu kecocokan literal, 4.000 unit UTF-16 | `flag` | 29,79 µs |
+| Paragraf ASCII tanpa kata kasar, 4.000 karakter | `flag` | 5,17 µs |
+| Paragraf ASCII tanpa kata kasar, 4.000 karakter | `censor` | 5,13 µs |
+| Aksen, emoji, dan satu kecocokan literal, 4.000 unit UTF-16 | `flag` | 29,65 µs |
 
 Opsi tambahan punya biaya masing-masing. Jalankan `npm run benchmark` dari repository untuk mengukur runtime Anda. [Metodologi dan hasil lengkap](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md).
 

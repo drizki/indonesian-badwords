@@ -190,21 +190,21 @@ checker.find('👩🏽‍💻 g0bl0k!').map(({ word, index, end, match }) => ({ 
 
 ## Speed
 
-Measured with the default checker on Node.js 24.22.1 (warmed synthetic medians, setup excluded).
+Measured with the default checker on Node.js 26.10.0 (AMD Ryzen 7 9700X, Linux; warmed synthetic medians, setup excluded).
 
 <table>
   <tr>
-    <td align="center" width="33%"><h3>1.77 µs</h3>Clean ASCII chat check<br />280 characters</td>
-    <td align="center" width="33%"><h3>~12 KB</h3>Default browser bundle<br />minified + gzip</td>
+    <td align="center" width="33%"><h3>1.05 µs</h3>Clean ASCII chat check<br />280 characters</td>
+    <td align="center" width="33%"><h3>~14 KB</h3>Default browser bundle<br />minified + gzip</td>
     <td align="center" width="33%"><h3>0</h3>Runtime dependencies</td>
   </tr>
 </table>
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 24.45 µs |
-| Clean ASCII paragraph, 4,000 characters | `censor` | 5.56 µs |
-| Accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.79 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 5.17 µs |
+| Clean ASCII paragraph, 4,000 characters | `censor` | 5.13 µs |
+| Accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.65 µs |
 
 Optional policies have their own costs. Run `npm run benchmark` from the repository to measure your runtime. [Methodology and full results](https://github.com/drizki/indonesian-badwords/blob/main/docs/performance.md).
 

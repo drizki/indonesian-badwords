@@ -4,31 +4,38 @@
 
 ## Measured snapshot
 
-These measurements were recorded for `indonesian-badwords@2.5.0` with the default
-dictionary and matching settings on Node.js 24.22.1. The documentation and examples patches through 2.5.2
-leave the runtime unchanged.
+These measurements were recorded on 2026-10-30 for the 2.7.0 release candidate
+(`indonesian-badwords@2.6.0` plus the unreleased 2.7.0 changes, repository commit
+`852e274`) with the default dictionary and matching settings, using
+`npm run benchmark` (all 142 workloads, not `--quick`) on Node.js 26.10.0, an
+AMD Ryzen 7 9700X (16 threads) and Linux 7.2.6. The machine was not idle: other
+desktop programs were running, so treat the last digit as noise and repeat the run
+on your own hardware.
 
 | Workload | Operation | Median per call |
 | --- | --- | ---: |
-| Clean ASCII chat, 280 characters | `flag` | 1.77 µs |
-| Clean ASCII paragraph, 4,000 characters | `flag` | 24.45 µs |
-| Clean ASCII paragraph, 4,000 characters | `censor` | 5.56 µs |
-| Clean ASCII paragraph, 4,000 characters | `analyze` | 16.10 µs |
-| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 21.79 µs |
-| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.79 µs |
+| Clean ASCII chat, 280 characters | `flag` | 1.05 µs |
+| Clean ASCII paragraph, 4,000 characters | `flag` | 5.17 µs |
+| Clean ASCII paragraph, 4,000 characters | `censor` | 5.13 µs |
+| Clean ASCII paragraph, 4,000 characters | `analyze` | 15.78 µs |
+| Clean paragraph with accents and emoji, 4,000 UTF-16 units | `flag` | 20.79 µs |
+| Paragraph with accents, emoji, and one literal match, 4,000 UTF-16 units | `flag` | 29.65 µs |
+| `!` repeated 4,000 times, no letters | `flag` | 7.18 µs |
 
 Each case uses synthetic inputs with a unique reference per call, warms up for at
 least 250 ms, then measures 41 calibrated batches. The table reports medians of
 per-call batch averages. Import, setup, input generation, and correctness checks
 are excluded. Results vary with input, hardware, and runtime.
 
-These are separate operation measurements. The methods use different paths for
-their outputs, so a boolean check need not be faster than censorship on every
-input. Cold startup and optional matching policies have separate costs.
+These are separate operation measurements. From 2.7.0 `flag()` runs the same
+compiled pattern as `censor()` (after a first stretch of about 256 KB of text on
+the cheaper-to-start token path), so on the clean ASCII paragraph above the two
+take the same time. The methods can still use different paths for their outputs,
+so a boolean check need not be faster than censorship on every input. Cold startup and optional matching policies have separate costs.
 
 ## Bundle size
 
-A browser bundle using the default checker is about 12 KB after minification and
+A browser bundle using the default checker is about 14 KB (14,220 B) after minification and
 gzip. This describes an ES2022 consumer bundle, not the npm download or the size
 of every optional feature combined. The package has zero runtime dependencies.
 
