@@ -46,7 +46,7 @@ it is repeated for each minor release.
 | Node.js | v26.10.0 (V8 14.6.202.34-node.34) |
 | zlib (gzip sizes) | 1.3.2 |
 | Architecture | x64 |
-| This package | indonesian-badwords 2.6.0 (the 2.6.0 runtime, built from the repository working tree) |
+| This package | indonesian-badwords 2.7.0 (the 2.7.0 runtime, built from the repository working tree) |
 | @sideid/id-profanity-filter | 1.13.0 (latest on npm on 2026-10-30) |
 | @fldx/sopan | 1.0.1 (latest on npm on 2026-10-30) |
 | censorship-id | 2.0.3 (latest on npm on 2026-10-30) |
@@ -58,8 +58,8 @@ Compared configurations (the column titles used below):
 <!-- benchmarks:begin configurations -->
 | Column | Package | Effective options |
 | --- | --- | --- |
-| indonesian-badwords | indonesian-badwords@2.6.0 | defaults (word mode, standard normalization, leetspeak folding) |
-| indonesian-badwords + evasion | indonesian-badwords@2.6.0 | `boundedEvasion`: single separators `- _ . *`, up to 2 repeated letters per letter |
+| indonesian-badwords | indonesian-badwords@2.7.0 | defaults (word mode, standard normalization, leetspeak folding) |
+| indonesian-badwords + evasion | indonesian-badwords@2.7.0 | `boundedEvasion`: single separators `- _ . *`, up to 2 repeated letters per letter |
 | @sideid/id-profanity-filter | @sideid/id-profanity-filter@1.13.0 | defaults |
 | @sideid/id-profanity-filter + split | @sideid/id-profanity-filter@1.13.0 | `detectSplit: true` |
 | @fldx/sopan | @fldx/sopan@1.0.1 | defaults |
@@ -101,40 +101,40 @@ Equivalent calls: this package `flag()`, `isProfane()` (both censorship-id and @
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-short (32 chars: clean ASCII) | **0.09 µs** | 0.34 µs | 325.2 µs | differs | 2.95 µs | 14.8 µs | 607.1 µs |
-| clean-chat (280 chars: clean ASCII) | **0.44 µs** | 2.21 µs | 365.1 µs | differs | 22.1 µs | 15.0 µs | 621.7 µs |
-| match-chat (280 chars: one plain match in the middle) | **0.34 µs** | 2.50 µs | 381.5 µs | 598.9 µs | 21.9 µs | 15.4 µs | 629.9 µs |
-| leet-chat (280 chars: one leetspeak match) | **4.06 µs** | 7.42 µs | 375.3 µs | 587.9 µs | 21.9 µs | differs | 371.1 µs |
-| unicode-clean-chat (280 chars: clean, accents and emoji) | **1.63 µs** | 13.5 µs | 364.7 µs | differs | 21.5 µs | 14.8 µs | 361.8 µs |
-| unicode-match-chat (280 chars: one match, accents and emoji) | **2.50 µs** | 17.1 µs | 368.1 µs | 613.9 µs | 21.6 µs | 15.2 µs | 473.1 µs |
-| fullwidth-chat (280 chars: one full-width match) | **6.49 µs** | 9.52 µs | differs | 585.6 µs | differs | differs | differs |
-| invisible-chat (280 chars: one match split by a zero-width space) | **8.21 µs** | 21.9 µs | 380.4 µs | 599.4 µs | differs | differs | 558.3 µs |
-| separator-chat (280 chars: one match spelled with hyphens) | differs | **10.8 µs** | 353.7 µs | 567.8 µs | 21.2 µs | differs | 559.5 µs |
+| clean-short (32 chars: clean ASCII) | **0.09 µs** | 0.37 µs | 329.2 µs | differs | 2.44 µs | 16.1 µs | 326.2 µs |
+| clean-chat (280 chars: clean ASCII) | **0.44 µs** | 2.35 µs | 350.6 µs | differs | 16.9 µs | 16.9 µs | 331.4 µs |
+| match-chat (280 chars: one plain match in the middle) | **0.32 µs** | 2.69 µs | 358.9 µs | 596.1 µs | 17.2 µs | 17.0 µs | 333.8 µs |
+| leet-chat (280 chars: one leetspeak match) | **4.14 µs** | 7.57 µs | 646.0 µs | 641.0 µs | 17.3 µs | differs | 319.6 µs |
+| unicode-clean-chat (280 chars: clean, accents and emoji) | **1.60 µs** | 13.4 µs | 584.7 µs | differs | 16.5 µs | 16.5 µs | 327.9 µs |
+| unicode-match-chat (280 chars: one match, accents and emoji) | **2.52 µs** | 17.2 µs | 369.8 µs | 600.9 µs | 16.6 µs | 17.0 µs | 332.5 µs |
+| fullwidth-chat (280 chars: one full-width match) | **6.32 µs** | 9.41 µs | differs | 587.0 µs | differs | differs | differs |
+| invisible-chat (280 chars: one match split by a zero-width space) | **8.27 µs** | 21.8 µs | 348.9 µs | 578.9 µs | differs | differs | 324.8 µs |
+| separator-chat (280 chars: one match spelled with hyphens) | differs | **10.7 µs** | 353.2 µs | 1.12 ms | 16.9 µs | differs | 323.0 µs |
 
 #### Paragraph (4,000 characters)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-paragraph (4,000 chars: clean ASCII) | **5.43 µs** | 28.7 µs | 601.1 µs | differs | 491.3 µs | 26.4 µs | 695.1 µs |
-| unicode-clean-paragraph (4,000 chars: clean, accents and emoji) | **16.1 µs** | 175.3 µs | 583.3 µs | differs | 297.4 µs | 25.8 µs | 720.7 µs |
-| match-start-paragraph (4,000 chars: one match at the start) | **1.74 µs** | 26.0 µs | 612.5 µs | 1.31 ms | 291.6 µs | 26.6 µs | 728.2 µs |
-| match-middle-paragraph (4,000 chars: one match at the middle) | **3.48 µs** | 29.0 µs | 608.5 µs | 1.33 ms | 290.0 µs | 26.7 µs | 691.4 µs |
-| match-end-paragraph (4,000 chars: one match at the end) | **5.22 µs** | 33.9 µs | 606.5 µs | 1.31 ms | 292.0 µs | 26.6 µs | 436.2 µs |
+| clean-paragraph (4,000 chars: clean ASCII) | **5.40 µs** | 29.5 µs | 876.1 µs | differs | 235.8 µs | 28.4 µs | 394.3 µs |
+| unicode-clean-paragraph (4,000 chars: clean, accents and emoji) | **16.3 µs** | 176.4 µs | 633.8 µs | differs | 230.5 µs | 27.5 µs | 394.9 µs |
+| match-start-paragraph (4,000 chars: one match at the start) | **1.74 µs** | 28.0 µs | 613.2 µs | 1.32 ms | 229.3 µs | 28.8 µs | 386.8 µs |
+| match-middle-paragraph (4,000 chars: one match at the middle) | **3.53 µs** | 28.4 µs | 662.5 µs | 2.57 ms | 229.9 µs | 28.6 µs | 405.0 µs |
+| match-end-paragraph (4,000 chars: one match at the end) | **5.28 µs** | 34.0 µs | 1.09 ms | 1.31 ms | 228.2 µs | 30.1 µs | 403.4 µs |
 
 #### Long text (64,000 characters)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-long (64,000 chars: clean ASCII) | **85.9 µs** | 455.9 µs | 4.48 ms | differs | 5.34 ms | 213.1 µs | 2.69 ms |
+| clean-long (64,000 chars: clean ASCII) | **86.2 µs** | 467.2 µs | 4.56 ms | differs | 4.14 ms | 230.3 µs | 1.60 ms |
 
 #### Adversarial inputs
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-long-token (64,000 chars: one unbroken 64,000-letter token) | **64.0 µs** | 394.4 µs | 4.46 ms | 9.74 ms | 2.47 ms | 137.9 µs | 891.0 µs |
-| dense-paragraph (4,000 chars: a match every 7 characters) | **1.72 µs** | 28.3 µs | 2.42 ms | 4.18 ms | 288.2 µs | 178.1 µs | 1.06 ms |
-| bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.16 µs | 25.2 µs | 570.2 µs | 916.5 µs | **5.44 µs** | 14.8 µs | 10.6 s † |
-| separator-run-paragraph (4,000 chars: letters joined by hyphens, no match) | **4.25 µs** | 46.9 µs | 544.2 µs | 942.0 µs | 136.2 µs | 14.8 µs | 386.5 µs |
+| clean-long-token (64,000 chars: one unbroken 64,000-letter token) | **66.9 µs** | 391.4 µs | 5.12 ms | 10.96 ms | 1.57 ms | 133.1 µs | 467.6 µs |
+| dense-paragraph (4,000 chars: a match every 7 characters) | **1.74 µs** | 28.3 µs | 4.78 ms | 4.75 ms | 230.4 µs | 203.0 µs | 564.5 µs |
+| bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.14 µs | 25.0 µs | 566.4 µs | 990.1 µs | **5.36 µs** | 16.2 µs | 8.6 s † |
+| separator-run-paragraph (4,000 chars: letters joined by hyphens, no match) | **4.24 µs** | 46.8 µs | 574.5 µs | 1.01 ms | 80.9 µs | 15.2 µs | 380.5 µs |
 
 ### Censor
 
@@ -144,40 +144,40 @@ Equivalent calls: this package `censor(text)`, `filter(text).filtered` (@sideid)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-short (32 chars: clean ASCII) | **0.11 µs** | 0.37 µs | 333.4 µs | 934.7 µs | 3.20 µs | 13.6 µs | 295.2 µs |
-| clean-chat (280 chars: clean ASCII) | **0.47 µs** | 2.07 µs | 360.1 µs | 1.07 ms | 19.5 µs | 14.3 µs | 296.8 µs |
-| match-chat (280 chars: one plain match in the middle) | **0.49 µs** | 2.42 µs | 743.6 µs | 1.11 ms | 21.3 µs | 14.9 µs | 297.8 µs |
-| leet-chat (280 chars: one leetspeak match) | **5.86 µs** | 8.49 µs | 741.7 µs | 1.09 ms | 20.8 µs | differs | 299.7 µs |
-| unicode-clean-chat (280 chars: clean, accents and emoji) | **1.63 µs** | 13.0 µs | 357.1 µs | 1.08 ms | 20.6 µs | 14.2 µs | 299.6 µs |
-| unicode-match-chat (280 chars: one match, accents and emoji) | **3.00 µs** | 17.8 µs | 740.0 µs | 1.14 ms | 21.0 µs | 14.9 µs | 299.4 µs |
-| fullwidth-chat (280 chars: one full-width match) | **7.69 µs** | 10.6 µs | differs | differs | differs | differs | differs |
-| invisible-chat (280 chars: one match split by a zero-width space) | **9.77 µs** | 23.0 µs | differs | differs | differs | differs | 296.2 µs |
-| separator-chat (280 chars: one match spelled with hyphens) | differs | **14.2 µs** | differs | 1.06 ms | 18.7 µs | differs | 299.3 µs |
+| clean-short (32 chars: clean ASCII) | **0.10 µs** | 0.35 µs | 340.7 µs | 994.9 µs | 2.44 µs | 15.1 µs | 326.1 µs |
+| clean-chat (280 chars: clean ASCII) | **0.45 µs** | 2.12 µs | 367.7 µs | 1.20 ms | 17.4 µs | 15.4 µs | 347.8 µs |
+| match-chat (280 chars: one plain match in the middle) | **0.48 µs** | 2.53 µs | 731.5 µs | 1.24 ms | 17.0 µs | 16.0 µs | 320.1 µs |
+| leet-chat (280 chars: one leetspeak match) | **5.58 µs** | 8.49 µs | 736.2 µs | 1.24 ms | 16.8 µs | differs | 351.3 µs |
+| unicode-clean-chat (280 chars: clean, accents and emoji) | **1.59 µs** | 13.0 µs | 641.3 µs | 1.21 ms | 16.6 µs | 16.0 µs | 335.2 µs |
+| unicode-match-chat (280 chars: one match, accents and emoji) | **3.15 µs** | 17.8 µs | 728.2 µs | 1.31 ms | 16.7 µs | 15.6 µs | 341.4 µs |
+| fullwidth-chat (280 chars: one full-width match) | **7.73 µs** | 10.8 µs | differs | differs | differs | differs | differs |
+| invisible-chat (280 chars: one match split by a zero-width space) | **9.83 µs** | 23.1 µs | differs | differs | differs | differs | 357.1 µs |
+| separator-chat (280 chars: one match spelled with hyphens) | differs | **14.8 µs** | differs | 1.17 ms | 16.9 µs | differs | 345.8 µs |
 
 #### Paragraph (4,000 characters)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-paragraph (4,000 chars: clean ASCII) | **5.32 µs** | 26.3 µs | 599.7 µs | 2.50 ms | 265.7 µs | 25.9 µs | 366.8 µs |
-| unicode-clean-paragraph (4,000 chars: clean, accents and emoji) | **16.5 µs** | 169.9 µs | 561.5 µs | 2.51 ms | 272.9 µs | 25.5 µs | 376.3 µs |
-| match-start-paragraph (4,000 chars: one match at the start) | **5.24 µs** | 29.6 µs | 1.22 ms | 2.42 ms | 286.0 µs | 26.4 µs | 372.2 µs |
-| match-middle-paragraph (4,000 chars: one match at the middle) | **5.38 µs** | 29.9 µs | 1.23 ms | 2.49 ms | 268.6 µs | 26.5 µs | 364.6 µs |
-| match-end-paragraph (4,000 chars: one match at the end) | **5.35 µs** | 29.4 µs | 1.24 ms | 2.77 ms | 281.1 µs | 26.6 µs | 366.6 µs |
+| clean-paragraph (4,000 chars: clean ASCII) | **5.37 µs** | 28.2 µs | 1.15 ms | 2.62 ms | 220.2 µs | 27.5 µs | 430.4 µs |
+| unicode-clean-paragraph (4,000 chars: clean, accents and emoji) | **16.1 µs** | 177.5 µs | 582.7 µs | 2.75 ms | 225.3 µs | 27.1 µs | 428.9 µs |
+| match-start-paragraph (4,000 chars: one match at the start) | **5.31 µs** | 31.3 µs | 1.24 ms | 2.61 ms | 219.0 µs | 28.5 µs | 455.5 µs |
+| match-middle-paragraph (4,000 chars: one match at the middle) | **5.22 µs** | 30.4 µs | 1.54 ms | 2.67 ms | 226.4 µs | 28.8 µs | 424.7 µs |
+| match-end-paragraph (4,000 chars: one match at the end) | **5.36 µs** | 30.6 µs | 1.48 ms | 2.66 ms | 222.0 µs | 28.6 µs | 748.9 µs |
 
 #### Long text (64,000 characters)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-long (64,000 chars: clean ASCII) | **82.6 µs** | 421.4 µs | 4.41 ms | 23.23 ms | 4.28 ms | 209.4 µs | 1.49 ms |
+| clean-long (64,000 chars: clean ASCII) | **84.3 µs** | 428.7 µs | 4.67 ms | 23.78 ms | 4.31 ms | 221.3 µs | 1.68 ms |
 
 #### Adversarial inputs
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-long-token (64,000 chars: one unbroken 64,000-letter token) | **67.7 µs** | 396.7 µs | 4.49 ms | 10.99 ms | 2.21 ms | 137.0 µs | 430.9 µs |
-| dense-paragraph (4,000 chars: a match every 7 characters) | **7.80 µs** | 34.4 µs | 5.03 ms | 16.86 ms | 260.3 µs | 181.3 µs | 539.9 µs |
-| bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.17 µs | 23.4 µs | 567.6 µs | 1.05 ms | **4.95 µs** | 14.2 µs | 8.6 s † |
-| separator-run-paragraph (4,000 chars: letters joined by hyphens, no match) | **4.38 µs** | 38.8 µs | 538.5 µs | 1.08 ms | 121.3 µs | 14.1 µs | 386.0 µs |
+| clean-long-token (64,000 chars: one unbroken 64,000-letter token) | **68.0 µs** | 389.9 µs | 4.48 ms | 9.42 ms | 1.43 ms | 143.4 µs | 436.9 µs |
+| dense-paragraph (4,000 chars: a match every 7 characters) | **7.94 µs** | 34.4 µs | 5.17 ms | 9.16 ms | 226.8 µs | 191.2 µs | 622.3 µs |
+| bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.19 µs | 50.2 µs | 539.7 µs | 961.8 µs | **5.42 µs** | 15.0 µs | 13.8 s † |
+| separator-run-paragraph (4,000 chars: letters joined by hyphens, no match) | **4.29 µs** | 40.1 µs | 538.4 µs | 1.04 ms | 79.5 µs | 15.9 µs | 877.7 µs |
 
 ### Locate
 
@@ -187,40 +187,40 @@ Equivalent calls: this package `find()`, `findProfanity()` (sopan), `detect()` (
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-short (32 chars: clean ASCII) | **0.14 µs** | 0.38 µs | n/a | n/a | 2.56 µs | 14.0 µs | 312.1 µs |
-| clean-chat (280 chars: clean ASCII) | **0.64 µs** | 2.23 µs | n/a | n/a | 18.4 µs | 15.0 µs | 325.0 µs |
-| match-chat (280 chars: one plain match in the middle) | **0.83 µs** | 2.85 µs | n/a | n/a | 18.6 µs | 15.4 µs | 324.2 µs |
-| leet-chat (280 chars: one leetspeak match) | **6.16 µs** | 8.90 µs | n/a | n/a | 18.6 µs | differs | 325.7 µs |
-| unicode-clean-chat (280 chars: clean, accents and emoji) | **1.80 µs** | 13.1 µs | n/a | n/a | 18.4 µs | 15.0 µs | 344.3 µs |
-| unicode-match-chat (280 chars: one match, accents and emoji) | **3.11 µs** | 17.8 µs | n/a | n/a | 18.4 µs | 15.4 µs | 346.0 µs |
-| fullwidth-chat (280 chars: one full-width match) | **8.19 µs** | 11.0 µs | n/a | n/a | differs | differs | differs |
-| invisible-chat (280 chars: one match split by a zero-width space) | **10.0 µs** | 23.6 µs | n/a | n/a | differs | differs | 347.8 µs |
-| separator-chat (280 chars: one match spelled with hyphens) | differs | **14.6 µs** | n/a | n/a | 18.5 µs | differs | 365.8 µs |
+| clean-short (32 chars: clean ASCII) | **0.12 µs** | 0.55 µs | n/a | n/a | 2.35 µs | 15.7 µs | 678.4 µs |
+| clean-chat (280 chars: clean ASCII) | **0.63 µs** | 2.40 µs | n/a | n/a | 16.8 µs | 17.4 µs | 683.6 µs |
+| match-chat (280 chars: one plain match in the middle) | **0.79 µs** | 3.14 µs | n/a | n/a | 17.0 µs | 17.5 µs | 644.5 µs |
+| leet-chat (280 chars: one leetspeak match) | **6.00 µs** | 9.18 µs | n/a | n/a | 16.6 µs | differs | 520.2 µs |
+| unicode-clean-chat (280 chars: clean, accents and emoji) | **1.77 µs** | 13.5 µs | n/a | n/a | 16.6 µs | 16.4 µs | 621.6 µs |
+| unicode-match-chat (280 chars: one match, accents and emoji) | **3.08 µs** | 18.0 µs | n/a | n/a | 16.1 µs | 17.3 µs | 569.7 µs |
+| fullwidth-chat (280 chars: one full-width match) | **8.24 µs** | 11.4 µs | n/a | n/a | differs | differs | differs |
+| invisible-chat (280 chars: one match split by a zero-width space) | **10.1 µs** | 47.0 µs | n/a | n/a | differs | differs | 669.3 µs |
+| separator-chat (280 chars: one match spelled with hyphens) | differs | 27.6 µs | n/a | n/a | **16.3 µs** | differs | 618.2 µs |
 
 #### Paragraph (4,000 characters)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-paragraph (4,000 chars: clean ASCII) | **7.81 µs** | 28.8 µs | n/a | n/a | 255.4 µs | 55.3 µs | 425.5 µs |
-| unicode-clean-paragraph (4,000 chars: clean, accents and emoji) | **17.4 µs** | 171.4 µs | n/a | n/a | 252.6 µs | 53.1 µs | 459.8 µs |
-| match-start-paragraph (4,000 chars: one match at the start) | **8.21 µs** | 32.4 µs | n/a | n/a | 257.2 µs | 55.5 µs | 487.7 µs |
-| match-middle-paragraph (4,000 chars: one match at the middle) | **8.17 µs** | 32.3 µs | n/a | n/a | 256.3 µs | 55.6 µs | 430.4 µs |
-| match-end-paragraph (4,000 chars: one match at the end) | **8.00 µs** | 32.8 µs | n/a | n/a | 251.7 µs | 54.9 µs | 417.2 µs |
+| clean-paragraph (4,000 chars: clean ASCII) | **8.05 µs** | 29.4 µs | n/a | n/a | 221.6 µs | 27.2 µs | 724.5 µs |
+| unicode-clean-paragraph (4,000 chars: clean, accents and emoji) | **17.6 µs** | 182.1 µs | n/a | n/a | 222.2 µs | 27.6 µs | 741.8 µs |
+| match-start-paragraph (4,000 chars: one match at the start) | **8.28 µs** | 33.5 µs | n/a | n/a | 231.8 µs | 29.5 µs | 729.4 µs |
+| match-middle-paragraph (4,000 chars: one match at the middle) | **8.21 µs** | 33.9 µs | n/a | n/a | 241.0 µs | 29.3 µs | 707.7 µs |
+| match-end-paragraph (4,000 chars: one match at the end) | **8.13 µs** | 33.0 µs | n/a | n/a | 232.9 µs | 29.8 µs | 800.9 µs |
 
 #### Long text (64,000 characters)
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-long (64,000 chars: clean ASCII) | **127.1 µs** | 459.9 µs | n/a | n/a | 4.25 ms | 416.2 µs | 1.69 ms |
+| clean-long (64,000 chars: clean ASCII) | **130.6 µs** | 989.5 µs | n/a | n/a | 4.25 ms | 214.1 µs | 3.26 ms |
 
 #### Adversarial inputs
 
 | Input | indonesian-badwords | indonesian-badwords + evasion | @sideid/id-profanity-filter | @sideid/id-profanity-filter + split | @fldx/sopan | censorship-id | censorship-id + smart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| clean-long-token (64,000 chars: one unbroken 64,000-letter token) | **67.8 µs** | 386.5 µs | n/a | n/a | 2.17 ms | 160.0 µs | 490.5 µs |
-| dense-paragraph (4,000 chars: a match every 7 characters) | **63.6 µs** | 90.4 µs | n/a | n/a | 259.1 µs | 304.1 µs | 580.8 µs |
-| bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 6.05 µs | 23.7 µs | n/a | n/a | **4.96 µs** | 17.9 µs | 9.1 s † |
-| separator-run-paragraph (4,000 chars: letters joined by hyphens, no match) | **12.3 µs** | 46.8 µs | n/a | n/a | 120.6 µs | 17.4 µs | 412.3 µs |
+| clean-long-token (64,000 chars: one unbroken 64,000-letter token) | **67.8 µs** | 415.3 µs | n/a | n/a | 1.54 ms | 139.5 µs | 941.4 µs |
+| dense-paragraph (4,000 chars: a match every 7 characters) | **62.5 µs** | 102.9 µs | n/a | n/a | 226.0 µs | 190.7 µs | 1.15 ms |
+| bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 6.03 µs | 24.7 µs | n/a | n/a | **5.32 µs** | 15.1 µs | 18.1 s † |
+| separator-run-paragraph (4,000 chars: letters joined by hyphens, no match) | **12.3 µs** | 48.6 µs | n/a | n/a | 78.3 µs | 17.3 µs | 382.4 µs |
 
 † Reduced protocol: one call took over 200 ms, so the cell is the median of three single calls on different inputs (not 31 calibrated batches), and only those three variants were checked against the expected result. Such a cell shows a package that degrades on that input, not a precise timing.
 
@@ -241,32 +241,36 @@ to weigh when judging this package for your workload.
 
 | Operation | Input | indonesian-badwords | Fastest other | Ratio |
 | --- | --- | ---: | --- | ---: |
-| Boolean check | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.16 µs | @fldx/sopan 5.44 µs | 1.3x |
-| Censor | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.17 µs | @fldx/sopan 4.95 µs | 1.4x |
-| Locate | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 6.05 µs | @fldx/sopan 4.96 µs | 1.2x |
+| Boolean check | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.14 µs | @fldx/sopan 5.36 µs | 1.3x |
+| Censor | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 7.19 µs | @fldx/sopan 5.42 µs | 1.3x |
+| Locate | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 6.03 µs | @fldx/sopan 5.32 µs | 1.1x |
 
 **Evasion policy against the other packages' opt-in modes (sopan has no separate mode)**
 
 | Operation | Input | indonesian-badwords + evasion | Fastest other | Ratio |
 | --- | --- | ---: | --- | ---: |
-| Boolean check | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 25.2 µs | @fldx/sopan 5.44 µs | 4.6x |
-| Censor | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 23.4 µs | @fldx/sopan 4.95 µs | 4.7x |
-| Locate | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 23.7 µs | @fldx/sopan 4.96 µs | 4.8x |
+| Boolean check | unicode-match-chat (280 chars: one match, accents and emoji) | 17.2 µs | @fldx/sopan 16.6 µs | 1.0x |
+| Boolean check | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 25.0 µs | @fldx/sopan 5.36 µs | 4.7x |
+| Censor | unicode-match-chat (280 chars: one match, accents and emoji) | 17.8 µs | @fldx/sopan 16.7 µs | 1.1x |
+| Censor | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 50.2 µs | @fldx/sopan 5.42 µs | 9.3x |
+| Locate | unicode-match-chat (280 chars: one match, accents and emoji) | 18.0 µs | @fldx/sopan 16.1 µs | 1.1x |
+| Locate | separator-chat (280 chars: one match spelled with hyphens) | 27.6 µs | @fldx/sopan 16.3 µs | 1.7x |
+| Locate | bang-dense-paragraph (4,000 chars: `!` repeated (no letters)) | 24.7 µs | @fldx/sopan 5.32 µs | 4.7x |
 
 **Startup, memory and bundle size: where another configuration is lower**
 
 | Measure | This package | Value | Lower in |
 | --- | --- | ---: | --- |
-| Load and construct | indonesian-badwords | 1.68 ms | censorship-id 0.99 ms; censorship-id + smart 1.56 ms |
-| First clean boolean check | indonesian-badwords | 0.38 ms | @fldx/sopan 0.26 ms |
-| Retained JS heap after load | indonesian-badwords | 0.2 MiB | censorship-id 0.1 MiB; @fldx/sopan 0.1 MiB |
-| Load and construct | indonesian-badwords + evasion | 5.13 ms | censorship-id 0.99 ms; censorship-id + smart 1.56 ms; @sideid/id-profanity-filter + split 2.53 ms; @fldx/sopan 2.55 ms; @sideid/id-profanity-filter 2.59 ms |
-| First clean boolean check | indonesian-badwords + evasion | 2.14 ms | @fldx/sopan 0.26 ms; censorship-id 0.61 ms |
-| Retained JS heap after load | indonesian-badwords + evasion | 0.6 MiB | censorship-id 0.1 MiB; @fldx/sopan 0.1 MiB; censorship-id + smart 0.2 MiB |
-| Bundle, minified | indonesian-badwords (default import) | 40,691 B | @fldx/sopan 3,553 B; censorship-id 8,641 B |
-| Bundle, gzip level 9 | indonesian-badwords (default import) | 14,220 B | @fldx/sopan 1,622 B; censorship-id 2,006 B; @sideid/id-profanity-filter 13,142 B |
-| Bundle, minified | indonesian-badwords + evasion + fuzzy | 72,898 B | @fldx/sopan 3,553 B; censorship-id 8,641 B; @sideid/id-profanity-filter 63,083 B |
-| Bundle, gzip level 9 | indonesian-badwords + evasion + fuzzy | 24,931 B | @fldx/sopan 1,622 B; censorship-id 2,006 B; @sideid/id-profanity-filter 13,142 B |
+| Load and construct | indonesian-badwords | 1.60 ms | censorship-id + smart 1.27 ms |
+| First clean boolean check | indonesian-badwords | 0.36 ms | @fldx/sopan 0.15 ms |
+| Retained JS heap after load | indonesian-badwords | 0.2 MiB | @fldx/sopan 0.1 MiB; censorship-id 0.1 MiB |
+| Load and construct | indonesian-badwords + evasion | 4.98 ms | censorship-id + smart 1.27 ms; @fldx/sopan 1.66 ms; censorship-id 1.96 ms; @sideid/id-profanity-filter 2.69 ms |
+| First clean boolean check | indonesian-badwords + evasion | 2.11 ms | @fldx/sopan 0.15 ms; censorship-id 0.88 ms |
+| Retained JS heap after load | indonesian-badwords + evasion | 0.6 MiB | @fldx/sopan 0.1 MiB; censorship-id 0.1 MiB; censorship-id + smart 0.2 MiB |
+| Bundle, minified | indonesian-badwords (default import) | 40,709 B | @fldx/sopan 3,553 B; censorship-id 8,641 B |
+| Bundle, gzip level 9 | indonesian-badwords (default import) | 14,223 B | @fldx/sopan 1,622 B; censorship-id 2,006 B; @sideid/id-profanity-filter 13,142 B |
+| Bundle, minified | indonesian-badwords + evasion + fuzzy | 72,916 B | @fldx/sopan 3,553 B; censorship-id 8,641 B; @sideid/id-profanity-filter 63,083 B |
+| Bundle, gzip level 9 | indonesian-badwords + evasion + fuzzy | 24,932 B | @fldx/sopan 1,622 B; censorship-id 2,006 B; @sideid/id-profanity-filter 13,142 B |
 <!-- benchmarks:end slower -->
 
 ## Correctness
@@ -461,8 +465,8 @@ read gzip figures as accurate to about one percent.
 <!-- benchmarks:begin bundles -->
 | Import | Minified | Gzip level 9 (zlib 1.3.2) |
 | --- | ---: | ---: |
-| indonesian-badwords (default import) | 40,691 B (39.7 KB) | 14,220 B (13.9 KB) |
-| indonesian-badwords + evasion + fuzzy | 72,898 B (71.2 KB) | 24,931 B (24.3 KB) |
+| indonesian-badwords (default import) | 40,709 B (39.8 KB) | 14,223 B (13.9 KB) |
+| indonesian-badwords + evasion + fuzzy | 72,916 B (71.2 KB) | 24,932 B (24.3 KB) |
 | @sideid/id-profanity-filter | 63,083 B (61.6 KB) | 13,142 B (12.8 KB) |
 | @fldx/sopan | 3,553 B (3.5 KB) | 1,622 B (1.6 KB) |
 | censorship-id | 8,641 B (8.4 KB) | 2,006 B (2.0 KB) |
@@ -482,13 +486,13 @@ workloads of the run; it is not the memory cost of the library alone.
 <!-- benchmarks:begin startup -->
 | Package | Load and construct | First clean boolean check (own call) | Retained JS heap after load | Process peak RSS |
 | --- | ---: | ---: | ---: | ---: |
-| indonesian-badwords | 1.68 ms | 0.38 ms | 0.2 MiB | 195 MiB |
-| indonesian-badwords + evasion | 5.13 ms | 2.14 ms | 0.6 MiB | 203 MiB |
-| @sideid/id-profanity-filter | 2.59 ms | 5.74 ms | 1.2 MiB | 188 MiB |
-| @sideid/id-profanity-filter + split | 2.53 ms | 29.97 ms | 2.6 MiB | 209 MiB |
-| @fldx/sopan | 2.55 ms | 0.26 ms | 0.1 MiB | 185 MiB |
-| censorship-id | 0.99 ms | 0.61 ms | 0.1 MiB | 184 MiB |
-| censorship-id + smart | 1.56 ms | 9.08 ms | 0.2 MiB | 186 MiB |
+| indonesian-badwords | 1.60 ms | 0.36 ms | 0.2 MiB | 197 MiB |
+| indonesian-badwords + evasion | 4.98 ms | 2.11 ms | 0.6 MiB | 197 MiB |
+| @sideid/id-profanity-filter | 2.69 ms | 5.59 ms | 1.2 MiB | 188 MiB |
+| @sideid/id-profanity-filter + split | 6.69 ms | 36.86 ms | 2.6 MiB | 208 MiB |
+| @fldx/sopan | 1.66 ms | 0.15 ms | 0.1 MiB | 184 MiB |
+| censorship-id | 1.96 ms | 0.88 ms | 0.1 MiB | 186 MiB |
+| censorship-id + smart | 1.27 ms | 7.15 ms | 0.2 MiB | 187 MiB |
 <!-- benchmarks:end startup -->
 
 ## Features
