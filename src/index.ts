@@ -417,8 +417,10 @@ export class Badwords {
             }
         }
         // No alphanumeric run as long as the shortest entry's longest one: nothing can match.
-        native.run ??= minimumRun(native.words);
-        if (native.run && !native.run.test(text)) return CLEAN;
+        if (text.length >= 1024) {
+            native.run ??= minimumRun(native.words);
+            if (native.run && !native.run.test(text)) return CLEAN;
+        }
         if (native.pattern) native.pattern.lastIndex = 0;
         if (native.censorPattern) native.censorPattern.lastIndex = 0;
         return native;
