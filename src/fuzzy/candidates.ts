@@ -10,6 +10,30 @@ function hash(units: readonly number[], at: number, q: number): number {
     return value >>> 0;
 }
 const BASE = 0x01000193;
+/** Code points of a key the index would hold, or undefined when the key is not eligible. */
+export function indexUnits(key: string, config: FuzzyConfig): number[] | undefined {
+    if (!/^[\p{L}\p{N}\p{M}]+$/u.test(key) || !/\p{L}/u.test(key)) return;
+    const units = Array.from(key, character => character.codePointAt(0)!);
+    if (units.length >= config.minLength && units.length <= config.maxLength) return units;
+}
+/** One-edit deletion signatures are cheaper for compact lexicons; larger profiles use packed q-grams. */
+export function usesDeletions(config: FuzzyConfig, maximum: number, deletionMaterial: number): boolean {
+    return config.maxEdits === 1 && maximum <= 64 && deletionMaterial <= 131_072;
+}
+export const deletionMaterial = (length: number): number => 2 * length * (length + 1);
+export const gramSize = (length: number, config: FuzzyConfig): number =>
+    Math.max(1, Math.min(3, Math.floor((length - (config.model === 'osa' ? config.maxEdits : 0)) / (config.maxEdits + 1))));
+/** Numeric workspace cells the index reserves for its longest group. */
+export function workspaceCells(config: FuzzyConfig, maximum: number, groups: number, deletions: boolean): number {
+    let capacity = 1;
+    if (!deletions) while (capacity < (maximum + config.maxEdits + 1) * 2) capacity *= 2;
+    return capacity * 12 + (maximum + config.maxEdits + 1) * 3 + groups * 3;
+}
+export function powerTable(size: number): Uint32Array {
+    const powers = new Uint32Array(size); powers[0] = 1;
+    for (let i = 1; i < size; i++) powers[i] = Math.imul(powers[i - 1], BASE) >>> 0;
+    return powers;
+}
 /** Polynomial hashes of a sequence and each one-scalar deletion, in O(length). Collisions only add verified candidates. */
 function signatures(units: readonly number[], powers: Uint32Array, suffix: Uint32Array, visit: (hash: number) => boolean): boolean {
     const length = units.length; suffix[length] = 0;
@@ -21,6 +45,18 @@ function signatures(units: readonly number[], powers: Uint32Array, suffix: Uint3
         prefix = (Math.imul(prefix, BASE) + units[i] + 1) >>> 0;
     }
     return true;
+}
+/** The distinct deletion signatures of one key: its postings in the deletion index. */
+export function deletionHashes(units: readonly number[], powers: Uint32Array, suffix: Uint32Array): Set<number> {
+    const hashes = new Set<number>();
+    signatures(units, powers, suffix, hash => { hashes.add(hash); return true; });
+    return hashes;
+}
+/** The distinct q-gram hashes of one key, with counts: its postings in the q-gram index. */
+export function gramCounts(units: readonly number[], q: number): Map<number, number> {
+    const counts = new Map<number, number>();
+    for (let i = 0; i + q <= units.length; i++) { const gram = hash(units, i, q); counts.set(gram, (counts.get(gram) ?? 0) + 1); }
+    return counts;
 }
 /** Reusable numeric query counts. No source strings or per-token Maps are retained. */
 class Grams {
@@ -58,9 +94,8 @@ export class FuzzyIndex {
     constructor(entries: readonly Entry[], readonly config: FuzzyConfig, composed: (key: string) => boolean, fail: IndexFail) {
         const grouped = new Map<string, FuzzyGroup>();
         for (const entry of entries) {
-            if (!/^[\p{L}\p{N}\p{M}]+$/u.test(entry.key) || !/\p{L}/u.test(entry.key)) continue;
-            const units = Array.from(entry.key, character => character.codePointAt(0)!);
-            if (units.length < config.minLength || units.length > config.maxLength) continue;
+            const units = indexUnits(entry.key, config);
+            if (!units) continue;
             let group = grouped.get(entry.key);
             if (!group) {
                 group = { units, entries: [], composed: composed(entry.key), top: 1 << (units.length - 1) };
@@ -75,27 +110,22 @@ export class FuzzyIndex {
         this.groups = [...grouped.values()];
         this.maximum = this.groups.reduce((n, group) => Math.max(n, group.units.length), 0);
         this.minimum = this.groups.reduce((n, group) => Math.min(n, group.units.length), Infinity);
-        // One-edit deletion signatures are cheaper for compact lexicons. Bound
-        // their total string material; larger profiles use packed q-grams.
-        const useDeletions = config.maxEdits === 1 && this.maximum <= 64
-            && this.groups.reduce((n, group) => n + 2 * group.units.length * (group.units.length + 1), 0) <= 131_072;
+        // Bound the deletion signatures' total string material.
+        const useDeletions = usesDeletions(config, this.maximum, this.groups.reduce((n, group) => n + deletionMaterial(group.units.length), 0));
         let capacity = 1;
         if (!useDeletions) while (capacity < (this.maximum + config.maxEdits + 1) * 2) capacity *= 2;
-        const cells = capacity * 12 + (this.maximum + config.maxEdits + 1) * 3 + this.groups.length * 3;
+        const cells = workspaceCells(config, this.maximum, this.groups.length, useDeletions);
         if (cells > config.maxStateCells) fail('stateCells', config.maxStateCells, cells);
         this.workspaceCells = cells;
         this.#scores = new Uint32Array(this.groups.length); this.#stamps = new Uint32Array(this.groups.length); this.#touched = new Uint32Array(this.groups.length);
         this.#grams = useDeletions ? [] : [new Grams(capacity), new Grams(capacity), new Grams(capacity)];
-        this.#powers = new Uint32Array(this.maximum + config.maxEdits + 3); this.#powers[0] = 1;
-        for (let i = 1; i < this.#powers.length; i++) this.#powers[i] = Math.imul(this.#powers[i - 1], BASE) >>> 0;
+        this.#powers = powerTable(this.maximum + config.maxEdits + 3);
         this.#suffix = new Uint32Array(this.#powers.length);
         this.#rows = Array.from({ length: 3 }, () => new Uint32Array(this.maximum + config.maxEdits + 1));
         if (useDeletions) {
             const lists = new Map<number, number[]>(); let postings = 0;
             this.groups.forEach((group, id) => {
-                const hashes = new Set<number>();
-                signatures(group.units, this.#powers, this.#powers.slice(), hash => { hashes.add(hash); return true; });
-                for (const hash of hashes) {
+                for (const hash of deletionHashes(group.units, this.#powers, this.#powers.slice())) {
                     if (++postings > config.maxIndexPostings) fail('indexPostings', config.maxIndexPostings, postings);
                     const ids = lists.get(hash) ?? []; ids.push(id); lists.set(hash, ids);
                 }
@@ -107,13 +137,11 @@ export class FuzzyIndex {
         this.groups.forEach((group, id) => { const list = lengths.get(group.units.length) ?? []; list.push(id); lengths.set(group.units.length, list); });
         let postings = 0;
         for (const [length, ids] of lengths) {
-            const q = Math.max(1, Math.min(3, Math.floor((length - (config.model === 'osa' ? config.maxEdits : 0)) / (config.maxEdits + 1))));
+            const q = gramSize(length, config);
             const threshold = length - q + 1 - config.maxEdits * (q === 1 ? 1 : q + Number(config.model === 'osa'));
             const lists = new Map<number, number[]>();
             for (const id of ids) {
-                const counts = new Map<number, number>(), units = this.groups[id].units;
-                for (let i = 0; i + q <= units.length; i++) { const gram = hash(units, i, q); counts.set(gram, (counts.get(gram) ?? 0) + 1); }
-                for (const [gram, count] of counts) {
+                for (const [gram, count] of gramCounts(this.groups[id].units, q)) {
                     if (++postings > config.maxIndexPostings) fail('indexPostings', config.maxIndexPostings, postings);
                     const list = lists.get(gram) ?? []; list.push(id, count); lists.set(gram, list);
                 }

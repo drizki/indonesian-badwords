@@ -160,6 +160,9 @@ const deferred = new api.Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy(
 deferred.addWords('kontol');
 assert.deepEqual(deferred.dict, ['goblok', 'kontol']);
 assert.equal(deferred.flag('kontox'), true);
+const budgeted = new api.Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy({ limits: { maxCompileStates: 20 } }) });
+assert.throws(() => budgeted.addWords('x'.repeat(30)), (error) => error instanceof FuzzyLimitError && error.limit === 'compileStates');
+assert.deepEqual(budgeted.dict, ['goblok']);
 const sharedWord = 'paketkontrol';
 assert.equal(api.flag(sharedWord), false);
 try {
@@ -609,6 +612,35 @@ new cjs.Badwords({ dictionary: ['customterm'] });
         }));
         run(process.execPath, [compiler, '-p', config], workspace);
     }
+    // Pre-2.7 subclasses and signature extractions must keep compiling under strict override and exact optional rules.
+    writeFileSync(join(workspace, 'subclass.ts'), `
+import { Badwords, type CheckOptions, type MatchedLocation, type AnalysisResult, type DetailedCensorContext, type CensorContext } from 'indonesian-badwords';
+class Logged extends Badwords {
+    override find(text: string, options?: CheckOptions): MatchedLocation[] { return super.find(text, options); }
+    override analyze(text: string, options?: CheckOptions): AnalysisResult { return super.analyze(text, options); }
+    override filter(text: string, options?: CheckOptions): string { return super.filter(text, options); }
+    override censor(text: string, replacement?: string | ((context: DetailedCensorContext) => string), options?: CheckOptions): string {
+        return super.censor(text, replacement, options);
+    }
+}
+const logged = new Logged({ dictionary: ['customterm'] });
+const oldFound: MatchedLocation[] = logged.find('customterm');
+const oldAnalysis: AnalysisResult = logged.analyze('customterm');
+const found: ReturnType<Badwords['find']> = oldFound;
+const report: ReturnType<Badwords['analyze']> = oldAnalysis;
+const first: MatchedLocation | undefined = found[0];
+const count: number = report.occurrenceCount;
+const flag: boolean | undefined = report.truncated;
+const context: DetailedCensorContext = { text: '', index: 0, end: 0, match: '', words: [], occurrences: (): MatchedLocation[] => [] };
+const plain: CensorContext = context;
+export { first, count, flag, plain };
+`);
+    writeFileSync(join(workspace, 'tsconfig-subclass.json'), JSON.stringify({
+        compilerOptions: { strict: true, noEmit: true, target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler',
+            exactOptionalPropertyTypes: true, noImplicitOverride: true, noUncheckedIndexedAccess: true },
+        files: ['subclass.ts']
+    }));
+    run(process.execPath, [compiler, '-p', 'tsconfig-subclass.json'], workspace);
     const compilerVersion = JSON.parse(readFileSync(join(root, 'node_modules/typescript/package.json'))).version;
     console.log(`Verified packed files, shared ESM/CommonJS identities and state, optional strategies, bounded evasion/fuzzy composition and reviewed data, isolated browser ES2022 bundles without Node globals or external imports, and TypeScript ${compilerVersion} (NodeNext/Node16/Bundler, including cross-format assignment).`);
 } finally {

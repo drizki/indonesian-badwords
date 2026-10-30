@@ -120,6 +120,7 @@
     "dist/cjs/evasion/types.d.ts",
     "dist/cjs/core/matcher.d.ts",
     "dist/cjs/core/provenance.d.ts",
+    "dist/cjs/core/budget.d.ts",
     "dist/cjs/core/pipeline.d.ts",
     "dist/cjs/core/types.d.ts",
     "THIRD_PARTY_NOTICES",

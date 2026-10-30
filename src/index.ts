@@ -8,6 +8,7 @@ import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize,
     type Normalization, type NormalizedText } from './text/normalize.ts';
 import { prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
 import { UnicodeMatcher, UnicodeView } from './text/unicode.ts';
+import type { DictionaryBudget } from './core/budget.ts';
 import { collapseWhitespace, MatchWindow, maxMatchesMode, type MaxMatchesMode } from './core/pipeline.ts';
 
 declare const __BADWORDS_PRESET_PATTERNS__: NativePatterns | undefined;
@@ -119,7 +120,7 @@ export class Badwords {
     readonly #maxMatches: number;
     readonly #onMaxMatches: MaxMatchesMode;
     #stale = false;
-    #snapshot: { words: Set<string>; preset: boolean } | undefined;
+    #budget: DictionaryBudget | undefined;
     readonly #allowed: AllowedPhrases | undefined;
     #matcher: Matcher | undefined;
     #maxKeyLength = 0;
@@ -150,7 +151,7 @@ export class Badwords {
             if (!options.evasion || typeof options.evasion !== 'object' || !Object.isFrozen(options.evasion))
                 throw new TypeError('evasion must be created by boundedEvasion()');
             const compiler = Reflect.get(options.evasion, Symbol.for('indonesian-badwords.evasion.v2')) as EvasionCompiler | undefined;
-            if (!compiler || compiler.version !== 2 || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
+            if (!compiler || compiler.version !== 2 || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function' || typeof compiler.budget !== 'function')
                 throw new TypeError('evasion must be created by boundedEvasion()');
             this.#evasionCompiler = compiler;
         }
@@ -158,7 +159,7 @@ export class Badwords {
             if (!options.fuzzy || typeof options.fuzzy !== 'object' || !Object.isFrozen(options.fuzzy))
                 throw new TypeError('fuzzy must be created by boundedFuzzy()');
             const compiler = Reflect.get(options.fuzzy, Symbol.for('indonesian-badwords.fuzzy.v2')) as FuzzyCompiler | undefined;
-            if (!compiler || compiler.version !== 2 || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function')
+            if (!compiler || compiler.version !== 2 || typeof compiler.compile !== 'function' || typeof compiler.checkDictionary !== 'function' || typeof compiler.budget !== 'function')
                 throw new TypeError('fuzzy must be created by boundedFuzzy()');
             this.#fuzzyCompiler = compiler;
         }
@@ -178,7 +179,9 @@ export class Badwords {
                 this.#maxWordLength = Math.max(this.#maxWordLength, word.length);
             }
         } else {
-            this.addWords(options.dictionary);
+            // The first compile below is the authority for the initial dictionary; the budget starts at the first update.
+            if (this.#evasionCompiler || this.#fuzzyCompiler) this.#changeDictionary(options.dictionary, true, false);
+            else this.addWords(options.dictionary);
         }
         if ((this.#evasionCompiler || this.#fuzzyCompiler) && !this.#evasion) this.#setEvasion(this.#dictionary, this.#preset);
     }
@@ -240,26 +243,24 @@ export class Badwords {
         this.#maxWordLength = this.#maxKeyLength;
         this.#native = undefined;
         this.#stale = false;
-        this.#snapshot = undefined;
         this.#preset = preset;
     }
 
-    /** Compile pending evasion/fuzzy updates. A compile-time failure restores the last compiled dictionary and rethrows. */
-    #refresh(): void {
-        const snapshot = this.#snapshot!;
-        try { this.#setEvasion(this.#dictionary); } catch (error) {
-            this.#dictionary = snapshot.words;
-            this.#preset = snapshot.preset;
-            this.#native = undefined;
-            this.#stale = false;
-            this.#snapshot = undefined;
-            this.#version++;
-            throw error;
-        }
+    /** Build the runtime for pending updates. Budgets were already enforced by #changeDictionary, so this cannot fail on them. */
+    #refresh(): void { this.#setEvasion(this.#dictionary); }
+
+    #key(word: string): string { return this.#ignoreRepeatedLetters ? normalize(word, 'none', true).text : word; }
+
+    /** Seeded with the current (already compiled) dictionary, so it is built on the first update. */
+    #newBudget(): DictionaryBudget {
+        const budget = this.#fuzzyCompiler ? this.#fuzzyCompiler.budget(this.#normalization, normalizeKey, this.#evasionCompiler)
+            : this.#evasionCompiler!.budget();
+        budget.change([...this.#dictionary].map(word => this.#key(word)), []);
+        return budget;
     }
 
-    /** Validates eagerly and applies atomically, but defers the (expensive) recompile to the next scan. */
-    #changeDictionary(words: string | readonly string[], add: boolean): void {
+    /** Enforces every budget eagerly and applies atomically, but defers building the (expensive) runtime to the next scan. */
+    #changeDictionary(words: string | readonly string[], add: boolean, enforce = true): void {
         const batch = wordsArray(words);
         this.#checkDictionary(batch);
         const dictionary = this.#dictionary;
@@ -271,8 +272,13 @@ export class Badwords {
         }
         if (!changes.size) return;
         if (add) this.#checkDictionary([...dictionary, ...changes]);
-        if (!this.#stale) { this.#snapshot = { words: new Set(dictionary), preset: this.#preset }; this.#stale = true; }
+        if (enforce) {
+            const budget = this.#budget ??= this.#newBudget();
+            const keys = [...changes].map(word => this.#key(word));
+            if (add) budget.change(keys, []); else budget.change([], keys);
+        }
         for (const word of changes) { if (add) dictionary.add(word); else dictionary.delete(word); }
+        this.#stale = true;
         this.#native = undefined;
         this.#version++;
         this.#preset = false;
@@ -413,7 +419,7 @@ export class Badwords {
     }
 
     #scan(text: string, visit: (match: Match) => boolean | void, spansOnly = false, skipNative = false,
-        accept?: MatchAcceptance, unique = false, knownEvasion?: boolean, detail = false): void {
+        accept?: MatchAcceptance, unique = false, knownEvasion?: boolean, detail = false, window?: MatchWindow): void {
         validateText(text);
         if (!text.length || !this.#dictionary.size) return;
         if (knownEvasion === undefined ? this.#evasion?.potential(text) : knownEvasion) {
@@ -427,6 +433,7 @@ export class Badwords {
         if (native instanceof UnicodeView) { native.scan(visit, accept); return; }
         if (native) {
             const pattern = this.#pattern(native);
+            window?.ordered();
             let occurrence: RegExpExecArray | null;
             while ((occurrence = pattern.exec(text)) !== null) {
                 native.orders ??= new Map(native.words.map((word, order) => [word, order]));
@@ -438,7 +445,10 @@ export class Badwords {
             }
             return;
         }
-        this.#compileMatcher().scan(this.#normalizeInput(text), this.#mode === 'word', visit, spansOnly, undefined, accept);
+        const matcher = this.#compileMatcher();
+        const value = this.#normalizeInput(text);
+        window?.frontier(value.starts, this.#maxKeyLength);
+        matcher.scan(value, this.#mode === 'word', visit, spansOnly, undefined, accept);
     }
 
     #normalizeInput(text: string): NormalizedText {
@@ -533,7 +543,7 @@ export class Badwords {
         return found;
     }
     #locations(text: string, accept?: MatchAcceptance, window = this.#window()): FindResult {
-        this.#scan(text, (match) => { window.add(match); }, false, false, accept, false, undefined, true);
+        this.#scan(text, (match) => window.add(match), false, false, accept, false, undefined, true, window);
         const seen = new Map<string, MatchVia>();
         const result = window.finish().map((match) => location(text, match, this.#provenance, seen));
         return (window.truncated ? Object.defineProperty(result, 'truncated', { value: true }) : result) as FindResult;
@@ -633,10 +643,15 @@ export class Badwords {
         if (typeof replacement !== 'function') validateText(replacement);
         const window = this.#window(mode);
         const spans: Array<{ start: number; end: number }> = [];
+        const found = new Set<string>();
         const merge = typeof replacement !== 'function';
-        this.#scan(text, (match) => { window.add(match); if (merge) mergeSpan(spans, match); }, false, false, accept, false, undefined, true);
+        // Without a callback, `censored` needs every span, so the scan continues past a full window (which then ignores the rest).
+        this.#scan(text, merge
+            ? (match) => { window.add(match); found.add(match.word); mergeSpan(spans, match); }
+            : (match) => window.add(match), false, false, accept, false, undefined, true, window);
         const matches = window.finish();
-        const found = new Set(matches.map((match) => match.word));
+        // A truncating window may have seen (and ignored) more words than it kept.
+        if (window.truncating || !merge) { found.clear(); for (const match of matches) found.add(match.word); }
         const seen = new Map<string, MatchVia>();
         const badwords = [...this.#dictionary].filter((word) => found.has(word));
         const censored = merge ? replaceSpans(text, spans, replacement) : this.#censorCallback(text, replacement, accept, mode);
@@ -655,7 +670,7 @@ export const badwords = instance.badwords.bind(instance);
 export const filter = instance.filter.bind(instance);
 export const censor = instance.censor.bind(instance);
 export const analyze = instance.analyze.bind(instance);
-/** @deprecated Mutates the process-wide default checker, so one dependency can change another's results. Use an isolated `new Badwords({ dictionary })` and its `addWords()`. Still works throughout 2.x. */
+/** @deprecated Mutates the process-wide default checker, so one dependency can change another's results. Use an isolated `new Badwords({ dictionary })` and its `addWords()`. The default export is the same shared instance, so `badwords.addWords()` does the same without a deprecation hint. Still works throughout 2.x. */
 export const addWords = instance.addWords.bind(instance);
-/** @deprecated Mutates the process-wide default checker, so one dependency can change another's results. Use an isolated `new Badwords({ dictionary })` and its `removeWords()`. Still works throughout 2.x. */
+/** @deprecated Mutates the process-wide default checker, so one dependency can change another's results. Use an isolated `new Badwords({ dictionary })` and its `removeWords()`. The default export is the same shared instance, so `badwords.removeWords()` does the same without a deprecation hint. Still works throughout 2.x. */
 export const removeWords = instance.removeWords.bind(instance);

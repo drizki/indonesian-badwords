@@ -27,24 +27,54 @@ export const bySource = (a: Match, b: Match): number => a.start - b.start || a.o
  * Collects occurrences up to a limit. 'throw' fails on the first occurrence past the limit.
  * 'truncate' keeps the first `limit` in source order (start, then dictionary order, then end)
  * of ALL occurrences, although scanners emit by end position: it buffers at most 2 * limit and
- * sorts down to `limit` whenever the buffer fills, so memory stays bounded.
+ * sorts down to `limit` whenever the buffer fills, so memory stays bounded. Scanners that can bound
+ * where later occurrences start (see ordered() and frontier()) let it say when to stop scanning.
  */
 export class MatchWindow {
     readonly matches: Match[] = [];
     truncated = false;
-    constructor(private readonly limit: number, private readonly truncate: boolean) {}
-    add(match: Match): void {
+    readonly truncating: boolean;
+    #done = false;
+    #inOrder = false;
+    #cutoff: Match | undefined;
+    #starts: ArrayLike<number> | undefined;
+    #reach = 0;
+    constructor(private readonly limit: number, truncate: boolean) { this.truncating = truncate; }
+    /** The scanner emits occurrences with strictly increasing start offsets (the native word pattern). */
+    ordered(): void { this.#inOrder = true; }
+    /**
+     * The scanner emits by end position over normalized text, no occurrence is longer than `reach` characters, and
+     * starts[i] is the source offset of normalized character i (never decreasing). An occurrence emitted later then
+     * starts at or after starts[end - reach] of the one just emitted.
+     */
+    frontier(starts: ArrayLike<number>, reach: number): void { this.#starts = starts; this.#reach = reach; }
+    /** Returns false once no later occurrence can be among the first `limit`, so the scanner may stop. */
+    add(match: Match): boolean {
         const { matches, limit } = this;
-        if (!this.truncate) {
+        if (!this.truncating) {
             if (matches.length >= limit) {
                 throw new RangeError("Match limit exceeded; increase maxMatches, set onMaxMatches: 'truncate', or use flag(), badwords(), or censor()");
             }
             matches.push(match);
-        } else if (matches.push(match) >= 2 * limit) this.cut();
+            return true;
+        }
+        if (this.#done) return false;
+        matches.push(match);
+        if (this.#inOrder) {
+            if (matches.length <= limit) return true;
+            matches.length = limit;
+            this.truncated = this.#done = true;
+            return false;
+        }
+        if (matches.length >= 2 * limit) this.#cut();
+        // Every later occurrence starts after the kept limit-th one, so none can displace it.
+        if (this.#cutoff && this.#starts && this.#starts[Math.max(0, match.to - this.#reach)] > this.#cutoff.start) this.#done = true;
+        return !this.#done;
     }
-    private cut(): void {
+    #cut(): void {
         this.matches.sort(bySource);
         this.matches.length = this.limit;
+        this.#cutoff = this.matches[this.limit - 1];
         this.truncated = true;
     }
     /** The kept matches in source order. */

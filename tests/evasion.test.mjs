@@ -107,10 +107,7 @@ test('dictionary mutation is atomic on compile/material errors and invalidates a
     const checker = new Badwords({ dictionary: ['ab'], evasion });
     const other = new Badwords({ dictionary: ['cd'], evasion });
     assert.equal(checker.flag('a-b'), true);
-    // Compile-time limits surface on the next scan (compilation is deferred); the update is then rolled back whole.
-    checker.addWords(['cd', 'ef']);
-    assert.deepEqual(checker.dict, ['ab', 'cd', 'ef']);
-    assert.throws(() => checker.flag('a-b'), error => error instanceof EvasionLimitError && error.limit === 'compileStates');
+    assert.throws(() => checker.addWords(['cd', 'ef']), error => error instanceof EvasionLimitError && error.limit === 'compileStates');
     assert.deepEqual(checker.dict, ['ab']);
     assert.equal(checker.flag('a-b'), true);
     assert.equal(checker.flag('c-d'), false);

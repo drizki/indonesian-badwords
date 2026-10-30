@@ -1,4 +1,5 @@
 import type { EvasionCompiler, EvasionPolicy } from './types.ts';
+import { KeyBudget } from '../core/budget.ts';
 import { compileEvasion, prepareEvasion, type CompiledOptions } from './scanner.ts';
 export type { EvasionPolicy } from './types.ts';
 
@@ -139,6 +140,11 @@ export function boundedEvasion(options: EvasionOptions): EvasionPolicy {
                 length += word.length;
                 if (length > config.maxDictionaryLength) fail('dictionaryLength', config.maxDictionaryLength, length);
             }
+        },
+        budget() {
+            return new class extends KeyBudget {
+                protected verify() { if (this.trie.states > config.maxCompileStates) fail('compileStates', config.maxCompileStates, config.maxCompileStates + 1); }
+            }();
         },
         compile: (entries, normalization, canonicalize, trie, candidateText) => compileEvasion(config, entries, normalization, canonicalize, trie, candidateText, fail)
     });

@@ -4,6 +4,7 @@ import type { Normalization, NormalizedText } from '../text/normalize.ts';
 import type { FuzzyConfig } from './types.ts';
 import type { FuzzyLimit } from './policy.ts';
 import { FuzzyIndex, type FuzzyMeter } from './candidates.ts';
+import { boundedLimit } from './budget.ts';
 
 type Fail = (limit: FuzzyLimit, maximum: number, used: number) => never;
 const ascii = (code: number) => (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
@@ -73,10 +74,7 @@ export function compileFuzzy(config: FuzzyConfig, entries: readonly Entry[], nor
     fail: Fail, evasion?: EvasionCompiler): EvasionRuntime {
     const plan = evasion?.plan?.(normalization, canonicalize);
     if (evasion && (!plan || plan.version !== 1)) throw new TypeError('evasion descriptor does not support fuzzy composition');
-    const bounded = (limit: 'input' | 'states' | 'steps' | 'compileStates' | 'dictionaryLength', own: number, other: number | undefined, used: number) => {
-        if (other !== undefined && other < own) { if (used > other) plan!.exceeded(limit, other, used); }
-        else if (used > own) fail(limit, own, used);
-    };
+    const bounded = boundedLimit(plan, fail);
     const compileMaximum = Math.min(config.maxCompileStates, plan?.maxCompileStates ?? Infinity);
     const nodes = trie({ maximum: compileMaximum, exceeded: used => bounded('compileStates', config.maxCompileStates, plan?.maxCompileStates, used) as never });
     let material = 0;

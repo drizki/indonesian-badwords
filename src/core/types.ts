@@ -28,8 +28,13 @@ export interface CensorContext {
 }
 /** The context censor() passes: a non-enumerable method lists the occurrences behind the span. */
 export interface DetailedCensorContext extends CensorContext {
-    /** Lazy and non-enumerable. Scans once per censor() call, honours the call's exceptions, and can throw find()'s RangeError or, if the dictionary changed during the call, a TypeError. */
-    occurrences(): readonly MatchedLocation[];
+    /**
+     * Lazy and non-enumerable. Scans once per censor() or analyze() call and honours the call's exceptions. Past
+     * maxMatches it throws find()'s RangeError, or with onMaxMatches: 'truncate' (the constructor option, or the analyze() call's)
+     * lists only the kept occurrences and gives the array a non-enumerable `truncated: true` whenever the span
+     * reaches past the last kept one, so the list may be incomplete. It throws a TypeError if the dictionary changed during the call.
+     */
+    occurrences(): readonly MatchedLocation[] & { readonly truncated?: true };
 }
 export type CensorCallback = (context: CensorContext) => string;
 export type CensorReplacement = string | CensorCallback;
@@ -110,6 +115,6 @@ export interface BadwordsOptions {
     ignoreRepeatedLetters?: boolean;
     /** Maximum detailed occurrences for find/analyze. Defaults to 10,000; Infinity disables the cap. */
     maxMatches?: number;
-    /** What find() and analyze() do past maxMatches: throw a RangeError (default) or keep the first maxMatches occurrences and set `truncated`. */
+    /** What find() and analyze() do past maxMatches: throw a RangeError (default) or keep the first maxMatches occurrences and set `truncated`. Also applies to censor() callbacks' `context.occurrences()`. */
     onMaxMatches?: MaxMatchesMode;
 }
