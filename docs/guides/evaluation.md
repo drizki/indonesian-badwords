@@ -17,6 +17,11 @@ A case has a `text` and what you `expected`:
 | `true` / `false` | The text should / should not be flagged. |
 | `['goblok']` | The text should match exactly these dictionary words (compared as a set). |
 | `[{ index: 6, end: 12 }]` | The text should match exactly these source spans (UTF-16 offsets, end exclusive). |
+| `[]` | Nothing should match. Counts at both the word level and the span level. |
+
+Expected words are the `word` that `find()` reports: the dictionary key after the
+checker's `normalization`, not the matched text. `GOBLOK` and `Ｇｏｂｌｏｋ` both report
+`goblok`, so label `['goblok']`. When you label raw text, prefer spans or a boolean.
 
 Give every case a unique `id`. Ids are what `compare()` joins on, so they keep a
 case the same when you add others. Without an id a case is called `case-N` by position.
@@ -95,16 +100,24 @@ result.failures[1]; // => { id: 'c', expected: true, outcome: 'fn', correct: fal
 - `precision` is TP / (TP + FP), `recall` is TP / (TP + FN), and `falsePositiveRate`
   is FP / (FP + TN), the share of should-not-flag cases that were flagged. Each
   carries its sample size `n` and a 95% Wilson interval. Small samples have wide
-  intervals; trust the interval before the point value. A rate with `n: 0` has
+  intervals; trust the interval before the point value. The interval uses z = 1.96. A rate with `n: 0` has
   `value`, `low` and `high` of `null`, never `NaN`.
 - `words` and `spans` hold the same counts at the level of individual words or spans,
-  over only the cases whose `expected` is a word list or a span list.
+  over only the cases whose `expected` is a word list or a span list (an empty list counts
+  in both).
+- Matches on identical or overlapping spans are one **detection**. With fuzzy matching on,
+  `dasar goblok` reports `goblok` (exact) and neighbours such as `goblik` (fuzzy) on the same
+  span. If any word of the detection is expected, the whole detection is a true positive and
+  the neighbours are not blamed. Otherwise it is one false positive, and each of its words
+  is listed once in `topFalsePositiveWords`. `byVia` counts the detection once, under its
+  strongest kind (`exact`, `normalized`, `leetspeak`, `evasion`, `fuzzy`). `failures` still
+  show every match.
 - A flagged case with the wrong words or spans keeps outcome `tp` (it was flagged,
   as expected), but `correct` is `false` and it appears in `failures`.
 - `failures` have the `text` and each match with its `via` kind. `cases` lists every
   case without its text.
 - `topFalsePositiveWords` ranks the dictionary words behind the false positives by
-  number of cases, then alphabetically. Set `top` to change the default of 10.
+  number of cases, then alphabetically. Set `top` (an integer or `Infinity`) to change the default of 10.
 
 ## See which matching option causes the problem
 
@@ -173,14 +186,16 @@ result.correct; // => 2
 ```
 
 Offsets are UTF-16 code units, as in `find()`, so `😀` counts as two. Cases are checked
-before anything runs: a duplicate id, a span outside the text or splitting a
+before `find()` runs: a duplicate id, a sparse array, a span outside the text or splitting a
 surrogate pair, a duplicate word or span, or a wrong type throws `TypeError` with the
-case id.
+case id. Errors that `find()` itself raises during the run, such as the `RangeError` for
+an `ignoreRanges` bound inside a grapheme, propagate unchanged.
 
 ## Snapshots in CI
 
-The result is plain JSON and deterministic: no timestamps, no randomness, sorted
-keys, rates rounded to six decimals. Store it, or only the parts you care about,
+The result is plain JSON and deterministic: no timestamps, no randomness, the
+breakdown tables (`byVia`, `byCategory`, `bySeverity`) with sorted keys, rates rounded
+to six decimals. Store it, or only the parts you care about,
 and diff it in a test.
 
 ```ts
@@ -193,6 +208,10 @@ const stored = JSON.parse(JSON.stringify(evaluate(checker, cases)));
 
 compare(stored, evaluate(checker, cases)).broken; // => []
 ```
+
+`compare()` identifies cases by id alone, so editing the text of a case under the same
+id shows up as a change, and `delta` covers only the ids present in both results; use
+`added` and `removed` for the rest.
 
 A snapshot of the full result includes your case text in `failures`. Keep it out of
 public logs if the texts are private; the library itself never transmits or stores them.
