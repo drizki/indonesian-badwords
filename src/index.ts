@@ -1,8 +1,8 @@
 import { dictionary as defaultDictionary } from './dictionary/presets.ts';
 import { Matcher, type Match } from './core/matcher.ts';
 import { describe, occurrencesWithin, type MatchVia, type ProvenanceSettings } from './core/provenance.ts';
-import type { FuzzyCompiler, FuzzyPolicy } from './fuzzy/types.ts';
-import type { EvasionCompiler, EvasionPolicy, EvasionRuntime } from './evasion/types.ts';
+import type { FuzzyCompiler } from './fuzzy/types.ts';
+import type { EvasionCompiler, EvasionRuntime } from './evasion/types.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './core/exceptions.ts';
 import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
     type Normalization, type NormalizedText } from './text/normalize.ts';
@@ -23,7 +23,7 @@ export type { EvasionTransforms, MatchVia } from './core/provenance.ts';
 export type { MaxMatchesMode } from './core/pipeline.ts';
 
 export type { BadwordLocation, MatchedLocation, CensorContext, DetailedCensorContext, CensorCallback, CensorReplacement, IgnoreRange, CheckOptions, FilterOptions, FindOptions, AnalyzeOptions, FindResult, AnalysisResult, AnalysisReport, MatchMode, BadwordsOptions } from './core/types.ts';
-import type { BadwordLocation, MatchedLocation, DetailedCensorContext, CheckOptions, FilterOptions, FindOptions, AnalyzeOptions, FindResult, AnalysisResult, AnalysisReport, MatchMode, BadwordsOptions } from './core/types.ts';
+import type { MatchedLocation, DetailedCensorContext, CheckOptions, FilterOptions, FindOptions, AnalyzeOptions, FindResult, AnalysisReport, MatchMode, BadwordsOptions } from './core/types.ts';
 
 function validateText(text: unknown): asserts text is string {
     if (typeof text !== 'string') throw new TypeError('string expected');
@@ -243,6 +243,8 @@ export class Badwords {
         this.#maxWordLength = this.#maxKeyLength;
         this.#native = undefined;
         this.#stale = false;
+        // The budget trie and footprints are only needed between scans; release them and re-seed on the next update.
+        this.#budget = undefined;
         this.#preset = preset;
     }
 
@@ -251,7 +253,7 @@ export class Badwords {
 
     #key(word: string): string { return this.#ignoreRepeatedLetters ? normalize(word, 'none', true).text : word; }
 
-    /** Seeded with the current (already compiled) dictionary, so it is built on the first update. */
+    /** Seeded with the current dictionary, pending updates included; released again when the runtime is compiled. */
     #newBudget(): DictionaryBudget {
         const budget = this.#fuzzyCompiler ? this.#fuzzyCompiler.budget(this.#normalization, normalizeKey, this.#evasionCompiler)
             : this.#evasionCompiler!.budget();

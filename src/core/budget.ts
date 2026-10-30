@@ -46,7 +46,14 @@ export abstract class KeyBudget implements DictionaryBudget {
         if (!up && !count) return false;
         const next = count + (up ? 1 : -1);
         if (next) this.#counts.set(key, next); else this.#counts.delete(key);
-        if (up && !count) { this.trie.add(key); this.enter(key); }
+        if (up && !count) {
+            this.trie.add(key);
+            try { this.enter(key); } catch (error) {
+                // enter() did not complete, so this key was never applied: undo the count and the trie.
+                this.trie.remove(key); this.#counts.delete(key);
+                throw error;
+            }
+        }
         else if (!up && !next) { this.trie.remove(key); this.leave(key); }
         return true;
     }

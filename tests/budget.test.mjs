@@ -126,3 +126,17 @@ test('loading words one at a time rejects exactly the over-budget ones and never
     assert.doesNotThrow(() => eager.flag('halo'));
     assert.equal(eager.flag('goblok'), true);
 });
+
+test('budget state is released when the runtime compiles and re-seeded exactly on the next update', () => {
+    const limits = { maxCompileStates: 40 };
+    const checker = new Badwords({ dictionary: ['abcdef'], fuzzy: boundedFuzzy({ limits }) });
+    checker.addWords('ghijkl');
+    checker.flag('halo'); // compiles and releases the budget
+    // 7 + 6 states in use; a 30-state word must still be refused, atomically, after the re-seed.
+    assert.throws(() => checker.addWords('mnopqrstuvwxyzabcdefghijklmnop'), FuzzyLimitError);
+    assert.deepEqual(checker.dict, ['abcdef', 'ghijkl']);
+    checker.addWords('mnop');
+    checker.flag('halo');
+    checker.removeWords('mnop');
+    assert.deepEqual(checker.dict, ['abcdef', 'ghijkl']);
+});
