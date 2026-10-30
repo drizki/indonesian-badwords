@@ -127,7 +127,24 @@ test('loading words one at a time rejects exactly the over-budget ones and never
     assert.equal(eager.flag('goblok'), true);
 });
 
-test('budget state is released when the runtime compiles and re-seeded exactly on the next update', () => {
+test('a large dictionary releases its budget state at compile and re-seeds exactly at the limit', () => {
+    const letters = (n) => { let word = ''; do { word += String.fromCharCode(97 + (n % 26)); n = Math.floor(n / 26); } while (n); return `q${word.padEnd(4, 'x')}`; };
+    const words = [...new Set(Array.from({ length: 2200 }, (_, i) => letters(i)))];
+    assert.ok(words.length > 2048);
+    const build = (maxCompileStates) => new Badwords({ dictionary: words, fuzzy: boundedFuzzy({ limits: { maxCompileStates } }) });
+    let low = 1, high = 1 << 16;
+    while (low < high) { const mid = (low + high) >> 1; try { build(mid); high = mid; } catch { low = mid + 1; } }
+    const checker = build(low);
+    checker.flag('halo'); // compiles; above the retention size, so the budget is released
+    assert.throws(() => checker.addWords('zzzzzzzz'), FuzzyLimitError);
+    assert.equal(checker.dict.length, words.length);
+    checker.removeWords(words[0]);
+    checker.flag('halo');
+    checker.addWords(words[0]);
+    assert.equal(checker.flag(`ada ${words[0]}`), true);
+});
+
+test('budget state is re-seeded exactly on the next update after a compile', () => {
     const limits = { maxCompileStates: 40 };
     const checker = new Badwords({ dictionary: ['abcdef'], fuzzy: boundedFuzzy({ limits }) });
     checker.addWords('ghijkl');

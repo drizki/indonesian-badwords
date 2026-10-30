@@ -95,6 +95,7 @@ let internalBang: RegExp | undefined;
 let bareEmoji: RegExp | undefined;
 const emojiDelimiters = new Map<number, boolean>();
 const CLEAN = 'clean';
+const RETAINED_BUDGET_WORDS = 2048;
 function asciiLetter(code: number): boolean { return (code >= 65 && code <= 90) || (code >= 97 && code <= 122); }
 function asciiWord(code: number): boolean { return asciiLetter(code) || (code >= 48 && code <= 57); }
 function emojiDelimiter(character: string): boolean {
@@ -243,8 +244,9 @@ export class Badwords {
         this.#maxWordLength = this.#maxKeyLength;
         this.#native = undefined;
         this.#stale = false;
-        // The budget trie and footprints are only needed between scans; release them and re-seed on the next update.
-        this.#budget = undefined;
+        // Large dictionaries release the budget trie and footprints (re-seeded on the next update); small ones keep them so
+        // interleaved updates and scans don't pay a re-seed each time.
+        if (words.size > RETAINED_BUDGET_WORDS) this.#budget = undefined;
         this.#preset = preset;
     }
 
@@ -253,7 +255,7 @@ export class Badwords {
 
     #key(word: string): string { return this.#ignoreRepeatedLetters ? normalize(word, 'none', true).text : word; }
 
-    /** Seeded with the current dictionary, pending updates included; released again when the runtime is compiled. */
+    /** Seeded with the current dictionary, pending updates included; released when a large dictionary's runtime compiles. */
     #newBudget(): DictionaryBudget {
         const budget = this.#fuzzyCompiler ? this.#fuzzyCompiler.budget(this.#normalization, normalizeKey, this.#evasionCompiler)
             : this.#evasionCompiler!.budget();
