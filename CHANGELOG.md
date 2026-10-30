@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- Docs: new public comparison page, [docs/benchmarks.md](docs/benchmarks.md), benchmarking this package against three other Indonesian profanity filters at pinned versions (speed per operation and input size, verdict disagreements, bundle sizes, startup, a verified/documented feature matrix, and the cases where this package is slower). Maintainer tooling: the benchmark records its environment and writes a JSON summary (`--json`) and covers `via` cost, `classify()`, combined evasion and fuzzy policies, fuzzy substring mode, long unbroken runs, cold start and memory; `npm test` now checks correctness and bundle-size budgets (`benchmarks/budgets.json`); and `npm run benchmark:paired` compares two builds with alternating timing. No runtime change; the npm package is unchanged.
+
 ## [2.6.0] - 2026-10-30
 
 - Docs: the READMEs, `package.json` description and keywords, and a new `llms.txt` now lead with capabilities (classification, `via`, evasion, fuzzy matching, exceptions, censoring, offsets) before performance; `test:docs` checks `llms.txt` links and recipes.

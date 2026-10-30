@@ -27,8 +27,12 @@ matching and result contracts.
   errors, and occurrence limits.
 - [Metadata and source reference](metadata.md): selectors, profiles, lookup
   functions, catalog records, and review limits.
-- [Performance](performance.md): measured workloads, bundle scope, and commands
-  for reproducing benchmarks.
+- [Performance](performance.md): measured workloads, bundle scope, size and
+  correctness budgets, paired build comparison, and commands for reproducing
+  benchmarks.
+- [Benchmarks](benchmarks.md): public comparison with other Indonesian
+  profanity filters, with pinned versions, disagreements, and where this
+  package is slower.
 - [Migration](migrating-v2.md): changes to account for when moving from v1.
 
 ## Investigate or contribute

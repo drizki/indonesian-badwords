@@ -31,7 +31,23 @@ Browser bundlers can convert the CommonJS code; raw browser imports need a CDN
 that performs that conversion. Browser apps need ES2022 and `Intl.Segmenter`.
 
 See [performance and benchmarks](performance.md) for workload descriptions,
-measurements, and commands. Update both README languages together when changing
+measurements, and commands.
+
+`npm test` also runs `npm run test:budgets`: exact expected outputs and the
+minified and gzipped size budgets in `benchmarks/budgets.json`, plus every
+benchmark workload's expected output (no timing). Speed is never a CI gate. To
+decide whether a change slowed something down, run
+`npm run benchmark:paired -- --base npm` (or `--base` with a ref spec, see
+[compare two builds](performance.md#compare-two-builds)) on a quiet machine
+before and after the change, and put the per-workload ratios in the PR.
+Validation CI uploads a quick `benchmark-summary` JSON artifact on Node.js 24
+for reference. The public comparison page [benchmarks.md](benchmarks.md) is
+generated: for each minor release, check the pinned package versions with
+`npm view <package> version` (update the pins and `PINS_CHECKED_ON` in
+`scripts/benchmark-compare.mjs` first), rerun
+`npm run benchmark:compare -- --write`, and commit the updated
+`benchmarks/comparison.json` and page together;
+`npm run benchmark:compare -- --check` verifies they agree. Update both README languages together when changing
 features, examples, requirements, or performance facts.
 
 ## Validate a package
