@@ -195,7 +195,9 @@ export function foldCandidateText(text: string): string | undefined {
     while ((occurrence = CANDIDATE_SUBSTITUTIONS.exec(text)) !== null) {
         const at = occurrence.index;
         if (occurrence[0] === '!') {
-            if (wordAt(text, previousCodePoint(text, at)) && wordAt(text, at + 1)) return;
+            // Only a lone bang can sit between word characters; skip the rest of a run.
+            if (text[at + 1] === '!') while (text[CANDIDATE_SUBSTITUTIONS.lastIndex] === '!') CANDIDATE_SUBSTITUTIONS.lastIndex++;
+            else if (wordAt(text, previousCodePoint(text, at)) && wordAt(text, at + 1)) return;
             continue;
         }
         if (!joinedAt(text, at)) continue;

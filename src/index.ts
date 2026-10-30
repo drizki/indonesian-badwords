@@ -561,9 +561,7 @@ export class Badwords {
         }
         if (native) {
             if (warm) {
-                const pattern = native.censorPattern ?? this.#pattern(native);
-                pattern.lastIndex = 0;
-                return pattern.test(text);
+                return (native.censorPattern ?? this.#pattern(native)).test(text);
             }
             native.tokenWork = (native.tokenWork ?? 0) + text.length;
             WORD_TOKENS.lastIndex = 0;
