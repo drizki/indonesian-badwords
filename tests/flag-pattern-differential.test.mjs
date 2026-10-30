@@ -136,3 +136,11 @@ test('symbol runs and bang neighborhoods do not hide or invent matches', () => {
         assert.equal(checker.find(input).length > 0, flagged, input);
     }
 });
+
+test('substring mode folds a bang that joins runs away from any i neighborhood', () => {
+    assert.equal(new Badwords({ mode: 'substring' }).censor('Hey!7417'), 'Hey!***7');
+    const ize = new Badwords({ dictionary: ['ize'], mode: 'substring' });
+    assert.equal(ize.flag('abc!123'), true);
+    assert.deepEqual(ize.find('abc!123').map(({ word, index, end }) => [word, index, end]), [['ize', 4, 7]]);
+    assert.equal(new Badwords({ dictionary: ['o'], mode: 'substring' }).flag(' !0!s'), true);
+});

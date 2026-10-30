@@ -104,8 +104,8 @@ export function potentialPattern(words: readonly string[], bangOnly = false, pre
 }
 
 /**
- * A cheap necessary test for the bang rewrite: a folded exclamation can only belong to a dictionary word as an
- * `i` with that word's own letters beside it (two either side, fewer past punctuation). The left and right
+ * A cheap necessary test for the bang rewrite in word mode: a folded exclamation can only belong to a whole-word
+ * match as an `i` with that word's own letters beside it (two either side, fewer past punctuation). The left and right
  * contexts are tested independently, which keeps the check a superset but lets the engine scan for `!` directly.
  * Undefined when the dictionary has characters this cannot reason about.
  */

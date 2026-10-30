@@ -480,8 +480,9 @@ export class Badwords {
         const literal = normalize(text, 'standard', this.#ignoreRepeatedLetters, true);
         internalBang ??= new RegExp(String.raw`[\p{L}\p{N}\p{M}]![\p{L}\p{N}\p{M}]`, 'u');
         if (!internalBang.test(literal.text)) return literal;
-        // A folded bang only adds matches beside an `i` neighborhood; without one the literal form holds every match.
-        if (plain && !this.#ignoreRepeatedLetters && ASCII_TEXT.test(text) && !this.#bangNeighborhood(text)) return literal;
+        // In word mode a folded bang only adds matches beside an `i` neighborhood; without one the literal form holds
+        // every match. Substring matches can sit inside a run the fold joins (`abc!123` -> `abciize`), so they always fold.
+        if (plain && this.#mode === 'word' && !this.#ignoreRepeatedLetters && ASCII_TEXT.test(text) && !this.#bangNeighborhood(text)) return literal;
         const starts = new Set<number>();
         const ends = new Set<number>();
         // An exclamation between already complete literal dictionary words is
