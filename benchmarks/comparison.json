@@ -12,13 +12,13 @@
   "architecture": "x64",
   "cpuModel": "AMD Ryzen 7 9700X 8-Core Processor",
   "cpuCount": 16,
-  "libraryVersion": "2.6.0",
+  "libraryVersion": "2.7.0",
   "build": "built from the repository working tree"
  },
  "packages": [
   {
    "package": "indonesian-badwords",
-   "version": "2.6.0"
+   "version": "2.7.0"
   },
   {
    "package": "@sideid/id-profanity-filter",
@@ -388,50 +388,50 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.08848,
-     "p95Us": 0.09155
+     "medianUs": 0.09261,
+     "p95Us": 0.1157
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 0.4376,
-     "p95Us": 0.4521
+     "medianUs": 0.4442,
+     "p95Us": 0.4693
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 0.3379,
-     "p95Us": 0.3498
+     "medianUs": 0.3208,
+     "p95Us": 0.3454
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 4.061,
-     "p95Us": 4.319
+     "medianUs": 4.141,
+     "p95Us": 4.237
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1.632,
-     "p95Us": 1.739
+     "medianUs": 1.602,
+     "p95Us": 1.634
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 2.503,
-     "p95Us": 2.61
+     "medianUs": 2.523,
+     "p95Us": 2.644
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 6.487,
-     "p95Us": 6.645
+     "medianUs": 6.319,
+     "p95Us": 6.654
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 8.213,
-     "p95Us": 8.521
+     "medianUs": 8.268,
+     "p95Us": 8.441
     },
     "separator-chat": {
      "id": "separator-chat",
@@ -454,112 +454,112 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 5.426,
-     "p95Us": 5.97
+     "medianUs": 5.399,
+     "p95Us": 5.673
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 16.05,
-     "p95Us": 17.43
+     "medianUs": 16.27,
+     "p95Us": 17.09
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
      "medianUs": 1.744,
-     "p95Us": 1.848
+     "p95Us": 1.865
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 3.481,
-     "p95Us": 3.636
+     "medianUs": 3.527,
+     "p95Us": 3.751
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 5.219,
-     "p95Us": 5.376
+     "medianUs": 5.281,
+     "p95Us": 5.374
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 85.86,
-     "p95Us": 88.86
+     "medianUs": 86.15,
+     "p95Us": 89.33
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 63.97,
-     "p95Us": 64.98
+     "medianUs": 66.92,
+     "p95Us": 69.18
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 1.719,
-     "p95Us": 1.78
+     "medianUs": 1.743,
+     "p95Us": 1.772
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 7.157,
-     "p95Us": 7.26
+     "medianUs": 7.139,
+     "p95Us": 7.226
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 4.249,
-     "p95Us": 4.655
+     "medianUs": 4.238,
+     "p95Us": 4.644
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.1065,
-     "p95Us": 0.112
+     "medianUs": 0.1045,
+     "p95Us": 0.1057
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 0.4734,
-     "p95Us": 0.4815
+     "medianUs": 0.45,
+     "p95Us": 0.4754
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 0.4888,
-     "p95Us": 0.4948
+     "medianUs": 0.4786,
+     "p95Us": 0.5361
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 5.861,
-     "p95Us": 9.962
+     "medianUs": 5.58,
+     "p95Us": 5.823
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1.634,
-     "p95Us": 1.695
+     "medianUs": 1.589,
+     "p95Us": 1.633
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 2.995,
-     "p95Us": 3.188
+     "medianUs": 3.154,
+     "p95Us": 3.358
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 7.686,
-     "p95Us": 7.966
+     "medianUs": 7.734,
+     "p95Us": 7.959
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 9.766,
-     "p95Us": 10.23
+     "medianUs": 9.829,
+     "p95Us": 10.48
     },
     "separator-chat": {
      "id": "separator-chat",
@@ -582,112 +582,112 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 5.318,
-     "p95Us": 5.636
+     "medianUs": 5.367,
+     "p95Us": 5.635
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 16.54,
-     "p95Us": 16.64
+     "medianUs": 16.15,
+     "p95Us": 16.49
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 5.237,
-     "p95Us": 5.444
+     "medianUs": 5.312,
+     "p95Us": 5.409
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 5.385,
-     "p95Us": 6.294
+     "medianUs": 5.217,
+     "p95Us": 5.333
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 5.353,
-     "p95Us": 5.494
+     "medianUs": 5.357,
+     "p95Us": 6.264
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 82.62,
-     "p95Us": 87.71
+     "medianUs": 84.33,
+     "p95Us": 103.1
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 67.66,
-     "p95Us": 73.74
+     "medianUs": 68,
+     "p95Us": 80.37
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 7.805,
-     "p95Us": 8.429
+     "medianUs": 7.943,
+     "p95Us": 8.66
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 7.167,
-     "p95Us": 7.313
+     "medianUs": 7.187,
+     "p95Us": 7.685
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 4.383,
-     "p95Us": 4.923
+     "medianUs": 4.295,
+     "p95Us": 4.889
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.1369,
-     "p95Us": 0.1434
+     "medianUs": 0.1247,
+     "p95Us": 0.1306
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 0.6363,
-     "p95Us": 0.6557
+     "medianUs": 0.6347,
+     "p95Us": 0.6675
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 0.8339,
-     "p95Us": 0.8644
+     "medianUs": 0.7929,
+     "p95Us": 0.8363
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 6.158,
-     "p95Us": 6.627
+     "medianUs": 6,
+     "p95Us": 6.523
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1.797,
-     "p95Us": 1.897
+     "medianUs": 1.775,
+     "p95Us": 1.852
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 3.11,
-     "p95Us": 3.226
+     "medianUs": 3.08,
+     "p95Us": 5.416
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 8.191,
-     "p95Us": 9.43
+     "medianUs": 8.237,
+     "p95Us": 9.049
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 10.03,
-     "p95Us": 10.46
+     "medianUs": 10.12,
+     "p95Us": 10.68
     },
     "separator-chat": {
      "id": "separator-chat",
@@ -710,62 +710,62 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 7.806,
-     "p95Us": 8.198
+     "medianUs": 8.055,
+     "p95Us": 9.249
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 17.41,
-     "p95Us": 18.18
+     "medianUs": 17.55,
+     "p95Us": 21.19
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 8.21,
-     "p95Us": 8.704
+     "medianUs": 8.278,
+     "p95Us": 8.655
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 8.172,
-     "p95Us": 8.837
+     "medianUs": 8.212,
+     "p95Us": 10.24
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 7.997,
-     "p95Us": 8.23
+     "medianUs": 8.126,
+     "p95Us": 8.217
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 127.1,
-     "p95Us": 130.7
+     "medianUs": 130.6,
+     "p95Us": 139.7
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 67.84,
-     "p95Us": 79.74
+     "medianUs": 67.76,
+     "p95Us": 68.6
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 63.62,
-     "p95Us": 67.51
+     "medianUs": 62.49,
+     "p95Us": 104.8
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 6.048,
-     "p95Us": 6.171
+     "medianUs": 6.032,
+     "p95Us": 7.386
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 12.32,
-     "p95Us": 12.57
+     "medianUs": 12.3,
+     "p95Us": 12.71
     }
    }
   },
@@ -774,348 +774,348 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.3445,
-     "p95Us": 0.356
+     "medianUs": 0.3694,
+     "p95Us": 0.4172
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.208,
-     "p95Us": 2.317
+     "medianUs": 2.349,
+     "p95Us": 3.103
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 2.503,
-     "p95Us": 2.611
+     "medianUs": 2.688,
+     "p95Us": 3.011
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 7.424,
-     "p95Us": 7.96
+     "medianUs": 7.57,
+     "p95Us": 8.843
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 13.47,
+     "medianUs": 13.45,
      "p95Us": 14.73
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 17.14,
-     "p95Us": 18.77
+     "medianUs": 17.17,
+     "p95Us": 18.49
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 9.516,
-     "p95Us": 10.37
+     "medianUs": 9.414,
+     "p95Us": 10.9
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 21.88,
-     "p95Us": 22.93
+     "medianUs": 21.78,
+     "p95Us": 22.98
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 10.82,
-     "p95Us": 13.37
+     "medianUs": 10.72,
+     "p95Us": 11.65
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 28.72,
-     "p95Us": 29.74
+     "medianUs": 29.48,
+     "p95Us": 31.06
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 175.3,
-     "p95Us": 181.6
+     "medianUs": 176.4,
+     "p95Us": 192.2
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 26,
-     "p95Us": 28.19
+     "medianUs": 28.02,
+     "p95Us": 46.97
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 28.98,
-     "p95Us": 30.96
+     "medianUs": 28.41,
+     "p95Us": 29.38
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 33.92,
-     "p95Us": 49.13
+     "medianUs": 33.96,
+     "p95Us": 36.35
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 455.9,
-     "p95Us": 487.4
+     "medianUs": 467.2,
+     "p95Us": 523
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 394.4,
-     "p95Us": 421.4
+     "medianUs": 391.4,
+     "p95Us": 420.7
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 28.3,
-     "p95Us": 28.98
+     "medianUs": 28.27,
+     "p95Us": 28.75
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 25.2,
-     "p95Us": 25.86
+     "medianUs": 24.98,
+     "p95Us": 25.82
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 46.89,
-     "p95Us": 49.86
+     "medianUs": 46.76,
+     "p95Us": 49.51
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.3666,
-     "p95Us": 0.3773
+     "medianUs": 0.3514,
+     "p95Us": 0.3557
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.073,
-     "p95Us": 2.113
+     "medianUs": 2.117,
+     "p95Us": 2.288
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 2.416,
-     "p95Us": 2.585
+     "medianUs": 2.53,
+     "p95Us": 2.681
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 8.493,
-     "p95Us": 9.197
+     "medianUs": 8.495,
+     "p95Us": 9.487
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 12.97,
-     "p95Us": 13.5
+     "medianUs": 12.96,
+     "p95Us": 13.53
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 17.81,
-     "p95Us": 23.31
+     "medianUs": 17.75,
+     "p95Us": 18.77
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 10.6,
-     "p95Us": 11.73
+     "medianUs": 10.76,
+     "p95Us": 11.43
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 22.96,
-     "p95Us": 23.49
+     "medianUs": 23.14,
+     "p95Us": 25.66
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 14.16,
-     "p95Us": 14.94
+     "medianUs": 14.76,
+     "p95Us": 18.12
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 26.32,
-     "p95Us": 27.15
+     "medianUs": 28.2,
+     "p95Us": 37.14
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 169.9,
-     "p95Us": 178.9
+     "medianUs": 177.5,
+     "p95Us": 190.9
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 29.55,
-     "p95Us": 31.46
+     "medianUs": 31.28,
+     "p95Us": 39.36
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 29.86,
-     "p95Us": 31.37
+     "medianUs": 30.41,
+     "p95Us": 33.05
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 29.39,
-     "p95Us": 31.06
+     "medianUs": 30.64,
+     "p95Us": 35.68
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 421.4,
-     "p95Us": 442.9
+     "medianUs": 428.7,
+     "p95Us": 501.5
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 396.7,
-     "p95Us": 418
+     "medianUs": 389.9,
+     "p95Us": 410.6
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
      "medianUs": 34.41,
-     "p95Us": 37.01
+     "p95Us": 36.96
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 23.42,
-     "p95Us": 29.82
+     "medianUs": 50.24,
+     "p95Us": 56.83
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 38.84,
-     "p95Us": 41.24
+     "medianUs": 40.08,
+     "p95Us": 47.05
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.3762,
-     "p95Us": 0.3895
+     "medianUs": 0.5481,
+     "p95Us": 0.8773
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.225,
-     "p95Us": 2.846
+     "medianUs": 2.398,
+     "p95Us": 3.827
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 2.845,
-     "p95Us": 3.146
+     "medianUs": 3.137,
+     "p95Us": 3.785
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 8.902,
-     "p95Us": 11.6
+     "medianUs": 9.178,
+     "p95Us": 10.65
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 13.14,
-     "p95Us": 13.89
+     "medianUs": 13.53,
+     "p95Us": 13.94
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 17.8,
-     "p95Us": 20.12
+     "medianUs": 18.01,
+     "p95Us": 20.04
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 11.01,
-     "p95Us": 12.24
+     "medianUs": 11.43,
+     "p95Us": 21.08
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 23.58,
-     "p95Us": 25.04
+     "medianUs": 47.02,
+     "p95Us": 91.17
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 14.6,
-     "p95Us": 15.74
+     "medianUs": 27.61,
+     "p95Us": 34.97
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 28.78,
-     "p95Us": 33.74
+     "medianUs": 29.37,
+     "p95Us": 58.45
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 171.4,
-     "p95Us": 180.3
+     "medianUs": 182.1,
+     "p95Us": 188.4
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 32.37,
-     "p95Us": 35.32
+     "medianUs": 33.48,
+     "p95Us": 35.86
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 32.29,
-     "p95Us": 36.43
+     "medianUs": 33.89,
+     "p95Us": 38.39
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 32.76,
-     "p95Us": 34.44
+     "medianUs": 32.95,
+     "p95Us": 36.63
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 459.9,
-     "p95Us": 481.7
+     "medianUs": 989.5,
+     "p95Us": 1047
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 386.5,
-     "p95Us": 418.7
+     "medianUs": 415.3,
+     "p95Us": 505.1
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 90.36,
-     "p95Us": 102.3
+     "medianUs": 102.9,
+     "p95Us": 110.6
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 23.67,
-     "p95Us": 25.18
+     "medianUs": 24.74,
+     "p95Us": 26.35
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 46.82,
-     "p95Us": 49.33
+     "medianUs": 48.64,
+     "p95Us": 51.64
     }
    }
   },
@@ -1124,38 +1124,38 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 325.2,
-     "p95Us": 331.9
+     "medianUs": 329.2,
+     "p95Us": 381.2
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 365.1,
-     "p95Us": 373.9
+     "medianUs": 350.6,
+     "p95Us": 365.8
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 381.5,
-     "p95Us": 500.1
+     "medianUs": 358.9,
+     "p95Us": 438.9
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 375.3,
-     "p95Us": 382.8
+     "medianUs": 646,
+     "p95Us": 1350
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 364.7,
-     "p95Us": 429.9
+     "medianUs": 584.7,
+     "p95Us": 636.4
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 368.1,
-     "p95Us": 389.7
+     "medianUs": 369.8,
+     "p95Us": 627.2
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -1178,112 +1178,112 @@
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 380.4,
-     "p95Us": 420.5
+     "medianUs": 348.9,
+     "p95Us": 382.3
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 353.7,
-     "p95Us": 372.1
+     "medianUs": 353.2,
+     "p95Us": 634.5
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 601.1,
-     "p95Us": 647.1
+     "medianUs": 876.1,
+     "p95Us": 1221
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 583.3,
-     "p95Us": 617.6
+     "medianUs": 633.8,
+     "p95Us": 762.4
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 612.5,
-     "p95Us": 640.2
+     "medianUs": 613.2,
+     "p95Us": 795.8
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 608.5,
-     "p95Us": 642.7
+     "medianUs": 662.5,
+     "p95Us": 1262
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 606.5,
-     "p95Us": 688.6
+     "medianUs": 1087,
+     "p95Us": 1194
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4478,
-     "p95Us": 4833
+     "medianUs": 4563,
+     "p95Us": 4695
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 4458,
-     "p95Us": 4873
+     "medianUs": 5122,
+     "p95Us": 7512
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 2418,
-     "p95Us": 2568
+     "medianUs": 4783,
+     "p95Us": 5332
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 570.2,
-     "p95Us": 651.2
+     "medianUs": 566.4,
+     "p95Us": 983.7
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 544.2,
-     "p95Us": 593
+     "medianUs": 574.5,
+     "p95Us": 667
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 333.4,
-     "p95Us": 354.9
+     "medianUs": 340.7,
+     "p95Us": 522.6
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 360.1,
-     "p95Us": 384.1
+     "medianUs": 367.7,
+     "p95Us": 413.9
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 743.6,
-     "p95Us": 811
+     "medianUs": 731.5,
+     "p95Us": 929.1
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 741.7,
-     "p95Us": 812.7
+     "medianUs": 736.2,
+     "p95Us": 790.1
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 357.1,
-     "p95Us": 374.7
+     "medianUs": 641.3,
+     "p95Us": 1212
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 740,
-     "p95Us": 786.9
+     "medianUs": 728.2,
+     "p95Us": 855.1
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -1342,62 +1342,62 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 599.7,
-     "p95Us": 634.5
+     "medianUs": 1148,
+     "p95Us": 1339
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 561.5,
-     "p95Us": 599.1
+     "medianUs": 582.7,
+     "p95Us": 652
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 1223,
-     "p95Us": 1311
+     "medianUs": 1244,
+     "p95Us": 1486
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 1232,
-     "p95Us": 1315
+     "medianUs": 1542,
+     "p95Us": 2457
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 1239,
-     "p95Us": 1462
+     "medianUs": 1480,
+     "p95Us": 1790
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4410,
-     "p95Us": 4676
+     "medianUs": 4673,
+     "p95Us": 5160
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 4494,
-     "p95Us": 4715
+     "medianUs": 4476,
+     "p95Us": 4656
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 5033,
-     "p95Us": 5104
+     "medianUs": 5175,
+     "p95Us": 5403
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 567.6,
-     "p95Us": 618.4
+     "medianUs": 539.7,
+     "p95Us": 595.2
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 538.5,
-     "p95Us": 574.8
+     "medianUs": 538.4,
+     "p95Us": 611.2
     }
    },
    "locate": "unsupported"
@@ -1443,14 +1443,14 @@
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 598.9,
-     "p95Us": 677.3
+     "medianUs": 596.1,
+     "p95Us": 737.6
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 587.9,
-     "p95Us": 659.9
+     "medianUs": 641,
+     "p95Us": 978.2
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
@@ -1473,26 +1473,26 @@
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 613.9,
-     "p95Us": 679
+     "medianUs": 600.9,
+     "p95Us": 664
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 585.6,
-     "p95Us": 654.7
+     "medianUs": 587,
+     "p95Us": 743.1
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 599.4,
-     "p95Us": 677.3
+     "medianUs": 578.9,
+     "p95Us": 633.2
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 567.8,
-     "p95Us": 651.3
+     "medianUs": 1122,
+     "p95Us": 1431
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
@@ -1533,20 +1533,20 @@
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 1313,
-     "p95Us": 1400
+     "medianUs": 1319,
+     "p95Us": 1425
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 1328,
-     "p95Us": 1405
+     "medianUs": 2566,
+     "p95Us": 2672
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 1313,
-     "p95Us": 1375
+     "medianUs": 1306,
+     "p95Us": 1443
     },
     "clean-long": {
      "id": "clean-long",
@@ -1569,64 +1569,64 @@
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 9743,
-     "p95Us": 10020
+     "medianUs": 10960,
+     "p95Us": 17050
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 4183,
-     "p95Us": 4283
+     "medianUs": 4750,
+     "p95Us": 5897
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 916.5,
-     "p95Us": 1005
+     "medianUs": 990.1,
+     "p95Us": 1120
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 942,
-     "p95Us": 996.5
+     "medianUs": 1008,
+     "p95Us": 1098
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 934.7,
-     "p95Us": 990.2
+     "medianUs": 994.9,
+     "p95Us": 1152
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 1073,
-     "p95Us": 1163
+     "medianUs": 1196,
+     "p95Us": 1436
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 1110,
-     "p95Us": 1210
+     "medianUs": 1239,
+     "p95Us": 1414
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 1094,
-     "p95Us": 1197
+     "medianUs": 1240,
+     "p95Us": 1542
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1078,
-     "p95Us": 1469
+     "medianUs": 1214,
+     "p95Us": 1397
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 1140,
-     "p95Us": 1320
+     "medianUs": 1312,
+     "p95Us": 1424
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -1667,68 +1667,68 @@
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 1056,
-     "p95Us": 1160
+     "medianUs": 1168,
+     "p95Us": 1330
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 2498,
-     "p95Us": 2842
+     "medianUs": 2615,
+     "p95Us": 2740
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 2510,
-     "p95Us": 2642
+     "medianUs": 2751,
+     "p95Us": 2929
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 2418,
-     "p95Us": 2597
+     "medianUs": 2610,
+     "p95Us": 2813
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 2489,
-     "p95Us": 2682
+     "medianUs": 2673,
+     "p95Us": 2849
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 2774,
-     "p95Us": 3065
+     "medianUs": 2662,
+     "p95Us": 3982
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 23230,
-     "p95Us": 24960
+     "medianUs": 23780,
+     "p95Us": 24440
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 10990,
-     "p95Us": 11560
+     "medianUs": 9418,
+     "p95Us": 11210
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 16860,
-     "p95Us": 17820
+     "medianUs": 9159,
+     "p95Us": 9950
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 1047,
-     "p95Us": 1629
+     "medianUs": 961.8,
+     "p95Us": 1023
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 1076,
-     "p95Us": 1351
+     "medianUs": 1036,
+     "p95Us": 1096
     }
    },
    "locate": "unsupported"
@@ -1738,38 +1738,38 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 2.952,
-     "p95Us": 3.086
+     "medianUs": 2.442,
+     "p95Us": 2.532
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 22.09,
-     "p95Us": 26.16
+     "medianUs": 16.91,
+     "p95Us": 18.15
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 21.87,
-     "p95Us": 22.43
+     "medianUs": 17.23,
+     "p95Us": 17.5
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 21.93,
-     "p95Us": 24.01
+     "medianUs": 17.32,
+     "p95Us": 17.57
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 21.46,
-     "p95Us": 36.06
+     "medianUs": 16.52,
+     "p95Us": 16.67
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 21.58,
-     "p95Us": 23.65
+     "medianUs": 16.59,
+     "p95Us": 16.78
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -1810,106 +1810,106 @@
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 21.22,
-     "p95Us": 21.63
+     "medianUs": 16.95,
+     "p95Us": 17.44
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 491.3,
-     "p95Us": 539.4
+     "medianUs": 235.8,
+     "p95Us": 251.2
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 297.4,
-     "p95Us": 500.9
+     "medianUs": 230.5,
+     "p95Us": 298.5
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 291.6,
-     "p95Us": 304.8
+     "medianUs": 229.3,
+     "p95Us": 237.6
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 290,
-     "p95Us": 307.1
+     "medianUs": 229.9,
+     "p95Us": 237.3
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 292,
-     "p95Us": 307
+     "medianUs": 228.2,
+     "p95Us": 235.4
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 5343,
-     "p95Us": 5488
+     "medianUs": 4145,
+     "p95Us": 4619
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 2468,
-     "p95Us": 3431
+     "medianUs": 1571,
+     "p95Us": 2074
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 288.2,
-     "p95Us": 326.8
+     "medianUs": 230.4,
+     "p95Us": 236.5
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 5.441,
-     "p95Us": 6.23
+     "medianUs": 5.358,
+     "p95Us": 5.594
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 136.2,
-     "p95Us": 157.6
+     "medianUs": 80.89,
+     "p95Us": 85.85
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 3.203,
-     "p95Us": 4.383
+     "medianUs": 2.443,
+     "p95Us": 2.592
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 19.5,
-     "p95Us": 22.82
+     "medianUs": 17.41,
+     "p95Us": 18.56
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 21.3,
-     "p95Us": 26.66
+     "medianUs": 16.96,
+     "p95Us": 18.45
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 20.75,
-     "p95Us": 22.07
+     "medianUs": 16.79,
+     "p95Us": 18.44
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 20.64,
-     "p95Us": 24.18
+     "medianUs": 16.61,
+     "p95Us": 17.68
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 20.98,
-     "p95Us": 29.07
+     "medianUs": 16.72,
+     "p95Us": 17.68
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -1950,106 +1950,106 @@
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 18.71,
-     "p95Us": 20.53
+     "medianUs": 16.86,
+     "p95Us": 19.01
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 265.7,
-     "p95Us": 329
+     "medianUs": 220.2,
+     "p95Us": 240.4
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 272.9,
-     "p95Us": 296.6
+     "medianUs": 225.3,
+     "p95Us": 241.1
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 286,
-     "p95Us": 318.5
+     "medianUs": 219,
+     "p95Us": 235.1
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 268.6,
-     "p95Us": 338.8
+     "medianUs": 226.4,
+     "p95Us": 246.5
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 281.1,
-     "p95Us": 307.7
+     "medianUs": 222,
+     "p95Us": 234.1
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4279,
-     "p95Us": 4503
+     "medianUs": 4314,
+     "p95Us": 8001
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 2213,
-     "p95Us": 3125
+     "medianUs": 1432,
+     "p95Us": 1939
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 260.3,
-     "p95Us": 279.5
+     "medianUs": 226.8,
+     "p95Us": 251.5
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 4.947,
-     "p95Us": 5.164
+     "medianUs": 5.425,
+     "p95Us": 5.952
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 121.3,
-     "p95Us": 123.5
+     "medianUs": 79.48,
+     "p95Us": 86.9
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 2.561,
-     "p95Us": 2.657
+     "medianUs": 2.345,
+     "p95Us": 3.401
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 18.45,
-     "p95Us": 19.35
+     "medianUs": 16.78,
+     "p95Us": 19.47
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 18.57,
-     "p95Us": 19.64
+     "medianUs": 17.03,
+     "p95Us": 19.84
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 18.63,
-     "p95Us": 19.48
+     "medianUs": 16.64,
+     "p95Us": 18.29
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 18.39,
-     "p95Us": 19.6
+     "medianUs": 16.57,
+     "p95Us": 18.11
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 18.39,
-     "p95Us": 19.2
+     "medianUs": 16.12,
+     "p95Us": 17.27
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2090,68 +2090,68 @@
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 18.46,
-     "p95Us": 19.01
+     "medianUs": 16.34,
+     "p95Us": 23.67
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 255.4,
-     "p95Us": 270.2
+     "medianUs": 221.6,
+     "p95Us": 244.1
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 252.6,
-     "p95Us": 262.3
+     "medianUs": 222.2,
+     "p95Us": 241.2
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 257.2,
-     "p95Us": 268.5
+     "medianUs": 231.8,
+     "p95Us": 284.5
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 256.3,
-     "p95Us": 270.9
+     "medianUs": 241,
+     "p95Us": 255.5
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 251.7,
-     "p95Us": 261.8
+     "medianUs": 232.9,
+     "p95Us": 281.2
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4248,
-     "p95Us": 4438
+     "medianUs": 4254,
+     "p95Us": 4947
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 2171,
-     "p95Us": 3064
+     "medianUs": 1543,
+     "p95Us": 2193
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 259.1,
-     "p95Us": 270.2
+     "medianUs": 226,
+     "p95Us": 242
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 4.961,
-     "p95Us": 5.022
+     "medianUs": 5.316,
+     "p95Us": 5.642
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 120.6,
-     "p95Us": 122.7
+     "medianUs": 78.32,
+     "p95Us": 86.81
     }
    }
   },
@@ -2160,20 +2160,20 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 14.76,
-     "p95Us": 14.93
+     "medianUs": 16.11,
+     "p95Us": 16.78
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 15.02,
-     "p95Us": 15.2
+     "medianUs": 16.85,
+     "p95Us": 25.41
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 15.38,
-     "p95Us": 15.6
+     "medianUs": 17.02,
+     "p95Us": 18.16
     },
     "leet-chat": {
      "id": "leet-chat",
@@ -2196,14 +2196,14 @@
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 14.83,
-     "p95Us": 14.95
+     "medianUs": 16.49,
+     "p95Us": 26.33
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 15.24,
-     "p95Us": 15.37
+     "medianUs": 17.04,
+     "p95Us": 18.35
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2262,82 +2262,82 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 26.44,
-     "p95Us": 26.77
+     "medianUs": 28.37,
+     "p95Us": 31.26
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 25.81,
-     "p95Us": 26.12
+     "medianUs": 27.48,
+     "p95Us": 28.39
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 26.57,
-     "p95Us": 26.99
+     "medianUs": 28.75,
+     "p95Us": 31.54
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 26.68,
-     "p95Us": 27.33
+     "medianUs": 28.56,
+     "p95Us": 29.98
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 26.65,
-     "p95Us": 27.43
+     "medianUs": 30.08,
+     "p95Us": 31.21
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 213.1,
-     "p95Us": 216.4
+     "medianUs": 230.3,
+     "p95Us": 238.8
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 137.9,
-     "p95Us": 181.3
+     "medianUs": 133.1,
+     "p95Us": 140.1
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 178.1,
-     "p95Us": 188.9
+     "medianUs": 203,
+     "p95Us": 226.6
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 14.78,
-     "p95Us": 15.59
+     "medianUs": 16.22,
+     "p95Us": 17.32
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 14.84,
-     "p95Us": 16.11
+     "medianUs": 15.24,
+     "p95Us": 16.96
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 13.59,
-     "p95Us": 14.34
+     "medianUs": 15.09,
+     "p95Us": 20.54
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 14.25,
-     "p95Us": 14.57
+     "medianUs": 15.37,
+     "p95Us": 15.86
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 14.92,
-     "p95Us": 15.28
+     "medianUs": 16,
+     "p95Us": 17.21
     },
     "leet-chat": {
      "id": "leet-chat",
@@ -2360,14 +2360,14 @@
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 14.22,
-     "p95Us": 14.5
+     "medianUs": 15.98,
+     "p95Us": 17.49
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 14.88,
-     "p95Us": 15.21
+     "medianUs": 15.61,
+     "p95Us": 16.88
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2426,82 +2426,82 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 25.85,
-     "p95Us": 26.61
+     "medianUs": 27.51,
+     "p95Us": 28.39
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 25.47,
-     "p95Us": 26.35
+     "medianUs": 27.06,
+     "p95Us": 28.28
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 26.45,
-     "p95Us": 27.19
+     "medianUs": 28.48,
+     "p95Us": 30.44
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 26.46,
-     "p95Us": 27.09
+     "medianUs": 28.8,
+     "p95Us": 30.59
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 26.57,
-     "p95Us": 27.25
+     "medianUs": 28.63,
+     "p95Us": 29.49
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 209.4,
-     "p95Us": 211.3
+     "medianUs": 221.3,
+     "p95Us": 326.6
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 137,
-     "p95Us": 149.3
+     "medianUs": 143.4,
+     "p95Us": 146.6
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 181.3,
-     "p95Us": 190.1
+     "medianUs": 191.2,
+     "p95Us": 206.7
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 14.2,
-     "p95Us": 14.61
+     "medianUs": 14.96,
+     "p95Us": 16.57
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 14.14,
-     "p95Us": 14.37
+     "medianUs": 15.88,
+     "p95Us": 17.76
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 14.02,
-     "p95Us": 14.23
+     "medianUs": 15.66,
+     "p95Us": 17.03
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 14.99,
-     "p95Us": 15.3
+     "medianUs": 17.38,
+     "p95Us": 19.48
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 15.41,
-     "p95Us": 15.63
+     "medianUs": 17.54,
+     "p95Us": 19.68
     },
     "leet-chat": {
      "id": "leet-chat",
@@ -2524,14 +2524,14 @@
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 14.99,
-     "p95Us": 15.61
+     "medianUs": 16.39,
+     "p95Us": 20.35
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 15.44,
-     "p95Us": 15.82
+     "medianUs": 17.26,
+     "p95Us": 19.01
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2590,62 +2590,62 @@
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 55.25,
-     "p95Us": 59.28
+     "medianUs": 27.24,
+     "p95Us": 29.14
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 53.08,
-     "p95Us": 54.83
+     "medianUs": 27.62,
+     "p95Us": 29.02
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 55.52,
-     "p95Us": 58.97
+     "medianUs": 29.47,
+     "p95Us": 33.61
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 55.59,
-     "p95Us": 59.67
+     "medianUs": 29.31,
+     "p95Us": 32.85
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 54.9,
-     "p95Us": 63.12
+     "medianUs": 29.82,
+     "p95Us": 32.44
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 416.2,
-     "p95Us": 438.4
+     "medianUs": 214.1,
+     "p95Us": 300.8
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 160,
-     "p95Us": 169.2
+     "medianUs": 139.5,
+     "p95Us": 140.9
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 304.1,
-     "p95Us": 363.3
+     "medianUs": 190.7,
+     "p95Us": 219.1
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 17.89,
-     "p95Us": 26.38
+     "medianUs": 15.05,
+     "p95Us": 15.46
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 17.41,
-     "p95Us": 18.31
+     "medianUs": 17.25,
+     "p95Us": 17.7
     }
    }
   },
@@ -2654,38 +2654,38 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 607.1,
-     "p95Us": 663.4
+     "medianUs": 326.2,
+     "p95Us": 356.5
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 621.7,
-     "p95Us": 672.7
+     "medianUs": 331.4,
+     "p95Us": 349.7
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 629.9,
-     "p95Us": 688.9
+     "medianUs": 333.8,
+     "p95Us": 407.9
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 371.1,
-     "p95Us": 662.2
+     "medianUs": 319.6,
+     "p95Us": 348
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 361.8,
-     "p95Us": 370.1
+     "medianUs": 327.9,
+     "p95Us": 458.4
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 473.1,
-     "p95Us": 639.1
+     "medianUs": 332.5,
+     "p95Us": 536.7
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2708,113 +2708,113 @@
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 558.3,
-     "p95Us": 618.3
+     "medianUs": 324.8,
+     "p95Us": 342.2
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 559.5,
-     "p95Us": 604.7
+     "medianUs": 323,
+     "p95Us": 337.3
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 695.1,
-     "p95Us": 742.2
+     "medianUs": 394.3,
+     "p95Us": 414.3
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 720.7,
-     "p95Us": 777.9
+     "medianUs": 394.9,
+     "p95Us": 419.4
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 728.2,
-     "p95Us": 789.4
+     "medianUs": 386.8,
+     "p95Us": 410.6
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 691.4,
-     "p95Us": 733.8
+     "medianUs": 405,
+     "p95Us": 435.4
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 436.2,
-     "p95Us": 525.8
+     "medianUs": 403.4,
+     "p95Us": 428
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 2686,
-     "p95Us": 3032
+     "medianUs": 1605,
+     "p95Us": 1957
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 891,
-     "p95Us": 947
+     "medianUs": 467.6,
+     "p95Us": 550.4
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 1063,
-     "p95Us": 1186
+     "medianUs": 564.5,
+     "p95Us": 655.1
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
      "reduced": true,
-     "medianUs": 10640000,
-     "p95Us": 11590000
+     "medianUs": 8555000,
+     "p95Us": 8598000
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 386.5,
-     "p95Us": 393.2
+     "medianUs": 380.5,
+     "p95Us": 383.8
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 295.2,
-     "p95Us": 339.1
+     "medianUs": 326.1,
+     "p95Us": 353.6
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 296.8,
-     "p95Us": 300.7
+     "medianUs": 347.8,
+     "p95Us": 404.6
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 297.8,
-     "p95Us": 300.5
+     "medianUs": 320.1,
+     "p95Us": 345.3
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 299.7,
-     "p95Us": 302.4
+     "medianUs": 351.3,
+     "p95Us": 408.6
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 299.6,
-     "p95Us": 302.4
+     "medianUs": 335.2,
+     "p95Us": 369.1
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 299.4,
-     "p95Us": 302.4
+     "medianUs": 341.4,
+     "p95Us": 356.1
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2837,113 +2837,113 @@
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 296.2,
-     "p95Us": 298
+     "medianUs": 357.1,
+     "p95Us": 378.7
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 299.3,
-     "p95Us": 306.4
+     "medianUs": 345.8,
+     "p95Us": 369.1
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 366.8,
-     "p95Us": 400.8
+     "medianUs": 430.4,
+     "p95Us": 458.6
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 376.3,
-     "p95Us": 388.4
+     "medianUs": 428.9,
+     "p95Us": 457.5
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 372.2,
-     "p95Us": 379
+     "medianUs": 455.5,
+     "p95Us": 764.3
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 364.6,
-     "p95Us": 375.1
+     "medianUs": 424.7,
+     "p95Us": 471.9
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 366.6,
-     "p95Us": 375.3
+     "medianUs": 748.9,
+     "p95Us": 799.8
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 1493,
-     "p95Us": 1503
+     "medianUs": 1677,
+     "p95Us": 1762
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 430.9,
-     "p95Us": 448.5
+     "medianUs": 436.9,
+     "p95Us": 470
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 539.9,
-     "p95Us": 574
+     "medianUs": 622.3,
+     "p95Us": 987.7
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
      "reduced": true,
-     "medianUs": 8570000,
-     "p95Us": 8698000
+     "medianUs": 13780000,
+     "p95Us": 18890000
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 386,
-     "p95Us": 393.1
+     "medianUs": 877.7,
+     "p95Us": 948.6
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 312.1,
-     "p95Us": 340.2
+     "medianUs": 678.4,
+     "p95Us": 1343
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 325,
-     "p95Us": 333.4
+     "medianUs": 683.6,
+     "p95Us": 708.5
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 324.2,
-     "p95Us": 347.7
+     "medianUs": 644.5,
+     "p95Us": 684.8
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 325.7,
-     "p95Us": 339.2
+     "medianUs": 520.2,
+     "p95Us": 585.5
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 344.3,
-     "p95Us": 363.9
+     "medianUs": 621.6,
+     "p95Us": 705.5
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 346,
-     "p95Us": 366.8
+     "medianUs": 569.7,
+     "p95Us": 733
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
@@ -2966,75 +2966,75 @@
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 347.8,
-     "p95Us": 494.1
+     "medianUs": 669.3,
+     "p95Us": 1465
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 365.8,
-     "p95Us": 429.1
+     "medianUs": 618.2,
+     "p95Us": 696.6
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 425.5,
-     "p95Us": 449.2
+     "medianUs": 724.5,
+     "p95Us": 1426
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 459.8,
-     "p95Us": 698.3
+     "medianUs": 741.8,
+     "p95Us": 822.8
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 487.7,
-     "p95Us": 710
+     "medianUs": 729.4,
+     "p95Us": 869.5
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 430.4,
-     "p95Us": 543
+     "medianUs": 707.7,
+     "p95Us": 938.6
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 417.2,
-     "p95Us": 451.1
+     "medianUs": 800.9,
+     "p95Us": 1534
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 1691,
-     "p95Us": 2500
+     "medianUs": 3256,
+     "p95Us": 3505
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 490.5,
-     "p95Us": 519.7
+     "medianUs": 941.4,
+     "p95Us": 992.3
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 580.8,
-     "p95Us": 622.8
+     "medianUs": 1151,
+     "p95Us": 2599
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
      "reduced": true,
-     "medianUs": 9067000,
-     "p95Us": 9225000
+     "medianUs": 18110000,
+     "p95Us": 19130000
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 412.3,
-     "p95Us": 443.2
+     "medianUs": 382.4,
+     "p95Us": 386.3
     }
    }
   }
@@ -4274,46 +4274,46 @@
  },
  "startup": {
   "ours": {
-   "loadAndConstructMs": 1.6848990000000015,
-   "firstFlagMs": 0.3760550000000009,
-   "retainedHeapMiB": 0.171783447265625,
-   "processPeakRssMiB": 194.7421875
+   "loadAndConstructMs": 1.597529999999999,
+   "firstFlagMs": 0.3621249999999989,
+   "retainedHeapMiB": 0.17137908935546875,
+   "processPeakRssMiB": 197.328125
   },
   "ours-evasion": {
-   "loadAndConstructMs": 5.132930999999999,
-   "firstFlagMs": 2.140864999999998,
-   "retainedHeapMiB": 0.625335693359375,
-   "processPeakRssMiB": 202.640625
+   "loadAndConstructMs": 4.979421000000002,
+   "firstFlagMs": 2.108456000000004,
+   "retainedHeapMiB": 0.6258621215820312,
+   "processPeakRssMiB": 197.265625
   },
   "sideid": {
-   "loadAndConstructMs": 2.585569999999997,
-   "firstFlagMs": 5.741478000000001,
-   "retainedHeapMiB": 1.1597518920898438,
-   "processPeakRssMiB": 188.15234375
+   "loadAndConstructMs": 2.694783000000001,
+   "firstFlagMs": 5.593458999999996,
+   "retainedHeapMiB": 1.159759521484375,
+   "processPeakRssMiB": 187.58984375
   },
   "sideid-split": {
-   "loadAndConstructMs": 2.5299300000000002,
-   "firstFlagMs": 29.966293,
+   "loadAndConstructMs": 6.686942000000002,
+   "firstFlagMs": 36.856742999999994,
    "retainedHeapMiB": 2.5701217651367188,
-   "processPeakRssMiB": 209.3515625
+   "processPeakRssMiB": 207.671875
   },
   "sopan": {
-   "loadAndConstructMs": 2.5480500000000035,
-   "firstFlagMs": 0.259873000000006,
-   "retainedHeapMiB": 0.1051177978515625,
-   "processPeakRssMiB": 184.60546875
+   "loadAndConstructMs": 1.6617709999999946,
+   "firstFlagMs": 0.14885199999999799,
+   "retainedHeapMiB": 0.10430145263671875,
+   "processPeakRssMiB": 183.93359375
   },
   "censorship": {
-   "loadAndConstructMs": 0.9882019999999976,
-   "firstFlagMs": 0.6066970000000005,
-   "retainedHeapMiB": 0.1032867431640625,
-   "processPeakRssMiB": 183.55078125
+   "loadAndConstructMs": 1.9607049999999973,
+   "firstFlagMs": 0.875630000000001,
+   "retainedHeapMiB": 0.10480499267578125,
+   "processPeakRssMiB": 185.765625
   },
   "censorship-smart": {
-   "loadAndConstructMs": 1.5590279999999979,
-   "firstFlagMs": 9.078696999999998,
-   "retainedHeapMiB": 0.23999786376953125,
-   "processPeakRssMiB": 186.31640625
+   "loadAndConstructMs": 1.2730359999999976,
+   "firstFlagMs": 7.152026999999997,
+   "retainedHeapMiB": 0.2403106689453125,
+   "processPeakRssMiB": 187.125
   }
  },
  "probes": {
@@ -5126,14 +5126,14 @@
   {
    "id": "ours",
    "title": "indonesian-badwords (default import)",
-   "minifiedBytes": 40691,
-   "gzipBytes": 14220
+   "minifiedBytes": 40709,
+   "gzipBytes": 14223
   },
   {
    "id": "ours-evasion-fuzzy",
    "title": "indonesian-badwords + evasion + fuzzy",
-   "minifiedBytes": 72898,
-   "gzipBytes": 24931
+   "minifiedBytes": 72916,
+   "gzipBytes": 24932
   },
   {
    "id": "sideid",

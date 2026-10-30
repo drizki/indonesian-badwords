@@ -7,6 +7,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-10-31
+
 - `filter(text, { preserveLineBreaks: true })` keeps line breaks: a whitespace run containing LF, CR, CRLF, U+2028 or U+2029 collapses to exactly those breaks (blank lines kept, trailing and leading spaces on a line dropped, CRLF kept as one unit). The default still collapses everything to one space. New `FilterOptions` type.
 - `analyze(text, { replacement })` accepts the same string or callback as `censor()`, including `mask()`/`grawlix()` and callbacks that use `context.occurrences()`, for `censored`. The default stays `***`. New `AnalyzeOptions` type.
 - New `onMaxMatches: 'throw' | 'truncate'` option for the constructor and, per call, for `find()` and `analyze()`. `'throw'` (default) keeps the `RangeError`; `'truncate'` keeps the first `maxMatches` occurrences in source order and sets `truncated`: `true` on the `analyze()` result (the field is absent otherwise, so untruncated results are unchanged) and a non-enumerable `truncated` property on the `find()` array (new `FindResult` type; deep equality and JSON are unaffected). `censored` still covers every match, and `classify()` accepts truncated results. A constructor `onMaxMatches: 'truncate'` also applies to `censor()` callbacks: `context.occurrences()` then lists only the kept occurrences, and carries a non-enumerable `truncated: true` when the span reaches past the last kept one (so an empty list is distinguishable from a clean span). Truncation stops scanning early where it can prove nothing later qualifies (the general matcher and the native word pattern), so a flood of matches no longer costs more than throwing; the evasion and fuzzy scanners still scan the whole input.

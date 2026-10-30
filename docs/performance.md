@@ -4,9 +4,9 @@
 
 ## Measured snapshot
 
-These measurements were recorded on 2026-10-30 for the 2.7.0 release candidate
-(`indonesian-badwords@2.6.0` plus the unreleased 2.7.0 changes, repository commit
-`852e274`) with the default dictionary and matching settings, using
+These measurements were recorded on 2026-10-30 for `indonesian-badwords@2.7.0`
+(measured on its release candidate; the later 2.7.0 changes do not affect these
+default word-mode workloads) with the default dictionary and matching settings, using
 `npm run benchmark` (all 142 workloads, not `--quick`) on Node.js 26.10.0, an
 AMD Ryzen 7 9700X (16 threads) and Linux 7.2.6. The machine was not idle: other
 desktop programs were running, so treat the last digit as noise and repeat the run
@@ -35,7 +35,7 @@ so a boolean check need not be faster than censorship on every input. Cold start
 
 ## Bundle size
 
-A browser bundle using the default checker is about 14 KB (14,220 B) after minification and
+A browser bundle using the default checker is about 14 KB (14,223 B) after minification and
 gzip. This describes an ES2022 consumer bundle, not the npm download or the size
 of every optional feature combined. The package has zero runtime dependencies.
 
