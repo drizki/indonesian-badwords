@@ -72,6 +72,8 @@ decide('dasar gebleg'); // => 'review'
 - [Evasion](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/evasion.md): separators, repeated letters, lookalikes, limits.
 - [Fuzzy matching](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/fuzzy-matching.md): typos and swapped letters, limits.
 - [Evaluate and tune](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/evaluation.md): `evaluate()` and `compare()` on your own labelled examples.
+- [Measured accuracy](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/accuracy.md): precision, recall and false-positive rate of each documented setup on a small constructed corpus, with its limits.
+- [Evaluation protocol](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/evaluation-protocol.md): corpus labels, split, reviewer roles and acceptance thresholds.
 - [Browsers and frameworks](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/browser-and-frameworks.md): browser, React, Vue and Svelte examples.
 - [Troubleshooting](https://raw.githubusercontent.com/drizki/indonesian-badwords/main/docs/guides/troubleshooting.md): missed words, false positives, limit errors.
 

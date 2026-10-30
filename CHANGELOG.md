@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 - Adds `evaluate(checker, cases)` and `compare(before, after)` in the optional `indonesian-badwords/evaluate` entry point (#42): score a checker on your own labelled examples (an expected flag, words, or exact spans) for case-level and word/span-level counts, precision, recall and false-positive rate with 95% Wilson intervals, failures with matched words and `via`, the top false-positive words (matches on overlapping spans count as one detection), breakdowns by `via` (and by category and severity when you pass `classify`), and a stable before/after list of fixed and broken cases. It is pure local computation with deterministic, JSON-serializable output; the root import is unchanged.
+- Adds a source-aware evaluation corpus (#23): `evaluation/corpus.json` (103 constructed cases labelled flag, benign or uncertain, with spans, term families, a deterministic dev/holdout split, variety and phenomenon labels), the [evaluation protocol](docs/evaluation-protocol.md) with acceptance thresholds for default-list and preset changes, and a reproducible baseline of the default, expanded, reviewed, evasion, fuzzy and substring setups on the [accuracy page](docs/accuracy.md) (`npm run evaluate:corpus`, checked in `npm test`). A single native reviewer labelled it; labels not yet reviewed are marked `proposed`, and no agreement metric exists. The corpus and tooling are repository-only and not in the npm package.
 
 ## [2.6.0] - 2026-10-30
 
