@@ -38,6 +38,9 @@ matching and result contracts.
 
 ## Investigate or contribute
 
+- [Measured accuracy](accuracy.md): precision, recall and false positives of each documented
+  setup on a small evaluation corpus, with its limits. [Evaluation protocol](evaluation-protocol.md):
+  how the corpus is labelled and split, and the thresholds changes must meet.
 - [Troubleshoot a result](guides/troubleshooting.md): missed words, false
   positives, censorship, highlighting, and incomplete checks.
 - [Report or improve dictionary coverage](contributing.md): useful examples,
