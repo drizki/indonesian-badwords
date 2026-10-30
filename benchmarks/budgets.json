@@ -442,6 +442,14 @@
    "maxGzipBytes": 7200
   },
   {
+   "id": "evaluate",
+   "entries": [
+    "evaluate.js"
+   ],
+   "maxMinifiedBytes": 9500,
+   "maxGzipBytes": 3800
+  },
+  {
    "id": "default+evasion+fuzzy",
    "entries": [
     "index.js",
