@@ -2,6 +2,7 @@ import type { EvasionCompiler, EvasionRuntime } from '../evasion/types.ts';
 import type { Entry, MatcherNode } from '../core/matcher.ts';
 import type { Normalization } from '../text/normalize.ts';
 import type { TrieLimit } from '../evasion/types.ts';
+import type { DictionaryBudget } from '../core/budget.ts';
 
 declare const policyBrand: unique symbol;
 /** An immutable policy created by the optional `indonesian-badwords/fuzzy` module. */
@@ -9,6 +10,9 @@ export interface FuzzyPolicy { readonly [policyBrand]: true }
 export interface FuzzyCompiler {
     readonly version: 2;
     checkDictionary(words: readonly string[], evasion?: EvasionCompiler): void;
+    /** An empty budget that decides, without compiling, whether compile() would stay within its finite compile limits. */
+    budget(normalization: Normalization, canonicalize: (text: string, normalization: Normalization) => string,
+        evasion?: EvasionCompiler): DictionaryBudget;
     compile(entries: readonly Entry[], normalization: Normalization,
         canonicalize: (text: string, normalization: Normalization) => string,
         trie: (limit: TrieLimit) => readonly MatcherNode[], candidateText: (text: string) => string | undefined,

@@ -1,5 +1,6 @@
 import type { CensorSpan, Entry, Match, MatcherNode } from '../core/matcher.ts';
 import type { Normalization, NormalizedText } from '../text/normalize.ts';
+import type { DictionaryBudget } from '../core/budget.ts';
 
 declare const policyBrand: unique symbol;
 /** An immutable policy created by the optional `indonesian-badwords/evasion` module. */
@@ -34,6 +35,8 @@ export interface EvasionCompiler {
     readonly dictionaryLimit?: { readonly maximum: number; exceeded(used: number): never };
     plan?(normalization: Normalization, canonicalize: (text: string, normalization: Normalization) => string): EvasionPlan;
     checkDictionary(words: readonly string[]): void;
+    /** An empty budget that decides, without compiling, whether compile() would stay within its finite compile limits. */
+    budget(): DictionaryBudget;
     compile(entries: readonly Entry[], normalization: Normalization,
         canonicalize: (text: string, normalization: Normalization) => string,
         trie: (limit: TrieLimit) => readonly MatcherNode[], candidateText: (text: string) => string | undefined): EvasionRuntime;

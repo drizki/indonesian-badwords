@@ -64,16 +64,21 @@ export function describe(source: string, match: Match, settings: ProvenanceSetti
     return Object.freeze({ kind: 'leetspeak', folds: Math.max(1, folds) });
 }
 
-/** Per-call lazy lookup of the occurrences inside a merged span, scanned once on first use. */
-export function occurrencesWithin<Location extends { index: number; end: number }>(load: () => readonly Location[]) {
-    let all: readonly Location[] | undefined;
-    return (span: { readonly index: number; readonly end: number }): readonly Location[] => {
+/**
+ * Per-call lazy lookup of the occurrences inside a merged span, scanned once on first use. When the scan was truncated
+ * and the span reaches past the last kept occurrence (so a dropped occurrence could lie inside it), the result carries
+ * a non-enumerable `truncated: true`, the same convention as find().
+ */
+export function occurrencesWithin<Location extends { index: number; end: number }>(load: () => readonly Location[] & { readonly truncated?: true }) {
+    let all: (readonly Location[] & { readonly truncated?: true }) | undefined;
+    return (span: { readonly index: number; readonly end: number }): readonly Location[] & { readonly truncated?: true } => {
         all ??= load();
         // Ordered by start: binary-search the first candidate.
         let low = 0, high = all.length;
         while (low < high) { const middle = (low + high) >> 1; if (all[middle].index < span.index) low = middle + 1; else high = middle; }
         const inside: Location[] = [];
         for (let at = low; at < all.length && all[at].index < span.end; at++) if (all[at].end <= span.end) inside.push(all[at]);
+        if (all.truncated && span.end > all[all.length - 1].index) Object.defineProperty(inside, 'truncated', { value: true });
         return Object.freeze(inside);
     };
 }

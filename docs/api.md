@@ -34,6 +34,7 @@ checker.flag('dasar g0bl0k!'); // => true
 | `normalization` | `'standard'` | Unicode normalization and substitutions. `'none'` keeps exact spelling and case. |
 | `ignoreRepeatedLetters` | `false` | Collapse repeated letters in dictionary keys and input. Incompatible with bounded evasion. |
 | `maxMatches` | `10_000` | Maximum accepted occurrences for `find` and `analyze`; positive safe integer or `Infinity`. |
+| `onMaxMatches` | `'throw'` | What `find` and `analyze` do past `maxMatches`: `'throw'` a `RangeError`, or `'truncate'` and report `truncated`. Also applies to `censor()` callbacks' `context.occurrences()`. See [match limits](#match-limits-and-truncation). |
 | `evasion` | Disabled | Policy created by the optional [`boundedEvasion`](#bounded-evasion) helper. |
 | `fuzzy` | Disabled | Policy created by the optional [`boundedFuzzy`](#bounded-fuzzy-matching) helper. |
 
@@ -43,22 +44,25 @@ their own finite work limits, independent of `maxMatches`.
 ## Methods
 
 `text` is a string. `options` is an optional `CheckOptions` object containing
-per-call `ignoreRanges`. `replacement` is a string or synchronous callback.
+per-call `ignoreRanges`; `filter`, `find` and `analyze` accept extensions of it
+(`FilterOptions`, `FindOptions`, `AnalyzeOptions`) described below.
+`replacement` is a string or synchronous callback.
 
 | Method | Returns | Behavior |
 | --- | --- | --- |
 | `flag(text, options?)` | `boolean` | Whether any accepted occurrence exists; stops at the first match. |
-| `find(text, options?)` | `MatchedLocation[]` | Every accepted occurrence, including overlaps. |
+| `find(text, options?)` | `FindResult` | Every accepted occurrence, including overlaps. A `MatchedLocation[]`; see [match limits](#match-limits-and-truncation). |
 | `badwords(text, options?)` | `string[]` | Unique matching dictionary terms, in dictionary insertion order. |
 | `censor(text, replacement?, options?)` | `string` | Replace matching spans; default replacement is `'***'`. |
-| `filter(text, options?)` | `string` | Remove matching spans, collapse whitespace, and trim. |
-| `analyze(text, options?)` | `AnalysisResult` | Original text, censorship, counts, unique terms, and locations. |
-| `addWords(words)` | `void` | Add a string or readonly string array to this checker. |
-| `removeWords(words)` | `void` | Remove a string or readonly string array from this checker. |
+| `filter(text, options?)` | `string` | Remove matching spans, collapse whitespace, and trim. `options.preserveLineBreaks` keeps [line breaks](#filter-and-line-breaks). |
+| `analyze(text, options?)` | `AnalysisReport` | Original text, censorship (`options.replacement`), counts, unique terms, and locations. An `AnalysisResult` plus an optional `truncated`. |
+| `addWords(words)` | `void` | Add a string or readonly string array to this checker. Enforces every limit now; [builds the matcher on the next scan](#dictionary-updates). |
+| `removeWords(words)` | `void` | Remove a string or readonly string array from this checker. Enforces every limit now; [builds the matcher on the next scan](#dictionary-updates). |
 | `dict` | `string[]` | A normalized dictionary snapshot; changing the array does not change the checker. |
 
 All methods above are also named exports except the `dict` property. Named
-functions and the default export use the same instance. See
+functions and the default export use the same instance. The module-level
+`addWords` and `removeWords` are deprecated (see below). See
 [instance ownership](#instances-and-dictionaries) before changing its dictionary.
 
 ## Instances and dictionaries
@@ -66,6 +70,15 @@ functions and the default export use the same instance. See
 ESM and CommonJS share the same class, functions, and default instance within one
 installed copy. Changing the default instance also changes the behavior of the
 named functions. Use `new Badwords()` for an independent checker.
+
+The module-level `addWords` and `removeWords` are **deprecated**: they mutate a
+process-wide checker, so one dependency can change another's results. Create an
+isolated checker instead (`new Badwords()` keeps the default list; pass
+`dictionary` to replace it) and call its own `addWords`. The deprecated functions
+keep working, with no warning, throughout 2.x. The default export is the same
+shared instance, so `import badwords from 'indonesian-badwords'; badwords.addWords(...)`
+mutates it just as the module-level function does, but TypeScript and editors
+show no deprecation hint for it.
 
 The package exports three frozen lists:
 
@@ -223,11 +236,12 @@ results, for duplicate ids in a result, and when a shared id has a different `ex
 | --- | --- |
 | `text` | Original input. |
 | `words` | Number of nonempty whitespace-separated tokens. |
-| `censored` | Input with matched spans replaced by `***`. |
+| `censored` | Input with matched spans replaced by `***`, or by `options.replacement`. Always covers every match, even when `locations` is truncated. |
 | `badwords` | Unique matching terms, in dictionary insertion order. |
 | `count` | Number of unique matching terms. |
 | `occurrenceCount` | Number of occurrences. |
 | `locations` | All occurrences as `{ word, index, end, match, via }`. |
+| `truncated` | Present, as `true`, only when `onMaxMatches: 'truncate'` dropped occurrences. Absent otherwise, so untruncated results are unchanged. |
 
 Locations are sorted by source index, then dictionary insertion order. `index`
 and exclusive `end` are JavaScript UTF-16 offsets. `match` equals
@@ -264,15 +278,130 @@ policy: `g0ooblok` is `leetspeak` for the former and `evasion` for the latter.
 has a non-enumerable `occurrences()` method (type `DetailedCensorContext`)
 returning the `MatchedLocation`s inside that merged span, as `find` reports them.
 Call it as `context.occurrences()`. It scans once per `censor` call, only when first used,
-applies the same `allowPhrases` and `ignoreRanges`, can throw the same
-`RangeError` as `find`, and throws `TypeError` if the dictionary changed during
-the call. The context's enumerable fields, spreads and equality checks are
+applies the same `allowPhrases` and `ignoreRanges`, follows the checker's
+[overflow mode](#match-limits-and-truncation) (past `maxMatches` it throws the same
+`RangeError` as `find`, or with `onMaxMatches: 'truncate'` lists only the kept
+occurrences and may carry `truncated`), and throws `TypeError` if the dictionary
+changed during the call. The context's enumerable fields, spreads and equality checks are
 unchanged. See
 [act on how a word matched](guides/chat-moderation.md#act-on-how-a-word-matched).
 
 Results include overlapping occurrences. Censorship replaces overlapping spans
 once and adjacent matches separately. Replacement strings are literal.
 `filter` removes matches, collapses whitespace, and trims the result.
+
+### Analyze replacement
+
+`analyze(text, { replacement })` builds `censored` with the same replacement as
+`censor()`: a literal string or a callback, including strategies such as `mask()`
+and callbacks that call `context.occurrences()`. `undefined` keeps `'***'`.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const checker = new Badwords({ dictionary: ['goblok', 'kontol'] });
+const text = 'dasar goblok dan kontol';
+checker.analyze(text).censored; // => 'dasar *** dan ***'
+checker.analyze(text, { replacement: '[sensor]' }).censored; // => 'dasar [sensor] dan [sensor]'
+checker.analyze(text, { replacement: ({ words }) => `<${words[0]}>` }).censored; // => 'dasar <goblok> dan <kontol>'
+```
+
+A callback replacement runs the same pass as `censor(text, callback, options)`, so
+the string equals what `censor()` returns, at the cost of one extra scan.
+
+### Filter and line breaks
+
+`filter` collapses every whitespace run into one space, so line breaks vanish.
+`filter(text, { preserveLineBreaks: true })` keeps them:
+
+- A whitespace run that contains line breaks (LF, CR, CRLF, U+2028 or U+2029)
+  becomes exactly those breaks, verbatim. `\r\n` stays one unit, and mixed
+  endings are not normalized.
+- Blank lines are kept: three consecutive `\n` stay three.
+- Spaces, tabs and other whitespace around a break, including trailing whitespace
+  on a line and indentation, are dropped.
+- A run without a line break (also vertical tab and form feed) still becomes one
+  space, and the whole result is still trimmed, line breaks at either end included.
+- A removed word on a line of its own leaves an empty line.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const checker = new Badwords({ dictionary: ['goblok'] });
+const text = 'baris  satu   \r\n\r\n  goblok\n  baris   tiga';
+checker.filter(text); // => 'baris satu baris tiga'
+checker.filter(text, { preserveLineBreaks: true }); // => 'baris satu\r\n\r\n\nbaris tiga'
+```
+
+### Match limits and truncation
+
+By default `find` and `analyze` throw a `RangeError` when accepted occurrences
+exceed `maxMatches`, so a caller that does not catch it can crash on hostile
+input. `onMaxMatches: 'truncate'` returns a bounded, usable result instead:
+
+- It keeps the **first `maxMatches` occurrences in source order** (start offset,
+  then dictionary order, then end offset): exactly the prefix of the unlimited
+  result, even though scanners find occurrences in a different order. A result of
+  exactly `maxMatches` occurrences is not truncated.
+- It is a constructor option (the checker's policy) and a per-call option on
+  `find` and `analyze` that overrides it either way. `maxMatches: Infinity` never
+  truncates.
+- `find` returns the usual array with a non-enumerable `truncated` property that
+  is `true` only when occurrences were dropped. Deep equality, `JSON.stringify`
+  and spreading ignore it, and `slice` or `map` copies do not carry it, so read it
+  from the returned array: `const found = checker.find(text); if (found.truncated) ...`.
+- `analyze` adds `truncated: true` to the result only when truncated.
+  `censored` still covers every match, so truncation never leaks text. `locations`,
+  `occurrenceCount`, `badwords` and `count` describe the kept occurrences only;
+  `words` counts the whole text.
+- `classify()` accepts truncated `find()` output and `analyze()` results and
+  classifies only what they contain; check `truncated` first if a partial answer
+  is not acceptable.
+- `flag`, `badwords`, `censor` and `filter` are not capped. A `censor()` callback's
+  `context.occurrences()` follows the checker's mode, so a constructor
+  `onMaxMatches: 'truncate'` also affects `censor()` callbacks: it returns only the
+  kept occurrences instead of throwing. For `analyze()` callbacks, the call's own
+  `onMaxMatches` decides.
+- When `occurrences()` truncates and the span reaches the last kept occurrence or
+  beyond, so a dropped occurrence could lie inside it, the frozen array carries a
+  non-enumerable `truncated: true` (read it as `context.occurrences().truncated`),
+  like `find()`. An empty list without the flag really is empty. Spans that end before
+  the last kept occurrence starts are complete and unmarked. Check the flag before
+  treating a short or empty list as clean, for example
+  `occurrences().length || occurrences().truncated`.
+- Truncation does not scan the whole input when it can prove it need not: the
+  general matcher and the native word pattern stop once no later occurrence can
+  be among the first `maxMatches` (about 5 to 35 ms instead of 300 ms for 1 MB of
+  `a` against `a` to `aaaaa` in substring mode). `analyze()` without a callback still
+  scans on, because `censored` covers every match. The evasion, fuzzy and Unicode-view
+  scanners have no safe bound on where later occurrences start, so they scan the
+  whole input; at most twice `maxMatches` occurrences are buffered.
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const checker = new Badwords({ dictionary: ['goblok'], maxMatches: 2, onMaxMatches: 'truncate' });
+const found = checker.find('goblok goblok goblok');
+found.length; // => 2
+found.truncated; // => true
+checker.analyze('goblok goblok goblok').censored; // => '*** *** ***'
+```
+
+### Dictionary updates
+
+`addWords` and `removeWords` enforce every limit when you call them, exactly as
+they did before 2.7: a wrong type, a list that exceeds a policy's
+`maxDictionaryLength`, or a dictionary that no longer fits a compile budget
+(`maxCompileStates`, `maxIndexPostings`, `maxStateCells`) throws the usual typed
+error from that call. A failed call changes nothing: the dictionary keeps every
+earlier update, including pending removals. `dict` reflects every update at once.
+
+With `evasion` or `fuzzy`, only building the matcher is deferred to the next
+scan, so loading many words one call at a time costs one build instead of one per
+call (300 single-word calls with a fuzzy policy: a few milliseconds of checks instead of
+about 300 ms of compiles). The deferred build cannot fail on a budget, because
+the same budgets were already checked, call by call, on the exact quantities the
+compiler counts. Without those policies the matcher was already built lazily.
 
 Empty strings return no matches, zero counts, and unchanged text. Non-string
 inputs and invalid options throw `TypeError`.

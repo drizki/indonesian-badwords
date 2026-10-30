@@ -1,5 +1,6 @@
 import type { FuzzyConfig, FuzzyCompiler, FuzzyPolicy } from './types.ts';
 import { compileFuzzy } from './scanner.ts';
+import { FuzzyBudget } from './budget.ts';
 export type { FuzzyPolicy } from './types.ts';
 
 export type FuzzyLimit = 'input' | 'states' | 'steps' | 'compileStates' | 'dictionaryLength' | 'indexPostings' | 'candidates' | 'stateCells';
@@ -83,6 +84,7 @@ export function boundedFuzzy(options: FuzzyOptions = {}): FuzzyPolicy {
                 } else if (length > config.maxDictionaryLength) fail('dictionaryLength', config.maxDictionaryLength, length);
             }
         },
+        budget: (normalization, canonicalize, evasion) => new FuzzyBudget(config, evasion?.plan?.(normalization, canonicalize), fail),
         compile: (entries, normalization, canonicalize, trie, candidateText, evasion) =>
             compileFuzzy(config, entries, normalization, canonicalize, trie, candidateText, fail, evasion)
     });
