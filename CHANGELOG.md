@@ -7,6 +7,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- `filter(text, { preserveLineBreaks: true })` keeps line breaks: a whitespace run containing LF, CR, CRLF, U+2028 or U+2029 collapses to exactly those breaks (blank lines kept, trailing and leading spaces on a line dropped, CRLF kept as one unit). The default still collapses everything to one space. New `FilterOptions` type.
+- `analyze(text, { replacement })` accepts the same string or callback as `censor()`, including `mask()`/`grawlix()` and callbacks that use `context.occurrences()`, for `censored`. The default stays `***`. New `AnalyzeOptions` type.
+- New `onMaxMatches: 'throw' | 'truncate'` option for the constructor and, per call, for `find()` and `analyze()`. `'throw'` (default) keeps the `RangeError`; `'truncate'` keeps the first `maxMatches` occurrences in source order and sets `truncated`: `true` on the `analyze()` result (the field is absent otherwise, so untruncated results are unchanged) and a non-enumerable `truncated` property on the `find()` array (new `FindResult` type; deep equality and JSON are unaffected). `censored` still covers every match, and `classify()` accepts truncated results.
+- `addWords()`/`removeWords()` defer recompiling evasion and fuzzy dictionaries until the next scan, so 300 single-word `addWords` calls with a fuzzy policy cost one compile instead of 300. Validation stays eager and atomic, and `dict` reflects updates immediately. Compile-time budget errors (`maxCompileStates`, `maxIndexPostings`) now surface on the next scan, which restores the last compiled dictionary, instead of on the `addWords` call.
+- Deprecates the module-level `addWords` and `removeWords` (`@deprecated`): they mutate a process-wide checker. Use an isolated `new Badwords()`. They keep working throughout 2.x, with no runtime warning.
+
 ## [2.6.0] - 2026-10-30
 
 - Docs: the READMEs, `package.json` description and keywords, and a new `llms.txt` now lead with capabilities (classification, `via`, evasion, fuzzy matching, exceptions, censoring, offsets) before performance; `test:docs` checks `llms.txt` links and recipes.

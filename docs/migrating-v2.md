@@ -32,7 +32,7 @@ const checker = new Badwords();
 | Empty strings return clean results; non-string inputs throw `TypeError`. | Handle empty messages as clean and validate non-string input before checking it. |
 | Standard normalization recognizes Unicode compatibility forms and invisible obfuscation. Numeric-only runs and terminal punctuation stay literal. | Test your accepted spelling variants. Use `normalization: 'none'` when you need exact spelling and case. |
 | Locations include exclusive `end` and original `match`; analysis includes `occurrenceCount`. | Distinguish unique-term `count` from occurrence count and use UTF-16 offsets for locations. |
-| `find` and `analyze` cap detailed results at 10,000 occurrences by default. | Handle `RangeError`, or choose a positive safe integer or `Infinity` for `maxMatches`. This cap does not apply to `flag`, `badwords`, `censor`, or `filter`; optional scanner work limits are separate. |
+| `find` and `analyze` cap detailed results at 10,000 occurrences by default. | Handle `RangeError`, set `onMaxMatches: 'truncate'`, or choose a positive safe integer or `Infinity` for `maxMatches`. This cap does not apply to `flag`, `badwords`, `censor`, or `filter`; optional scanner work limits are separate. |
 | `dict` returns a normalized copy. | Use `addWords` and `removeWords` to change a checker's dictionary. |
 
 See the [API reference](api.md) for current matching rules, optional policies, and

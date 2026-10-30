@@ -144,12 +144,15 @@ test('both policies enforce the smaller shared input and dictionary limits', () 
 
 test('dictionary recompilation is atomic and refreshes every index', () => {
     const checker = basic({ limits: { maxCompileStates: 10 } }, ['goblok']);
-    assert.throws(() => checker.addWords('unrelatedlongword'), error => error instanceof FuzzyLimitError && error.limit === 'compileStates');
+    // Compile-time limits surface on the next scan (compilation is deferred); the update is then rolled back whole.
+    checker.addWords('unrelatedlongword');
+    assert.throws(() => checker.flag('goblox'), error => error instanceof FuzzyLimitError && error.limit === 'compileStates');
     assert.deepEqual(checker.dict, ['goblok']); assert.equal(checker.flag('goblox'), true);
     checker.removeWords('goblok'); assert.equal(checker.flag('goblox'), false);
     checker.addWords('KONTOL'); assert.equal(checker.flag('kontox'), true);
     const small = basic({ limits: { maxIndexPostings: 1 } }, []);
-    assert.throws(() => small.addWords('goblok'), error => error instanceof FuzzyLimitError && error.limit === 'indexPostings');
+    small.addWords('goblok');
+    assert.throws(() => small.flag('goblox'), error => error instanceof FuzzyLimitError && error.limit === 'indexPostings');
     assert.deepEqual(small.dict, []);
 });
 

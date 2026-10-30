@@ -69,7 +69,8 @@ checker.flag('anotherterm'); // => true
 
 Supplying `dictionary` replaces the initial list. To extend the default list,
 create a default checker and call `addWords`. Mutations affect that instance;
-`dict` returns a copy. Removing a word removes it everywhere. Use a [phrase
+`dict` returns a copy. The module-level `addWords` and `removeWords` mutate a
+shared checker and are deprecated; prefer your own `new Badwords()` instance. Removing a word removes it everywhere. Use a [phrase
 exception](exceptions.md) if the word should remain detectable outside a known
 name or expression.
 

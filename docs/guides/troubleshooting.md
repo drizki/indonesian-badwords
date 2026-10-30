@@ -52,7 +52,7 @@ examples](browser-and-frameworks.md).
 | Error | Likely cause | Next step |
 | --- | --- | --- |
 | `TypeError` | Invalid input/options or a non-string callback result | Validate the caller and read the relevant contract. |
-| `RangeError` from `find`/`analyze` | Accepted occurrences exceeded `maxMatches` | Handle an incomplete report; deliberately choose a new cap if needed. |
+| `RangeError` from `find`/`analyze` | Accepted occurrences exceeded `maxMatches` | Set `onMaxMatches: 'truncate'` and check `truncated`, handle the error, or deliberately choose a new cap. |
 | `EvasionLimitError` | An evasion input, compilation, or scan quota was exceeded | Inspect `limit`, `maximum`, and `used`; narrow the policy or adjust that bound. |
 | `FuzzyLimitError` | A fuzzy input, compilation, index, or scan quota was exceeded | Inspect the typed fields and review edit breadth and workload size. |
 | `RangeError` with ignored ranges | Numeric bounds or grapheme boundaries are invalid | Recompute offsets in the original text. |

@@ -144,6 +144,22 @@ assert.deepEqual(scoped.find(scopedText, checks), [{ word: 'bodo', index: 17, en
 assert.equal(scoped.censor(scopedText, mask(), checks), 'Baju Bodo goblok ****');
 assert.equal(scoped.analyze(scopedText, checks).occurrenceCount, 1);
 assert.equal(scoped.flag(scopedText, { ignoreRanges: [{ index: 10, end: 21 }] }), false);
+assert.equal(api.filter('a  goblok\\r\\n\\r\\n  b\tc'), 'a b c');
+assert.equal(api.filter('a  goblok\\r\\n\\r\\n  b\tc', { preserveLineBreaks: true }), 'a\\r\\n\\r\\nb c');
+assert.equal(api.analyze('goblok dan kontol', { replacement: '[x]' }).censored, '[x] dan [x]');
+assert.equal(api.analyze('goblok', { replacement: ({ occurrences }) => String(occurrences().length) }).censored, '1');
+assert.equal(api.analyze('goblok').censored, '***');
+const truncating = new api.Badwords({ dictionary: ['a'], mode: 'substring', maxMatches: 2, onMaxMatches: 'truncate' });
+assert.equal(truncating.find('aaaa').truncated, true);
+assert.equal(truncating.find('aa').truncated, undefined);
+assert.deepEqual(truncating.find('aaaa'), truncating.find('aaaa', { onMaxMatches: 'truncate' }));
+assert.equal(truncating.analyze('aaaa').truncated, true);
+assert.equal(metadataApi.classify(truncating.find('aaaa')).occurrences.length, 2);
+assert.throws(() => truncating.find('aaaa', { onMaxMatches: 'throw' }), RangeError);
+const deferred = new api.Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy() });
+deferred.addWords('kontol');
+assert.deepEqual(deferred.dict, ['goblok', 'kontol']);
+assert.equal(deferred.flag('kontox'), true);
 const sharedWord = 'paketkontrol';
 assert.equal(api.flag(sharedWord), false);
 try {
@@ -223,6 +239,8 @@ globalThis.browserResults = {
         confusables: { mappings: latinLookalikes, maxTotal: 2 } }) }).censor('g-o-b-l-o-k gοblοk'),
     fuzzy: new Badwords({ dictionary: ['goblok'], fuzzy: boundedFuzzy(), evasion: boundedEvasion({ separators: { characters: ['-'], maxGap: 1, maxTotal: 8 } }) }).censor('g-o-b-l-o-x'),
     matchLimitEnforced,
+    pipeline: [instance.filter('a \\n\\n b goblok', { preserveLineBreaks: true }), instance.analyze('goblok', { replacement: '#' }).censored,
+        new Badwords({ dictionary: ['a'], mode: 'substring', maxMatches: 1, onMaxMatches: 'truncate' }).find('aa').truncated],
     reviewed: new Badwords({ dictionary: reviewedDictionary }).flag('kontol'),
     emptyProfile: selectDictionary({ profiles: [] }).length,
     exactMetadata: getMetadata('KONTOL').length,
@@ -273,6 +291,7 @@ globalThis.browserResults = {
         evasion: '*** ***',
         fuzzy: '***',
         matchLimitEnforced: true,
+        pipeline: ['a\n\nb', '#', true],
         reviewed: true,
         emptyProfile: 0,
         exactMetadata: 0,
@@ -501,6 +520,38 @@ mask({ keepFirst: '1' });
 grawlix({ random: () => '0' });
 checker.addWords(['added'] as const);
 checker.removeWords(['added'] as const);
+import type { FilterOptions, FindOptions, AnalyzeOptions, FindResult, AnalysisReport, MaxMatchesMode } from 'indonesian-badwords';
+const filterOptions: FilterOptions = { preserveLineBreaks: true, ignoreRanges: [range] as const };
+const kept: string = checker.filter('a\\nb', filterOptions);
+const overflow: MaxMatchesMode = 'truncate';
+const findOptions: FindOptions = { onMaxMatches: overflow, ignoreRanges: [range] as const };
+const truncatedFind: FindResult = checker.find('customterm', findOptions);
+const truncatedFlag: true | undefined = truncatedFind.truncated;
+const plainFind: MatchedLocation[] = truncatedFind;
+const analyzeOptions: AnalyzeOptions = { replacement, onMaxMatches: 'truncate', ignoreRanges: [range] as const };
+const report: AnalysisReport = checker.analyze('customterm', analyzeOptions);
+const reportFlag: true | undefined = report.truncated;
+const reportAsResult: AnalysisResult = report;
+checker.analyze('customterm', { replacement: '[x]' });
+checker.analyze('customterm', { replacement: mask() });
+checker.analyze('customterm', { replacement: (context) => String(context.occurrences().length) });
+classify(truncatedFind);
+classify(report);
+new Badwords({ maxMatches: 10, onMaxMatches: 'truncate' });
+// Old call shapes keep compiling: narrower option types and the old return types.
+const oldFilter: (text: string, options?: CheckOptions) => string = instance.filter;
+const oldFind: (text: string, options?: CheckOptions) => MatchedLocation[] = instance.find;
+const oldAnalyze: (text: string, options?: CheckOptions) => AnalysisResult = instance.analyze;
+const oldAnalysis: AnalysisResult = { text: '', words: 0, censored: '', badwords: [], count: 0, occurrenceCount: 0, locations: [] };
+classify(oldAnalysis);
+// @ts-expect-error overflow modes are 'throw' or 'truncate'
+new Badwords({ onMaxMatches: 'drop' });
+// @ts-expect-error preserveLineBreaks is a boolean
+checker.filter('x', { preserveLineBreaks: 'yes' });
+// @ts-expect-error analyze replacement callbacks must return strings
+checker.analyze('x', { replacement: () => 1 });
+// @ts-expect-error truncated is read-only
+truncatedFind.truncated = true;
 // @ts-expect-error invalid matching mode
 new Badwords({ mode: 'invalid' });
 // @ts-expect-error invalid normalization policy

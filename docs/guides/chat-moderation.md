@@ -79,6 +79,26 @@ also have work quotas. A limit error means the check did not finish, so do not
 convert it to `false`. Detailed occurrence caps can throw `RangeError` too.
 [Errors and limits](../api.md#results-and-errors) distinguish those cases.
 
+To get a bounded report instead of an exception from a flood of matches, set
+`onMaxMatches: 'truncate'`. The result keeps the first `maxMatches` occurrences in
+source order, `censored` still hides every match, and `truncated` tells you the
+list is partial, so you can queue the message for review:
+
+```ts
+import { Badwords } from 'indonesian-badwords';
+
+const checker = new Badwords({ dictionary: ['goblok'], maxMatches: 3, onMaxMatches: 'truncate' });
+const result = checker.analyze('goblok '.repeat(50));
+result.locations.length; // => 3
+result.truncated; // => true
+result.censored.includes('goblok'); // => false
+```
+
+Pass `{ replacement }` to `analyze` to render `censored` your own way, with the
+same string or callback that `censor` accepts. For multi-line posts,
+`filter(text, { preserveLineBreaks: true })` keeps paragraphs and lines.
+See [match limits](../api.md#match-limits-and-truncation).
+
 ## Act on how a word matched
 
 Every occurrence from `find` and `analyze` carries a `via` that says how it

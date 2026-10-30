@@ -8,6 +8,7 @@ import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize,
     type Normalization, type NormalizedText } from './text/normalize.ts';
 import { prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
 import { UnicodeMatcher, UnicodeView } from './text/unicode.ts';
+import { collapseWhitespace, MatchWindow, maxMatchesMode, type MaxMatchesMode } from './core/pipeline.ts';
 
 declare const __BADWORDS_PRESET_PATTERNS__: NativePatterns | undefined;
 const presetPatterns = typeof __BADWORDS_PRESET_PATTERNS__ === 'undefined' ? undefined : __BADWORDS_PRESET_PATTERNS__;
@@ -18,79 +19,10 @@ export type { Normalization } from './text/normalize.ts';
 export type { FuzzyPolicy } from './fuzzy/types.ts';
 export type { EvasionPolicy } from './evasion/types.ts';
 export type { EvasionTransforms, MatchVia } from './core/provenance.ts';
+export type { MaxMatchesMode } from './core/pipeline.ts';
 
-/** One occurrence with exclusive end and UTF-16 offsets into the original input. */
-export interface BadwordLocation {
-    word: string;
-    index: number;
-    end: number;
-    /** Exact matched source text, including any obfuscation. */
-    match: string;
-}
-/** An occurrence from find() or analyze(), with how it matched; the most literal path when several reach the same span. */
-export interface MatchedLocation extends BadwordLocation {
-    readonly via: MatchVia;
-}
-
-/** One merged source span passed to a censorship callback. */
-export interface CensorContext {
-    readonly text: string;
-    readonly index: number;
-    readonly end: number;
-    readonly match: string;
-    /** Unique contributing dictionary words, in dictionary insertion order. */
-    readonly words: readonly string[];
-}
-/** The context censor() passes: a non-enumerable method lists the occurrences behind the span. */
-export interface DetailedCensorContext extends CensorContext {
-    /** Lazy and non-enumerable. Scans once per censor() call, honours the call's exceptions, and can throw find()'s RangeError or, if the dictionary changed during the call, a TypeError. */
-    occurrences(): readonly MatchedLocation[];
-}
-export type CensorCallback = (context: CensorContext) => string;
-export type CensorReplacement = string | CensorCallback;
-
-/** A half-open UTF-16 range in the original input, on complete grapheme boundaries. */
-export interface IgnoreRange {
-    readonly index: number;
-    readonly end: number;
-}
-export interface CheckOptions {
-    /** Ignore every occurrence intersecting these source ranges. Empty ranges are no-ops. */
-    readonly ignoreRanges?: readonly IgnoreRange[];
-}
-
-export interface AnalysisResult {
-    text: string;
-    /** Nonempty whitespace-separated tokens, not linguistic word segmentation. */
-    words: number;
-    censored: string;
-    /** Unique dictionary words in dictionary insertion order. */
-    badwords: string[];
-    /** Unique matched dictionary words. */
-    count: number;
-    /** Every occurrence, including overlapping dictionary matches. */
-    occurrenceCount: number;
-    locations: MatchedLocation[];
-}
-
-export type MatchMode = 'substring' | 'word';
-export interface BadwordsOptions {
-    /** Explicit bounded transformations from the optional /evasion module. */
-    evasion?: EvasionPolicy;
-    /** Explicit bounded edits from the optional /fuzzy module. */
-    fuzzy?: FuzzyPolicy;
-    dictionary?: readonly string[];
-    /** Literal whole-word phrases exempt only occurrences fully contained inside them. */
-    allowPhrases?: readonly string[];
-    /** Defaults to whole-word matching. */
-    mode?: MatchMode;
-    /** Standard: NFKC, lowercase, invisible-character removal and internal leetspeak. */
-    normalization?: Normalization;
-    /** Opt in to stretched spellings such as gooooblok. Defaults to false. */
-    ignoreRepeatedLetters?: boolean;
-    /** Maximum detailed occurrences for find/analyze. Defaults to 10,000; Infinity disables the cap. */
-    maxMatches?: number;
-}
+export type { BadwordLocation, MatchedLocation, CensorContext, DetailedCensorContext, CensorCallback, CensorReplacement, IgnoreRange, CheckOptions, FilterOptions, FindOptions, AnalyzeOptions, FindResult, AnalysisResult, AnalysisReport, MatchMode, BadwordsOptions } from './core/types.ts';
+import type { BadwordLocation, MatchedLocation, DetailedCensorContext, CheckOptions, FilterOptions, FindOptions, AnalyzeOptions, FindResult, AnalysisResult, AnalysisReport, MatchMode, BadwordsOptions } from './core/types.ts';
 
 function validateText(text: unknown): asserts text is string {
     if (typeof text !== 'string') throw new TypeError('string expected');
@@ -185,6 +117,9 @@ export class Badwords {
     readonly #normalization: Normalization;
     readonly #ignoreRepeatedLetters: boolean;
     readonly #maxMatches: number;
+    readonly #onMaxMatches: MaxMatchesMode;
+    #stale = false;
+    #snapshot: { words: Set<string>; preset: boolean } | undefined;
     readonly #allowed: AllowedPhrases | undefined;
     #matcher: Matcher | undefined;
     #maxKeyLength = 0;
@@ -206,6 +141,7 @@ export class Badwords {
         if (maxMatches !== Infinity && (!Number.isSafeInteger(maxMatches) || maxMatches < 1)) {
             throw new TypeError('maxMatches must be a positive safe integer or Infinity');
         }
+        this.#onMaxMatches = maxMatchesMode(options.onMaxMatches) ?? 'throw';
         if (options.dictionary !== undefined && !Array.isArray(options.dictionary)) {
             throw new TypeError('dictionary must be an array of strings');
         }
@@ -303,24 +239,43 @@ export class Badwords {
         this.#maxKeyLength = entries.reduce((maximum, entry) => Math.max(maximum, entry.key.length), 0);
         this.#maxWordLength = this.#maxKeyLength;
         this.#native = undefined;
-        this.#version++;
+        this.#stale = false;
+        this.#snapshot = undefined;
         this.#preset = preset;
     }
 
+    /** Compile pending evasion/fuzzy updates. A compile-time failure restores the last compiled dictionary and rethrows. */
+    #refresh(): void {
+        const snapshot = this.#snapshot!;
+        try { this.#setEvasion(this.#dictionary); } catch (error) {
+            this.#dictionary = snapshot.words;
+            this.#preset = snapshot.preset;
+            this.#native = undefined;
+            this.#stale = false;
+            this.#snapshot = undefined;
+            this.#version++;
+            throw error;
+        }
+    }
+
+    /** Validates eagerly and applies atomically, but defers the (expensive) recompile to the next scan. */
     #changeDictionary(words: string | readonly string[], add: boolean): void {
         const batch = wordsArray(words);
         this.#checkDictionary(batch);
-        const staged = new Set(this.#dictionary);
-        let changed = false;
+        const dictionary = this.#dictionary;
+        const changes = new Set<string>();
         for (const word of batch) {
-            if (add && staged.has(word)) continue;
-            if (!add && staged.delete(word)) { changed = true; continue; }
+            if (dictionary.has(word)) { if (!add) changes.add(word); continue; }
             const canonical = trimDictionaryWord(normalizeKey(trimDictionaryWord(word), this.#normalization));
-            if (add) {
-                if (canonical && !staged.has(canonical)) { staged.add(canonical); changed = true; }
-            } else if (staged.delete(canonical)) changed = true;
+            if (add ? canonical && !dictionary.has(canonical) : dictionary.has(canonical)) changes.add(canonical);
         }
-        if (changed) this.#setEvasion(staged);
+        if (!changes.size) return;
+        if (add) this.#checkDictionary([...dictionary, ...changes]);
+        if (!this.#stale) { this.#snapshot = { words: new Set(dictionary), preset: this.#preset }; this.#stale = true; }
+        for (const word of changes) { if (add) dictionary.add(word); else dictionary.delete(word); }
+        this.#native = undefined;
+        this.#version++;
+        this.#preset = false;
     }
 
     #longWord(text: string): boolean {
@@ -450,6 +405,7 @@ export class Badwords {
     }
 
     #acceptance(text: string, options?: CheckOptions): MatchAcceptance | undefined {
+        if (this.#stale) this.#refresh();
         if (this.#evasion) { validateText(text); this.#evasion.checkInput(text); }
         if (options === undefined && !this.#allowed) return;
         validateText(text);
@@ -539,11 +495,8 @@ export class Badwords {
         return normalize(text, 'standard', this.#ignoreRepeatedLetters, protectedBangs);
     }
 
-    #append(matches: Match[], match: Match): void {
-        if (matches.length >= this.#maxMatches) {
-            throw new RangeError('Match limit exceeded; increase maxMatches or use flag(), badwords(), or censor()');
-        }
-        matches.push(match);
+    #window(mode?: MaxMatchesMode): MatchWindow {
+        return new MatchWindow(this.#maxMatches, (mode ?? this.#onMaxMatches) === 'truncate');
     }
 
     /** True if any dictionary word matches. Empty input is clean. */
@@ -579,16 +532,18 @@ export class Badwords {
         this.#scan(text, () => { found = true; return false; }, false, true);
         return found;
     }
-    #locations(text: string, accept?: MatchAcceptance): MatchedLocation[] {
-        const matches: Match[] = [];
-        this.#scan(text, (match) => { this.#append(matches, match); }, false, false, accept, false, undefined, true);
-        matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
+    #locations(text: string, accept?: MatchAcceptance, window = this.#window()): FindResult {
+        this.#scan(text, (match) => { window.add(match); }, false, false, accept, false, undefined, true);
         const seen = new Map<string, MatchVia>();
-        return matches.map((match) => location(text, match, this.#provenance, seen));
+        const result = window.finish().map((match) => location(text, match, this.#provenance, seen));
+        return (window.truncated ? Object.defineProperty(result, 'truncated', { value: true }) : result) as FindResult;
     }
-    /** All occurrences in source order; dictionary order breaks ties. */
-    find(text: string, options?: CheckOptions): MatchedLocation[] {
-        return this.#locations(text, this.#acceptance(text, options));
+    /**
+     * All occurrences in source order; dictionary order breaks ties. Past maxMatches it throws a RangeError, or with
+     * onMaxMatches: 'truncate' returns the first maxMatches in source order and sets `truncated`.
+     */
+    find(text: string, options?: FindOptions): FindResult {
+        return this.#locations(text, this.#acceptance(text, options), this.#window(maxMatchesMode(options?.onMaxMatches)));
     }
     /** Unique found dictionary words in dictionary insertion order. */
     badwords(text: string, options?: CheckOptions): string[] {
@@ -597,7 +552,7 @@ export class Badwords {
         this.#scan(text, ({ word }) => { found.add(word); return found.size < this.#dictionary.size; }, false, false, accept, true);
         return [...this.#dictionary].filter((word) => found.has(word));
     }
-    #censorCallback(text: string, replacement: (context: DetailedCensorContext) => string, accept?: MatchAcceptance): string {
+    #censorCallback(text: string, replacement: (context: DetailedCensorContext) => string, accept?: MatchAcceptance, mode?: MaxMatchesMode): string {
         validateText(text);
         const advanced = this.#evasion?.potential(text);
         if (!text.length || !this.#dictionary.size || (!advanced && this.#longWord(text))) return text;
@@ -618,7 +573,7 @@ export class Badwords {
         const version = this.#version;
         const within = occurrencesWithin(() => {
             if (version !== this.#version) throw new TypeError('dictionary changed during censor()');
-            return this.#locations(text, accept);
+            return this.#locations(text, accept, this.#window(mode));
         });
         for (const span of spans) {
             const words = Object.freeze(span.entries.sort((a, b) => a.order - b.order).map((entry) => entry.word));
@@ -660,20 +615,35 @@ export class Badwords {
         this.#scan(text, (match) => { mergeSpan(spans, match); }, true, !accept, accept, false, advanced);
         return replaceSpans(text, spans, replacement);
     }
-    filter(text: string, options?: CheckOptions): string { return this.censor(text, '', options).replace(/\s+/gu, ' ').trim(); }
-    /** Scan once for source spans, unique words, counts and censored output. */
-    analyze(text: string, options?: CheckOptions): AnalysisResult {
+    /** Remove matches and collapse whitespace runs to one space (or, with preserveLineBreaks, to their line breaks); the result is trimmed. */
+    filter(text: string, options?: FilterOptions): string {
+        const keep = options?.preserveLineBreaks;
+        if (keep !== undefined && typeof keep !== 'boolean') throw new TypeError('preserveLineBreaks must be a boolean');
+        return collapseWhitespace(this.censor(text, '', options), keep === true);
+    }
+    /**
+     * Scan once for source spans, unique words, counts and censored output. `censored` always covers every match.
+     * Past maxMatches it throws a RangeError, or with onMaxMatches: 'truncate' every field except `censored` and
+     * `words` describes the first maxMatches occurrences in source order, and `truncated: true` is added.
+     */
+    analyze(text: string, options?: AnalyzeOptions): AnalysisReport {
         const accept = this.#acceptance(text, options);
-        const matches: Match[] = [];
-        const found = new Set<string>();
-        const seen = new Map<string, MatchVia>();
+        const mode = maxMatchesMode(options?.onMaxMatches);
+        const replacement = options?.replacement === undefined ? '***' : options.replacement;
+        if (typeof replacement !== 'function') validateText(replacement);
+        const window = this.#window(mode);
         const spans: Array<{ start: number; end: number }> = [];
-        this.#scan(text, (match) => { this.#append(matches, match); found.add(match.word); mergeSpan(spans, match); }, false, false, accept, false, undefined, true);
-        matches.sort((a, b) => a.start - b.start || a.order - b.order || a.end - b.end);
+        const merge = typeof replacement !== 'function';
+        this.#scan(text, (match) => { window.add(match); if (merge) mergeSpan(spans, match); }, false, false, accept, false, undefined, true);
+        const matches = window.finish();
+        const found = new Set(matches.map((match) => match.word));
+        const seen = new Map<string, MatchVia>();
         const badwords = [...this.#dictionary].filter((word) => found.has(word));
-        return { text, words: text.match(/\S+/gu)?.length ?? 0, censored: replaceSpans(text, spans, '***'),
+        const censored = merge ? replaceSpans(text, spans, replacement) : this.#censorCallback(text, replacement, accept, mode);
+        const result: AnalysisReport = { text, words: text.match(/\S+/gu)?.length ?? 0, censored,
             badwords, count: badwords.length, occurrenceCount: matches.length,
             locations: matches.map((match) => location(text, match, this.#provenance, seen)) };
+        return window.truncated ? { ...result, truncated: true } : result;
     }
 }
 
@@ -685,5 +655,7 @@ export const badwords = instance.badwords.bind(instance);
 export const filter = instance.filter.bind(instance);
 export const censor = instance.censor.bind(instance);
 export const analyze = instance.analyze.bind(instance);
+/** @deprecated Mutates the process-wide default checker, so one dependency can change another's results. Use an isolated `new Badwords({ dictionary })` and its `addWords()`. Still works throughout 2.x. */
 export const addWords = instance.addWords.bind(instance);
+/** @deprecated Mutates the process-wide default checker, so one dependency can change another's results. Use an isolated `new Badwords({ dictionary })` and its `removeWords()`. Still works throughout 2.x. */
 export const removeWords = instance.removeWords.bind(instance);
