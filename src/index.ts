@@ -6,7 +6,7 @@ import type { EvasionCompiler, EvasionRuntime } from './evasion/types.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './core/exceptions.ts';
 import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
     type Normalization, type NormalizedText } from './text/normalize.ts';
-import { bangCandidates, minimumRun, prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
+import { bangCandidates, prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
 import { UnicodeMatcher, UnicodeView } from './text/unicode.ts';
 import type { DictionaryBudget } from './core/budget.ts';
 import { collapseWhitespace, MatchWindow, maxMatchesMode, type MaxMatchesMode } from './core/pipeline.ts';
@@ -84,8 +84,6 @@ interface NativeMatcher {
     patterns: NativePatterns;
     potential?: RegExp;
     bangPotential?: RegExp;
-    bangGuard?: RegExp | null;
-    run?: RegExp | null;
     tokenWork?: number;
     unicode?: UnicodeMatcher;
 }
@@ -410,16 +408,8 @@ export class Badwords {
             return native.potential.test(text) ? undefined : CLEAN;
         }
         if (bangs) {
-            native.bangGuard ??= bangCandidates(native.words) ?? null;
-            if (native.bangGuard === null || native.bangGuard.test(text)) {
-                native.bangPotential ??= potentialPattern(native.words, true);
-                if (native.bangPotential.test(text)) return;
-            }
-        }
-        // No alphanumeric run as long as the shortest entry's longest one: nothing can match.
-        if (text.length >= 1024) {
-            native.run ??= minimumRun(native.words);
-            if (native.run && !native.run.test(text)) return CLEAN;
+            native.bangPotential ??= potentialPattern(native.words, true);
+            if (native.bangPotential.test(text)) return;
         }
         if (native.pattern) native.pattern.lastIndex = 0;
         if (native.censorPattern) native.censorPattern.lastIndex = 0;

@@ -110,8 +110,7 @@ export function potentialPattern(words: readonly string[], bangOnly = false, pre
  * Undefined when the dictionary has characters this cannot reason about.
  */
 export function bangCandidates(words: readonly string[]): RegExp | undefined {
-    const both = { left: new Set<string>(), right: new Set<string>() };
-    const open = { left: new Set<string>(), right: new Set<string>() };
+    const groups = [0, 1, 2, 3].map(() => [new Set<string>(), new Set<string>()]);
     const side = (word: string, from: number, step: number): string => {
         const parts: string[] = [];
         for (let at = from; parts.length < 2 && at >= 0 && at < word.length; at += step) {
@@ -121,27 +120,16 @@ export function bangCandidates(words: readonly string[]): RegExp | undefined {
         }
         return (step < 0 ? parts.reverse() : parts).join('');
     };
-    let bare = false;
     for (const word of words) {
         if (!/^[\x00-\x7f]*$/.test(word)) return;
         for (let index = word.indexOf('i'); index >= 0; index = word.indexOf('i', index + 1)) {
             const left = side(word, index - 1, -1), right = side(word, index + 1, 1);
-            if (!left && !right) bare = true;
-            else if (!left) open.right.add(right);
-            else if (!right) open.left.add(left);
-            else { both.left.add(left); both.right.add(right); }
+            const [lefts, rights] = groups[(left ? 1 : 0) | (right ? 2 : 0)];
+            lefts.add(left);
+            rights.add(right);
         }
     }
-    if (bare) return /!/;
-    const alternatives: string[] = [];
-    if (both.left.size) alternatives.push(`(?<=(?:${[...both.left].join('|')})!)(?=${[...both.right].join('|')})`);
-    if (open.right.size) alternatives.push(`(?=${[...open.right].join('|')})`);
-    if (open.left.size) alternatives.push(`(?<=(?:${[...open.left].join('|')})!)`);
-    return new RegExp(alternatives.length ? `!(?:${alternatives.join('|')})` : '(?!)', 'i');
-}
-
-/** Matches any text holding an alphanumeric run as long as the shortest entry's longest run; null when that proves nothing. */
-export function minimumRun(words: readonly string[]): RegExp | null {
-    const length = Math.min(...words.map((word) => Math.max(0, ...word.split(/[^a-z0-9]+/i).map((part) => part.length))));
-    return length > 1 && length < Infinity ? new RegExp(`[a-z0-9]{${length}}`, 'i') : null;
+    if (groups[0][0].size) return /!/;
+    const terms = groups.map(([lefts, rights], key) => lefts.size ? `${key & 1 ? `(?<=(?:${[...lefts].join('|')})!)` : ''}${key & 2 ? `(?=${[...rights].join('|')})` : ''}` : '');
+    return new RegExp(`!(?:${terms.filter(Boolean).join('|') || '(?!)'})`, 'i');
 }
