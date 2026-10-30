@@ -40,15 +40,18 @@ decide whether a change slowed something down, run
 `npm run benchmark:paired -- --base npm` (or `--base` with a ref spec, see
 [compare two builds](performance.md#compare-two-builds)) on a quiet machine
 before and after the change, and put the per-workload ratios in the PR.
-Validation CI uploads a quick `benchmark-summary` JSON artifact on Node.js 24
-for reference. The public comparison page [benchmarks.md](benchmarks.md) is
+The CI workflow (`ci.yml`, outside the reusable validation workflow that the
+publish workflow gates on, so it can never block a release) uploads a quick
+`benchmark-summary` JSON artifact on Node.js 24 for reference. The public comparison page [benchmarks.md](benchmarks.md) is
 generated: for each minor release, check the pinned package versions with
 `npm view <package> version` (update the pins and `PINS_CHECKED_ON` in
 `scripts/benchmark-compare.mjs` first), rerun
 `npm run benchmark:compare -- --write`, and commit the updated
 `benchmarks/comparison.json` and page together;
-`npm run benchmark:compare -- --check` verifies they agree. Update both README languages together when changing
-features, examples, requirements, or performance facts.
+`npm run benchmark:compare -- --check` verifies they agree, including the
+stored package pins, per-column policies, input definitions and protocol.
+Update both README languages together when changing features, examples,
+requirements, or performance facts.
 
 ## Validate a package
 

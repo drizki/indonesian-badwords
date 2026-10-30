@@ -76,8 +76,9 @@ Memory and cold-start figures describe the stated scope; they are not a complete
 application budget. Quick runs are only a smoke check.
 
 CI uploads a quick run's JSON summary as the `benchmark-summary` artifact on
-Node.js 24 for every validation run. It is informational: shared runners are too
-noisy to gate on speed.
+Node.js 24 for every push and pull request. It is informational and lives in
+`ci.yml`, outside the validation workflow the publish workflow depends on, so it
+cannot block a release; shared runners are too noisy to gate on speed.
 
 ## Budgets: correctness and size
 
