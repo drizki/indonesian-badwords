@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
 import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import { join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
+import { boundedEvasionPolicy as bounded, createChecker, identifier, median, percentile, sink as sinkValue } from './lib/bench-common.mjs';
 
 // Paired regression timing: compares two builds of this package on the same machine, in the same process
 // per workload, with alternating A/B batches. Use it for speed-regression decisions; absolute numbers from
@@ -27,9 +27,8 @@ const quick = process.argv.includes('--quick');
 const rounds = Number(argument('rounds') ?? (quick ? 9 : 31));
 const CLEAN = 'Pesanan sudah sampai. Terima kasih atas bantuan dan informasinya. ';
 const UNICODE = '😀 Pesan: ＧＯＢＬＯＫ dan kon​tol. ';
-const bounded = { separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 }, repetitions: { maxExtraPerLetter: 2, maxTotal: 8 } };
 const repeat = (text, length) => text.repeat(Math.ceil(length / text.length)).slice(0, length);
-const tag = (index) => `q${String.fromCharCode(97 + Math.floor(index / 26), 97 + index % 26)}q `;
+const tag = (index) => `${identifier(index)} `;
 const clean = (length) => (index) => (tag(index) + repeat(CLEAN, length)).slice(0, length);
 const placed = (length, term) => (index) => {
     const text = clean(length)(index), at = Math.floor(length / 2);
@@ -59,16 +58,7 @@ add('fuzzy-substring-clean-chat-flag', 'flag', clean(280), { options: { dictiona
 add('composed-typo-chat-censor', 'censor', placed(280, 'g-o-b-l-o-x'), { ...fuzzyOne, evasion: bounded });
 add('composed-clean-chat-flag', 'flag', clean(280), { evasion: bounded, fuzzy: {} });
 
-function checkerFor(directory, policy) {
-    const load = createRequire(join(directory, 'package.json'));
-    const options = { ...policy.options };
-    if (policy.evasion) options.evasion = load('./dist/cjs/evasion.js').boundedEvasion(policy.evasion);
-    if (policy.fuzzy) options.fuzzy = load('./dist/cjs/fuzzy.js').boundedFuzzy(policy.fuzzy);
-    return new (load('./dist/cjs/index.js').Badwords)(options);
-}
 const comparable = (value) => JSON.stringify(value, (key, item) => key === 'via' ? undefined : item);
-const median = (values) => { const sorted = [...values].sort((a, b) => a - b); return sorted[Math.ceil(sorted.length / 2) - 1]; };
-const quantile = (values, fraction) => { const sorted = [...values].sort((a, b) => a - b); return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))]; };
 
 function worker({ id, base, head }) {
     const workload = workloads.find((item) => item.id === id);
@@ -76,7 +66,7 @@ function worker({ id, base, head }) {
     const builds = {};
     for (const [name, directory] of Object.entries({ base, head })) {
         try {
-            const checker = checkerFor(directory, workload.policy);
+            const checker = createChecker(join(directory, 'dist/cjs'), workload.policy);
             if (typeof checker[workload.op] !== 'function') throw new Error(`no ${workload.op}()`);
             builds[name] = (text) => checker[workload.op](text);
         } catch (error) { return { id, status: 'unsupported', reason: `${name}: ${error.message}` }; }
@@ -86,7 +76,7 @@ function worker({ id, base, head }) {
     let cursor = 0, sink = 0;
     const batch = (run, calls) => {
         const begin = performance.now();
-        for (let index = 0; index < calls; index++) { sink += String(run(inputs[cursor])).length; cursor = (cursor + 1) % inputs.length; }
+        for (let index = 0; index < calls; index++) { sink += sinkValue(run(inputs[cursor])); cursor = (cursor + 1) % inputs.length; }
         return (performance.now() - begin) * 1_000 / calls;
     };
     const warmupEnd = performance.now() + (quick ? 40 : 250);
@@ -103,7 +93,7 @@ function worker({ id, base, head }) {
     }
     return { id, status: 'measured', op: workload.op, inputUtf16: inputs[0].length, callsPerBatch: calls, rounds,
         baseMedianUs: median(samples.base), headMedianUs: median(samples.head), ratio: median(ratios),
-        ratioQ25: quantile(ratios, 0.25), ratioQ75: quantile(ratios, 0.75), outputsMatchIgnoringVia: same, sink: sink > 0 };
+        ratioQ25: percentile(ratios, 0.25), ratioQ75: percentile(ratios, 0.75), outputsMatchIgnoringVia: same, sinkTotal: sink };
 }
 
 const scratch = [];

@@ -5,6 +5,7 @@ import os from 'node:os';
 import { createRequire } from 'node:module';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
+import { boundedEvasionPolicy as bounded, createChecker, percentile } from './lib/bench-common.mjs';
 
 // Informational, self-checking local measurements; no timing assertions.
 // Each case has a fresh process, a 256 MiB V8 heap and a 20-second timeout.
@@ -102,8 +103,6 @@ for (const replacement of ['mask', 'grawlix']) add(`${replacement}-graphemes-280
         { surface: '👩‍💻', word: '👩💻', offset: 5 }]
 });
 
-const bounded = { separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 },
-    repetitions: { maxExtraPerLetter: 2, maxTotal: 8 } };
 for (const length of [280, 4_000]) add(`bounded-clean-${length}-flag`, 'clean', length, 'flag', { evasion: bounded });
 for (const method of ['flag', 'censor', 'analyze']) add(`bounded-separated-280-${method}`, 'placed', 280, method, {
     position: 'middle', surface: 'g-o-b-l-o-k',
@@ -295,7 +294,6 @@ function summary(job, result) {
     return { kind: job.method, occurrences: found.length, first: found[0] ?? null, last: found.at(-1) ?? null,
         ...(job.method === 'analyze' ? { uniqueWords: result.count, words: result.badwords, censoredLength: result.censored.length } : {}) };
 }
-function percentile(values, fraction) { return [...values].sort((a, b) => a - b)[Math.ceil(values.length * fraction) - 1]; }
 function us(milliseconds) { return milliseconds * 1_000; }
 
 async function measure(job) {
@@ -452,7 +450,7 @@ const coldScenarios = {
         const evasion = await step('import evasion', () => require('../dist/cjs/evasion.js'));
         const fuzzy = await step('import fuzzy', () => require('../dist/cjs/fuzzy.js'));
         const policies = await step('create bounded policies', () => ({
-            evasion: evasion.boundedEvasion({ separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 }, repetitions: { maxExtraPerLetter: 2, maxTotal: 8 } }),
+            evasion: evasion.boundedEvasion(bounded),
             fuzzy: fuzzy.boundedFuzzy({}) }));
         const checker = await step('construct evasion+fuzzy Badwords', () => new api.Badwords(policies));
         await step('first flag, 4 KB clean', () => assert.equal(checker.flag(LONG_CLEAN), false));
@@ -495,10 +493,7 @@ const memoryScenarios = {
     default: { description: 'root import, one default checker, 2,000 unique 4 KB clean checks and 200 censor calls',
         build: (api) => new api.Badwords(), operations: 2_000 },
     'evasion-fuzzy': { description: 'bounded evasion + fuzzy checker over the default dictionary, 50 unique 4 KB clean checks and 20 censor calls',
-        build: (api) => new api.Badwords({
-            evasion: require('../dist/cjs/evasion.js').boundedEvasion({ separators: { characters: ['-', '_'], maxGap: 1, maxTotal: 8 },
-                repetitions: { maxExtraPerLetter: 2, maxTotal: 8 } }),
-            fuzzy: require('../dist/cjs/fuzzy.js').boundedFuzzy({}) }), operations: 50 },
+        build: () => createChecker(fileURLToPath(new URL('../dist/cjs', import.meta.url)), { evasion: bounded, fuzzy: {} }), operations: 50 },
     'custom-10000-terms': { description: 'root import, a checker over a 10,000-term custom dictionary, 200 unique 4 KB clean checks',
         build: (api) => new api.Badwords({ dictionary: Array.from({ length: 10_000 }, (_, index) => `x${alphabeticId(index)}x`) }), operations: 200 }
 };
@@ -571,20 +566,29 @@ if (process.argv.includes('--worker')) {
     const selected = jobs.filter((job) => !selection || selection.includes(job.id));
     const records = [];
     const emit = (record) => { records.push(record); console.log(JSON.stringify(record)); };
-    const header = environment(selected);
+    // --verify is a correctness check (npm test): no environment record (it runs git), no timing.
+    const header = verify ? null : environment(selected);
     if (!verify) emit(header);
     let failed = false;
     for (const definition of selected) {
         const job = { ...definition, verify, warmupMs: quick ? 40 : 250, minWarmupCalls: definition.heavy ? 2 : quick ? 32 : 128,
             targetBatchMs: quick ? 1 : 5, samples: definition.heavy ? 9 : quick ? 15 : 41 };
+        if (verify) {
+            // Verification asserts outputs only, so it runs in this process: fresh-process isolation matters for
+            // cold-start and memory observations, which --verify does not make.
+            try { records.push(await measure(job)); } catch (error) {
+                console.error(`${error.name}: ${error.message}`);
+                emit({ type: 'failure', id: job.id, message: error.message }); failed = true; break;
+            }
+            continue;
+        }
         const child = spawnSync(process.execPath, ['--max-old-space-size=256', '--expose-gc', fileURLToPath(import.meta.url), '--worker'],
             { input: JSON.stringify(job), encoding: 'utf8', timeout: definition.heavy ? 180_000 : 20_000, maxBuffer: 1_048_576 });
         if (child.error || child.status !== 0) {
             emit({ type: 'failure', id: job.id, signal: child.signal, message: child.error?.message ?? child.stderr.trim() });
             failed = true; break;
         }
-        if (verify) records.push(JSON.parse(child.stdout.trim()));
-        else emit(JSON.parse(child.stdout.trim()));
+        emit(JSON.parse(child.stdout.trim()));
     }
     if (verify && !failed) console.log(`Verified expected output for ${selected.length} benchmark workloads (no timing).`);
     if (!verify && !failed) for (const name of Object.keys(coldScenarios)) {

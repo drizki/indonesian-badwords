@@ -3,8 +3,9 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { gzipSync } from 'node:zlib';
-import { build } from 'esbuild';
+import { join } from 'node:path';
+import { bundleSize } from './lib/bundle-size.mjs';
+import { createChecker } from './lib/bench-common.mjs';
 
 // Correctness and size budgets (benchmarks/budgets.json) for the built package. Speed is never a gate here:
 // shared CI timings are too noisy; use `npm run benchmark:paired` for regression decisions.
@@ -17,13 +18,7 @@ const budgets = JSON.parse(readFileSync(new URL('../benchmarks/budgets.json', im
 const measureOnly = process.argv.includes('--measure');
 
 const strip = (list) => list.map(({ via, ...rest }) => rest);
-function checker(policy = {}) {
-    const { Badwords } = require('../dist/cjs/index.js');
-    const options = { ...policy.options };
-    if (policy.evasion) options.evasion = require('../dist/cjs/evasion.js').boundedEvasion(policy.evasion);
-    if (policy.fuzzy) options.fuzzy = require('../dist/cjs/fuzzy.js').boundedFuzzy(policy.fuzzy);
-    return new Badwords(options);
-}
+const checker = (policy = {}) => createChecker(join(root, 'dist/cjs'), policy);
 function run(entry) {
     const instance = checker(entry.policy);
     switch (entry.op) {
@@ -56,12 +51,11 @@ const importSpecifier = (entry) => `export * from ${JSON.stringify(fileURLToPath
 const sizes = [];
 for (const entry of budgets.sizes) {
     const contents = entry.entries.map((file) => importSpecifier({ file })).join('\n');
-    const result = await build({ stdin: { contents, resolveDir: root }, bundle: true, platform: 'browser', target: 'es2022',
-        format: 'esm', minify: true, legalComments: 'none', write: false, logLevel: 'silent' });
-    const bytes = result.outputFiles[0].contents;
-    sizes.push({ id: entry.id, minified: bytes.length, gzip: gzipSync(bytes, { level: 9 }).length, entry });
+    const { minifiedBytes, gzipBytes } = await bundleSize(contents, root);
+    sizes.push({ id: entry.id, minified: minifiedBytes, gzip: gzipBytes, entry });
 }
 if (measureOnly) {
+    console.log(`Node ${process.version}, zlib ${process.versions.zlib}`);
     for (const { id, minified, gzip, entry } of sizes) console.log(`${id.padEnd(18)} minified ${String(minified).padStart(7)} (budget ${entry.maxMinifiedBytes})  gzip ${String(gzip).padStart(6)} (budget ${entry.maxGzipBytes})`);
 } else {
     for (const { id, minified, gzip, entry } of sizes) {
