@@ -1,0 +1,455 @@
+{
+ "$comment": "Budgets for scripts/check-budgets.mjs. correctness: exact outputs of the built package (spans include provenance). sizes: esbuild, browser, ES2022, minified ESM of every export of each dist/esm entry (gzip level 9), set about 3% above the 2.6.0 measurement. Speed is deliberately not budgeted; use npm run benchmark:paired for regression decisions.",
+ "correctness": [
+  {
+   "id": "default-clean-flag",
+   "op": "flag",
+   "input": "Apa kabar? Pesanan sudah sampai. Terima kasih atas bantuan Anda.",
+   "expected": false
+  },
+  {
+   "id": "default-match-flag",
+   "op": "flag",
+   "input": "dasar goblok kamu",
+   "expected": true
+  },
+  {
+   "id": "default-fullwidth-flag",
+   "op": "flag",
+   "input": "dasar ＧＯＢＬＯＫ kamu",
+   "expected": true
+  },
+  {
+   "id": "default-zero-width-flag",
+   "op": "flag",
+   "input": "dasar kon​tol kamu",
+   "expected": true
+  },
+  {
+   "id": "default-embedded-word-clean",
+   "op": "flag",
+   "input": "Dia mengerjakan tugasnya dengan baik",
+   "expected": false
+  },
+  {
+   "id": "default-censor",
+   "op": "censor",
+   "input": "dasar goblok kamu!",
+   "expected": "dasar *** kamu!"
+  },
+  {
+   "id": "default-censor-leetspeak",
+   "op": "censor",
+   "input": "dasar g0bl0k, kontol!",
+   "expected": "dasar ***, ***!"
+  },
+  {
+   "id": "default-badwords-order",
+   "op": "badwords",
+   "input": "kontol goblok kontol",
+   "expected": [
+    "goblok",
+    "kontol"
+   ]
+  },
+  {
+   "id": "default-find-exact",
+   "op": "find",
+   "input": "dasar goblok",
+   "expected": [
+    {
+     "word": "goblok",
+     "index": 6,
+     "end": 12,
+     "match": "goblok",
+     "via": {
+      "kind": "exact"
+     }
+    }
+   ]
+  },
+  {
+   "id": "default-find-leetspeak",
+   "op": "find",
+   "input": "dasar g0bl0k",
+   "expected": [
+    {
+     "word": "goblok",
+     "index": 6,
+     "end": 12,
+     "match": "g0bl0k",
+     "via": {
+      "kind": "leetspeak",
+      "folds": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "default-find-normalized",
+   "op": "find",
+   "input": "dasar ＧＯＢＬＯＫ",
+   "expected": [
+    {
+     "word": "goblok",
+     "index": 6,
+     "end": 12,
+     "match": "ＧＯＢＬＯＫ",
+     "via": {
+      "kind": "normalized"
+     }
+    }
+   ]
+  },
+  {
+   "id": "default-analyze",
+   "op": "analyze",
+   "input": "dasar goblok, kontol",
+   "expected": {
+    "text": "dasar goblok, kontol",
+    "words": 3,
+    "censored": "dasar ***, ***",
+    "badwords": [
+     "goblok",
+     "kontol"
+    ],
+    "count": 2,
+    "occurrenceCount": 2,
+    "locations": [
+     {
+      "word": "goblok",
+      "index": 6,
+      "end": 12,
+      "match": "goblok",
+      "via": {
+       "kind": "exact"
+      }
+     },
+     {
+      "word": "kontol",
+      "index": 14,
+      "end": 20,
+      "match": "kontol",
+      "via": {
+       "kind": "exact"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "substring-joined",
+   "policy": {
+    "options": {
+     "mode": "substring"
+    }
+   },
+   "op": "find",
+   "input": "kamugoblok",
+   "expected": [
+    {
+     "word": "goblo",
+     "index": 4,
+     "end": 9,
+     "match": "goblo",
+     "via": {
+      "kind": "exact"
+     }
+    },
+    {
+     "word": "goblok",
+     "index": 4,
+     "end": 10,
+     "match": "goblok",
+     "via": {
+      "kind": "exact"
+     }
+    }
+   ]
+  },
+  {
+   "id": "evasion-separators",
+   "policy": {
+    "evasion": {
+     "separators": {
+      "characters": [
+       "-",
+       "_"
+      ],
+      "maxGap": 1,
+      "maxTotal": 8
+     },
+     "repetitions": {
+      "maxExtraPerLetter": 2,
+      "maxTotal": 8
+     }
+    }
+   },
+   "op": "censor",
+   "input": "dasar g-o-b-l-o-k kamu",
+   "expected": "dasar *** kamu"
+  },
+  {
+   "id": "evasion-repetitions",
+   "policy": {
+    "evasion": {
+     "separators": {
+      "characters": [
+       "-",
+       "_"
+      ],
+      "maxGap": 1,
+      "maxTotal": 8
+     },
+     "repetitions": {
+      "maxExtraPerLetter": 2,
+      "maxTotal": 8
+     }
+    }
+   },
+   "op": "find",
+   "input": "dasar gooobloook",
+   "expected": [
+    {
+     "word": "goblok",
+     "index": 6,
+     "end": 16,
+     "match": "gooobloook",
+     "via": {
+      "kind": "evasion",
+      "transforms": {
+       "separators": 0,
+       "repetitions": 4,
+       "confusables": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "fuzzy-typo",
+   "policy": {
+    "options": {
+     "dictionary": [
+      "goblok"
+     ]
+    },
+    "fuzzy": {}
+   },
+   "op": "find",
+   "input": "dasar goblox",
+   "expected": [
+    {
+     "word": "goblok",
+     "index": 6,
+     "end": 12,
+     "match": "goblox",
+     "via": {
+      "kind": "fuzzy",
+      "edits": 1,
+      "model": "levenshtein"
+     }
+    }
+   ]
+  },
+  {
+   "id": "fuzzy-osa-transposition",
+   "policy": {
+    "options": {
+     "dictionary": [
+      "goblok"
+     ]
+    },
+    "fuzzy": {
+     "model": "osa"
+    }
+   },
+   "op": "censor",
+   "input": "dasar golbok kamu",
+   "expected": "dasar *** kamu"
+  },
+  {
+   "id": "evasion-fuzzy-composed",
+   "policy": {
+    "options": {
+     "dictionary": [
+      "goblok"
+     ]
+    },
+    "evasion": {
+     "separators": {
+      "characters": [
+       "-",
+       "_"
+      ],
+      "maxGap": 1,
+      "maxTotal": 8
+     },
+     "repetitions": {
+      "maxExtraPerLetter": 2,
+      "maxTotal": 8
+     }
+    },
+    "fuzzy": {}
+   },
+   "op": "censor",
+   "input": "dasar g-o-b-l-o-x kamu",
+   "expected": "dasar *** kamu"
+  },
+  {
+   "id": "evasion-fuzzy-clean",
+   "policy": {
+    "evasion": {
+     "separators": {
+      "characters": [
+       "-",
+       "_"
+      ],
+      "maxGap": 1,
+      "maxTotal": 8
+     },
+     "repetitions": {
+      "maxExtraPerLetter": 2,
+      "maxTotal": 8
+     }
+    },
+    "fuzzy": {}
+   },
+   "op": "flag",
+   "input": "Pesanan sudah sampai. Terima kasih atas bantuan dan informasinya.",
+   "expected": false
+  },
+  {
+   "id": "custom-dictionary",
+   "policy": {
+    "options": {
+     "dictionary": [
+      "kasar"
+     ]
+    }
+   },
+   "op": "find",
+   "input": "kata kasar itu",
+   "expected": [
+    {
+     "word": "kasar",
+     "index": 5,
+     "end": 10,
+     "match": "kasar",
+     "via": {
+      "kind": "exact"
+     }
+    }
+   ]
+  },
+  {
+   "id": "classify-score",
+   "op": "classify",
+   "input": "dasar goblok",
+   "expected": {
+    "score": 35,
+    "level": "moderate",
+    "classified": 1,
+    "unclassified": 0,
+    "words": [
+     "goblok"
+    ]
+   }
+  },
+  {
+   "id": "classify-custom-unclassified",
+   "policy": {
+    "options": {
+     "dictionary": [
+      "kasar"
+     ]
+    }
+   },
+   "op": "classify",
+   "input": "kata kasar itu",
+   "expected": {
+    "score": null,
+    "level": "unrated",
+    "classified": 0,
+    "unclassified": 1,
+    "words": [
+     "kasar"
+    ]
+   }
+  },
+  {
+   "id": "match-limit-is-a-typed-error",
+   "policy": {
+    "options": {
+     "maxMatches": 2
+    }
+   },
+   "op": "find",
+   "input": "goblok goblok goblok",
+   "throws": {
+    "name": "RangeError",
+    "message": "Match limit exceeded"
+   }
+  }
+ ],
+ "sizes": [
+  {
+   "id": "default",
+   "entries": [
+    "index.js"
+   ],
+   "maxMinifiedBytes": 38500,
+   "maxGzipBytes": 13500
+  },
+  {
+   "id": "censor",
+   "entries": [
+    "censor.js"
+   ],
+   "maxMinifiedBytes": 3200,
+   "maxGzipBytes": 1400
+  },
+  {
+   "id": "metadata",
+   "entries": [
+    "metadata.js"
+   ],
+   "maxMinifiedBytes": 79900,
+   "maxGzipBytes": 7200
+  },
+  {
+   "id": "catalog",
+   "entries": [
+    "catalog.js"
+   ],
+   "maxMinifiedBytes": 1033200,
+   "maxGzipBytes": 100600
+  },
+  {
+   "id": "evasion",
+   "entries": [
+    "evasion.js"
+   ],
+   "maxMinifiedBytes": 13400,
+   "maxGzipBytes": 5400
+  },
+  {
+   "id": "fuzzy",
+   "entries": [
+    "fuzzy.js"
+   ],
+   "maxMinifiedBytes": 17300,
+   "maxGzipBytes": 7200
+  },
+  {
+   "id": "default+evasion+fuzzy",
+   "entries": [
+    "index.js",
+    "evasion.js",
+    "fuzzy.js"
+   ],
+   "maxMinifiedBytes": 68100,
+   "maxGzipBytes": 23500
+  }
+ ]
+}
