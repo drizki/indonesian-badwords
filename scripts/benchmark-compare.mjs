@@ -7,6 +7,7 @@ import os from 'node:os';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
+import { accuracyDefinition, accuracyOnlyConfigs, renderAccuracy, scoreConfiguration } from './lib/compare-accuracy.mjs';
 import { createChecker, identifier, identifiers, minimalEnvironment, percentile, rejectedIdentifiers, sink, wideEvasionPolicy } from './lib/bench-common.mjs';
 
 // Public comparison (docs/benchmarks.md). Explicitly opt-in: reference packages are installed in a temporary
@@ -90,7 +91,15 @@ function loadAdapter(config, directory) {
     const { id, policy } = config;
     const external = createRequire(join(directory, 'package.json'));
     if (id.startsWith('ours')) {
-        const checker = createChecker(join(root, 'dist/cjs'), policy);
+        let checker;
+        if (policy.recipe === 'tolerant') {
+            // The README recipe, copied unchanged.
+            const load = createRequire(join(root, 'dist/cjs/index.js'));
+            const { boundedEvasion, latinLookalikes } = load('./evasion.js');
+            checker = new (load('./index.js').Badwords)({ fuzzy: load('./fuzzy.js').boundedFuzzy({ model: 'osa', maxEdits: 1 }),
+                evasion: boundedEvasion({ separators: { characters: [' ', '.', '_', '-'], maxGap: 1, maxTotal: 8 }, repetitions: { maxExtraPerLetter: 2, maxTotal: 8 },
+                    confusables: { mappings: latinLookalikes, maxTotal: 2 } }) });
+        } else checker = createChecker(join(root, 'dist/cjs'), policy);
         return { flag: (text) => checker.flag(text), censor: (text) => checker.censor(text), locate: (text) => checker.find(text) };
     }
     if (id.startsWith('sideid')) {
@@ -220,8 +229,12 @@ function censorProbe(adapter) {
 }
 
 if (process.argv.includes('--worker')) {
-    const { id, directory, tests } = JSON.parse(readFileSync(0, 'utf8'));
-    const config = configs.find((item) => item.id === id);
+    const { id, directory, tests, accuracyOnly } = JSON.parse(readFileSync(0, 'utf8'));
+    const config = [...configs, ...accuracyOnlyConfigs].find((item) => item.id === id);
+    if (accuracyOnly) {
+        console.log(JSON.stringify({ id, accuracy: scoreConfiguration(config, loadAdapter(config, directory)) }));
+        process.exit(0);
+    }
     globalThis.gc?.();
     const heapBefore = process.memoryUsage().heapUsed;
     const start = performance.now();
@@ -243,7 +256,7 @@ if (process.argv.includes('--worker')) {
             return [test.id, cell];
         }));
     }
-    console.log(JSON.stringify({ id, loadAndConstructMs, firstFlagMs, results, probes: probeResults(adapter), offsets: offsetsProbe(adapter), censorSample: censorProbe(adapter),
+    console.log(JSON.stringify({ id, loadAndConstructMs, firstFlagMs, results, accuracy: scoreConfiguration(config, adapter), probes: probeResults(adapter), offsets: offsetsProbe(adapter), censorSample: censorProbe(adapter),
         contextProbe: contextProbe(adapter), screenedIdentifiers: variants, checksum,
         retainedHeapMiB, processPeakRssMiB: process.resourceUsage().maxRSS / 1_024 }));
 }
@@ -267,6 +280,7 @@ const documentedRows = [
     ['Opt-in typo tolerance', { ours: 'yes: `/fuzzy`', sideid: 'yes: similarity, Levenshtein', sopan: 'not described', censorship: 'not described' }]
 ];
 
+const accuracyOrder = ['ours', 'ours-evasion', 'ours-tolerant', 'sideid', 'sideid-split', 'sopan', 'censorship', 'censorship-smart'];
 function render(data) {
     const byId = Object.fromEntries(configs.map((config) => [config.id, config]));
     const env = data.environment;
@@ -356,6 +370,7 @@ function render(data) {
         ...configs.map((config) => { const cold = data.startup[config.id]; return `| ${config.title} | ${cold.loadAndConstructMs.toFixed(2)} ms | ${cold.firstFlagMs.toFixed(2)} ms | ${cold.retainedHeapMiB.toFixed(1)} MiB | ${cold.processPeakRssMiB.toFixed(0)} MiB |`; })].join('\n');
     sections.bundles = [`| Import | Minified | Gzip level 9 (zlib ${env.zlib}) |`, `| --- | ---: | ---: |`,
         ...data.bundles.map((bundle) => `| ${bundle.title} | ${bytes(bundle.minifiedBytes)} B (${kb(bundle.minifiedBytes)}) | ${bytes(bundle.gzipBytes)} B (${kb(bundle.gzipBytes)}) |`)].join('\n');
+    Object.assign(sections, renderAccuracy(data, Object.fromEntries([...configs, ...accuracyOnlyConfigs].map((config) => [config.id, config.title])), accuracyOrder));
     return sections;
 }
 const marker = (name, edge) => `<!-- benchmarks:${edge} ${name} -->`;
@@ -374,7 +389,7 @@ const BUILD_LABEL = 'built from the repository working tree';
 function definitions() {
     const set = identifiers(variants);
     return JSON.parse(JSON.stringify({
-        references, configs, operations, groups, cases, probes,
+        references, configs, operations, groups, cases, probes, accuracyOnlyConfigs, accuracy: accuracyDefinition(),
         method: method(false),
         identifierSet: { scheme: 'q + two letters + q, followed by a space', variants, first: set[0], last: set.at(-1), rejected: rejectedIdentifiers,
             sha256: createHash('sha256').update(set.join(',')).digest('hex') }
@@ -388,6 +403,7 @@ function checkDefinitions(data) {
         catch { throw new Error(`benchmarks/comparison.json was measured with different "${key}" than scripts/benchmark-compare.mjs now defines: rerun \`npm run benchmark:compare -- --write\` (or revert the edit).`); }
     }
     for (const key of Object.keys(data.definitions ?? {})) if (!(key in current)) throw new Error(`benchmarks/comparison.json stores an unknown definition "${key}": rerun with --write.`);
+    for (const id of accuracyOrder) if (!data.accuracy?.results?.[id]) throw new Error(`benchmarks/comparison.json has no accuracy results for ${id}: rerun with --write.`);
     for (const config of configs) for (const operation of operations) {
         const cells = data.results?.[config.id]?.[operation.id];
         if (!cells) throw new Error(`benchmarks/comparison.json has no results for ${config.id}/${operation.id}: rerun with --write.`);
@@ -429,6 +445,7 @@ async function main() {
             if (pinned && !pinned.endsWith(`@${manifest.version}`)) throw new Error(`Reference version mismatch: ${name}@${manifest.version}`);
             return { package: name, version: manifest.version, runtimeDependencies: Object.keys(manifest.dependencies ?? {}).length, types: Boolean(manifest.types ?? manifest.typings) };
         });
+        const accuracy = {};
         const results = {}, startup = {}, probeData = {}, offsets = {}, censorSamples = {}, contexts = {};
         for (const config of configs) {
             console.error(`Measuring ${config.title}...`);
@@ -438,8 +455,16 @@ async function main() {
                     ...(process.env.BENCHMARK_PROGRESS ? { stdio: ['pipe', 'pipe', 'inherit'] } : {}) });
             if (child.error || child.status !== 0) throw new Error(`${config.id}: ${child.error?.message ?? child.stderr}`);
             const worker = JSON.parse(child.stdout.trim());
+            accuracy[config.id] = worker.accuracy;
             results[config.id] = worker.results; probeData[config.id] = worker.probes; offsets[config.id] = worker.offsets; censorSamples[config.id] = worker.censorSample; contexts[config.id] = worker.contextProbe;
             startup[config.id] = { loadAndConstructMs: worker.loadAndConstructMs, firstFlagMs: worker.firstFlagMs, retainedHeapMiB: worker.retainedHeapMiB, processPeakRssMiB: worker.processPeakRssMiB };
+        }
+        for (const config of accuracyOnlyConfigs) {
+            console.error(`Scoring ${config.title}...`);
+            const child = spawnSync(process.execPath, ['--max-old-space-size=256', fileURLToPath(import.meta.url), '--worker'],
+                { input: JSON.stringify({ id: config.id, directory, accuracyOnly: true }), encoding: 'utf8', timeout: 600_000, maxBuffer: 16_777_216, env: minimalEnvironment() });
+            if (child.error || child.status !== 0) throw new Error(`${config.id}: ${child.error?.message ?? child.stderr}`);
+            accuracy[config.id] = JSON.parse(child.stdout.trim()).accuracy;
         }
         const disagreements = [];
         for (const config of configs) for (const operation of operations) {
@@ -471,7 +496,7 @@ async function main() {
                 cpuModel: os.cpus()[0]?.model ?? 'unknown', cpuCount: os.cpus().length, libraryVersion: packages[0].version, build: BUILD_LABEL },
             packages: packages.map(({ package: name, version }) => ({ package: name, version })),
             definitions: definitions(), method: method(quick),
-            results, startup, probes: probeData, sideidContext: contexts.sideid, verifiedFeatures, disagreements, bundles
+            results, accuracy: { definition: definitions().accuracy, results: accuracy }, startup, probes: probeData, sideidContext: contexts.sideid, verifiedFeatures, disagreements, bundles
         };
         if (argument('json')) writeFileSync(argument('json'), JSON.stringify(data, null, 1) + '\n');
         if (process.argv.includes('--write')) {

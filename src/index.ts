@@ -6,7 +6,7 @@ import type { EvasionCompiler, EvasionRuntime } from './evasion/types.ts';
 import { compileAllowedPhrases, matchAcceptance, type AllowedPhrases, type MatchAcceptance } from './core/exceptions.ts';
 import { canonicalSearchView, foldCandidateText, isSimpleUnicodeAtom, normalize, normalizeKey, trimDictionaryWord,
     type Normalization, type NormalizedText } from './text/normalize.ts';
-import { prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
+import { bangCandidates, prepareNativePatterns, potentialPattern, type NativePatterns } from './core/pattern.ts';
 import { UnicodeMatcher, UnicodeView } from './text/unicode.ts';
 import type { DictionaryBudget } from './core/budget.ts';
 import { collapseWhitespace, MatchWindow, maxMatchesMode, type MaxMatchesMode } from './core/pipeline.ts';
@@ -79,10 +79,12 @@ interface NativeMatcher {
     crossing: RegExp | undefined;
     crossingTrigger: string | undefined;
     hazards: RegExp;
+    quiet: RegExp;
     words: readonly string[];
     patterns: NativePatterns;
     potential?: RegExp;
     bangPotential?: RegExp;
+    tokenWork?: number;
     unicode?: UnicodeMatcher;
 }
 
@@ -91,6 +93,8 @@ const ASCII_TEXT = /^[\x00-\x7f]*$/;
 // require the normalization engine and its original-source span mapping.
 const ASCII_WORD = /^[A-Za-z0-9]+$/;
 const WORD_TOKENS = /[a-z0-9]+/gi;
+// Compiling the dictionary regex costs ~1 ms: flag() stays on the Set path until it has tokenized this much text.
+const PATTERN_WARMUP = 262_144;
 let internalBang: RegExp | undefined;
 let bareEmoji: RegExp | undefined;
 const emojiDelimiters = new Map<number, boolean>();
@@ -129,6 +133,7 @@ export class Badwords {
     #native: NativeMatcher | null | undefined;
     #preset = false;
     #version = 0;
+    #bangGuard: { matcher: Matcher; pattern: RegExp | undefined } | undefined;
     readonly #provenance: ProvenanceSettings;
 
     constructor(options: BadwordsOptions = {}) {
@@ -318,6 +323,7 @@ export class Badwords {
                     crossing: undefined,
                     crossingTrigger: undefined,
                     hazards: /[0-9@$(|!_\x80-\uffff]/g,
+                    quiet: /[0-9@$(|_\x80-\uffff]/g,
                     words, patterns
                 };
             }
@@ -343,11 +349,12 @@ export class Badwords {
                 if (native.complex.test(text)) return;
             }
         }
-        native.hazards.lastIndex = 0;
+        let hazards = native.hazards;
+        hazards.lastIndex = 0;
         let hazard: RegExpExecArray | null;
         let folding = false;
         let bangs = false;
-        while ((hazard = native.hazards.exec(text)) !== null) {
+        while ((hazard = hazards.exec(text)) !== null) {
             const code = hazard[0].charCodeAt(0);
             if (code > 127) {
                 const point = text.codePointAt(hazard.index)!;
@@ -361,23 +368,33 @@ export class Badwords {
                     }
                     return;
                 }
-                native.hazards.lastIndex += point > 0xffff ? 1 : 0;
+                hazards.lastIndex += point > 0xffff ? 1 : 0;
+                continue;
+            }
+            let end = hazard.index + 1;
+            if ((code < 48 || code > 57) && text.charCodeAt(end) === code) {
+                // Only a lone symbol between word characters can join letters; skip runs.
+                while (text.charCodeAt(end) === code) end++;
+                hazards.lastIndex = end;
+                if (code === 95) folding = true;
                 continue;
             }
             if (code === 95) { folding = true; continue; }
             if (this.#normalization === 'none') continue;
             const before = text.charCodeAt(hazard.index - 1);
-            let end = hazard.index + 1;
             if (code >= 48 && code <= 57) {
                 while (text.charCodeAt(end) >= 48 && text.charCodeAt(end) <= 57) end++;
-                native.hazards.lastIndex = end;
+                hazards.lastIndex = end;
             }
             const after = text.charCodeAt(end);
             if (code >= 48 && code <= 57) {
                 if (asciiLetter(before) || asciiLetter(after)) folding = true;
             } else if (asciiWord(before) && asciiWord(after)) {
-                if (code === 33) bangs = true;
-                else folding = true;
+                if (code === 33) {
+                    bangs = true;
+                    native.quiet.lastIndex = hazards.lastIndex;
+                    hazards = native.quiet;
+                } else folding = true;
             }
             if (folding) {
                 native.potential ??= potentialPattern(native.words, false, native.patterns);
@@ -450,18 +467,22 @@ export class Badwords {
             return;
         }
         const matcher = this.#compileMatcher();
-        const value = this.#normalizeInput(text);
+        const value = this.#normalizeInput(text, true);
         window?.frontier(value.starts, this.#maxKeyLength);
         matcher.scan(value, this.#mode === 'word', visit, spansOnly, undefined, accept);
     }
 
-    #normalizeInput(text: string): NormalizedText {
+    /** `plain`: the result feeds only the exact matcher, so bangs no word can use may stay literal. */
+    #normalizeInput(text: string, plain = false): NormalizedText {
         if (this.#normalization !== 'standard' || (!text.includes('!') && !/[^\x00-\x7f]/.test(text))) {
             return normalize(text, this.#normalization, this.#ignoreRepeatedLetters);
         }
         const literal = normalize(text, 'standard', this.#ignoreRepeatedLetters, true);
         internalBang ??= new RegExp(String.raw`[\p{L}\p{N}\p{M}]![\p{L}\p{N}\p{M}]`, 'u');
         if (!internalBang.test(literal.text)) return literal;
+        // In word mode a folded bang only adds matches beside an `i` neighborhood; without one the literal form holds
+        // every match. Substring matches can sit inside a run the fold joins (`abc!123` -> `abciize`), so they always fold.
+        if (plain && this.#mode === 'word' && !this.#ignoreRepeatedLetters && ASCII_TEXT.test(text) && !this.#bangNeighborhood(text)) return literal;
         const starts = new Set<number>();
         const ends = new Set<number>();
         // An exclamation between already complete literal dictionary words is
@@ -509,6 +530,12 @@ export class Badwords {
         return normalize(text, 'standard', this.#ignoreRepeatedLetters, protectedBangs);
     }
 
+    #bangNeighborhood(text: string): boolean {
+        const matcher = this.#compileMatcher();
+        if (this.#bangGuard?.matcher !== matcher) this.#bangGuard = { matcher, pattern: bangCandidates([...this.#dictionary]) };
+        return !this.#bangGuard.pattern || this.#bangGuard.pattern.test(text);
+    }
+
     #window(mode?: MaxMatchesMode): MatchWindow {
         return new MatchWindow(this.#maxMatches, (mode ?? this.#onMaxMatches) === 'truncate');
     }
@@ -524,8 +551,9 @@ export class Badwords {
         }
         if (!text.length || !this.#dictionary.size) return false;
         if (this.#longWord(text)) return false;
-        const value = this.#normalization === 'standard' ? text.toLowerCase() : text;
-        const native = this.#nativeFor(text, false, value);
+        const warm = this.#native?.censorPattern ?? this.#native?.pattern ?? ((this.#native?.tokenWork ?? 0) >= PATTERN_WARMUP);
+        const value = warm || this.#normalization !== 'standard' ? text : text.toLowerCase();
+        const native = this.#nativeFor(text, !!warm, warm ? undefined : value);
         if (native === CLEAN) return false;
         if (native instanceof UnicodeView) {
             let found = false;
@@ -533,8 +561,10 @@ export class Badwords {
             return found;
         }
         if (native) {
-            // Lexical Set lookups stop at the first matched token and avoid
-            // compiling the full dictionary search regex for boolean checks.
+            if (warm) {
+                return (native.censorPattern ?? this.#pattern(native)).test(text);
+            }
+            native.tokenWork = (native.tokenWork ?? 0) + text.length;
             WORD_TOKENS.lastIndex = 0;
             let token: RegExpExecArray | null;
             while ((token = WORD_TOKENS.exec(value)) !== null) {
@@ -573,7 +603,7 @@ export class Badwords {
         const native = advanced ? undefined : this.#nativeFor(text);
         if (native === CLEAN) return text;
         const spans = advanced ? this.#evasion!.censor(this.#normalizeInput(text), this.#mode === 'word', accept)
-            : native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text), this.#mode === 'word', accept);
+            : native ? [] : this.#compileMatcher().scanCensor(this.#normalizeInput(text, true), this.#mode === 'word', accept);
         if (native) {
             const collect = ({ word, start, end, order }: Match) => {
                 spans.push({ start, end, entries: [{ word, key: word, order }] });

@@ -102,3 +102,34 @@ export function potentialPattern(words: readonly string[], bangOnly = false, pre
     }
     return new RegExp(patterns.length ? patterns.join('|') : '(?!)', 'i');
 }
+
+/**
+ * A cheap necessary test for the bang rewrite in word mode: a folded exclamation can only belong to a whole-word
+ * match as an `i` with that word's own letters beside it (two either side, fewer past punctuation). The left and right
+ * contexts are tested independently, which keeps the check a superset but lets the engine scan for `!` directly.
+ * Undefined when the dictionary has characters this cannot reason about.
+ */
+export function bangCandidates(words: readonly string[]): RegExp | undefined {
+    const groups = [0, 1, 2, 3].map(() => [new Set<string>(), new Set<string>()]);
+    const side = (word: string, from: number, step: number): string => {
+        const parts: string[] = [];
+        for (let at = from; parts.length < 2 && at >= 0 && at < word.length; at += step) {
+            const alphanumeric = /[a-z0-9]/i.test(word[at]);
+            parts.push(ALIASES[word[at]] ?? (alphanumeric ? word[at] : '[^a-z0-9]'));
+            if (!alphanumeric) break;
+        }
+        return (step < 0 ? parts.reverse() : parts).join('');
+    };
+    for (const word of words) {
+        if (!/^[\x00-\x7f]*$/.test(word)) return;
+        for (let index = word.indexOf('i'); index >= 0; index = word.indexOf('i', index + 1)) {
+            const left = side(word, index - 1, -1), right = side(word, index + 1, 1);
+            const [lefts, rights] = groups[(left ? 1 : 0) | (right ? 2 : 0)];
+            lefts.add(left);
+            rights.add(right);
+        }
+    }
+    if (groups[0][0].size) return /!/;
+    const terms = groups.map(([lefts, rights], key) => lefts.size ? `${key & 1 ? `(?<=(?:${[...lefts].join('|')})!)` : ''}${key & 2 ? `(?=${[...rights].join('|')})` : ''}` : '');
+    return new RegExp(`!(?:${terms.filter(Boolean).join('|') || '(?!)'})`, 'i');
+}

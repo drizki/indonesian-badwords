@@ -47,8 +47,10 @@ for (const op of ['flag', 'find', 'analyze']) add(`leetspeak-paragraph-${op}`, o
 add('leetspeak-dense-paragraph-find', 'find', dense(4_000, 'g0bl0k k0nt0l '));
 add('unicode-dense-paragraph-find', 'find', dense(4_000, UNICODE));
 for (const op of ['find', 'censor']) add(`dense-20000-${op}`, op, dense(20_000, 'kontol goblok ngentot '));
-add('bang-dense-paragraph-flag', 'flag', (index) => tag(index) + '!'.repeat(3_996));
-add('clean-long-text-flag', 'flag', clean(64_000));
+for (const op of ['flag', 'censor', 'find']) add(`bang-dense-paragraph-${op}`, op, (index) => tag(index) + '!'.repeat(3_996));
+for (const op of ['flag', 'censor', 'find']) add(`bang-letters-paragraph-${op}`, op, dense(4_000, 'a!'));
+for (const op of ['flag', 'censor']) add(`separator-run-${op}`, op, dense(5_000, 'g-o-b-l-o-'));
+for (const op of ['flag', 'censor', 'find']) add(`clean-long-text-${op}`, op, clean(64_000));
 add('long-token-flag', 'flag', (index) => (tag(index).trim() + 'pengembanganinfrastruktur'.repeat(3_000)).slice(0, 64_000));
 add('evasion-clean-paragraph-flag', 'flag', clean(4_000), { evasion: bounded });
 add('evasion-separated-chat-censor', 'censor', placed(280, 'g-o-b-l-o-k'), { evasion: bounded });
