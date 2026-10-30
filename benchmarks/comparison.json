@@ -1,5 +1,5 @@
 {
- "schema": 1,
+ "schema": 2,
  "date": "2026-10-30",
  "pinsCheckedOn": "2026-10-30",
  "quick": false,
@@ -7,12 +7,13 @@
  "environment": {
   "node": "v26.10.0",
   "v8": "14.6.202.34-node.34",
+  "zlib": "1.3.2",
   "os": "Linux 7.2.6-arch2-1",
   "architecture": "x64",
   "cpuModel": "AMD Ryzen 7 9700X 8-Core Processor",
   "cpuCount": 16,
   "libraryVersion": "2.6.0",
-  "commit": "fdc0829b04f3"
+  "build": "built from the repository working tree"
  },
  "packages": [
   {
@@ -32,6 +33,318 @@
    "version": "2.0.3"
   }
  ],
+ "definitions": {
+  "references": [
+   "@sideid/id-profanity-filter@1.13.0",
+   "@fldx/sopan@1.0.1",
+   "censorship-id@2.0.3"
+  ],
+  "configs": [
+   {
+    "id": "ours",
+    "package": "indonesian-badwords",
+    "title": "indonesian-badwords",
+    "options": "defaults (word mode, standard normalization, leetspeak folding)",
+    "policy": {}
+   },
+   {
+    "id": "ours-evasion",
+    "package": "indonesian-badwords",
+    "title": "indonesian-badwords + evasion",
+    "options": "`boundedEvasion`: single separators `- _ . *`, up to 2 repeated letters per letter",
+    "policy": {
+     "evasion": {
+      "separators": {
+       "characters": [
+        "-",
+        "_",
+        ".",
+        "*"
+       ],
+       "maxGap": 1,
+       "maxTotal": 8
+      },
+      "repetitions": {
+       "maxExtraPerLetter": 2,
+       "maxTotal": 8
+      }
+     }
+    }
+   },
+   {
+    "id": "sideid",
+    "package": "@sideid/id-profanity-filter",
+    "title": "@sideid/id-profanity-filter",
+    "options": "defaults",
+    "policy": {}
+   },
+   {
+    "id": "sideid-split",
+    "package": "@sideid/id-profanity-filter",
+    "title": "@sideid/id-profanity-filter + split",
+    "options": "`detectSplit: true`",
+    "policy": {
+     "options": {
+      "detectSplit": true
+     }
+    }
+   },
+   {
+    "id": "sopan",
+    "package": "@fldx/sopan",
+    "title": "@fldx/sopan",
+    "options": "defaults",
+    "policy": {}
+   },
+   {
+    "id": "censorship",
+    "package": "censorship-id",
+    "title": "censorship-id",
+    "options": "defaults",
+    "policy": {}
+   },
+   {
+    "id": "censorship-smart",
+    "package": "censorship-id",
+    "title": "censorship-id + smart",
+    "options": "`smartMode: true`",
+    "policy": {
+     "call": {
+      "smartMode": true
+     }
+    }
+   }
+  ],
+  "operations": [
+   {
+    "id": "flag",
+    "title": "Boolean check",
+    "ours": "`flag()`"
+   },
+   {
+    "id": "censor",
+    "title": "Censor",
+    "ours": "`censor()`"
+   },
+   {
+    "id": "locate",
+    "title": "Locate",
+    "ours": "`find()`"
+   }
+  ],
+  "groups": [
+   [
+    "chat",
+    "Chat-sized (32 and 280 characters)"
+   ],
+   [
+    "paragraph",
+    "Paragraph (4,000 characters)"
+   ],
+   [
+    "long",
+    "Long text (64,000 characters)"
+   ],
+   [
+    "adversarial",
+    "Adversarial inputs"
+   ]
+  ],
+  "cases": [
+   {
+    "id": "clean-short",
+    "group": "chat",
+    "length": 32,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "clean-chat",
+    "group": "chat",
+    "length": 280,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "match-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "goblok",
+    "what": "one plain match in the middle"
+   },
+   {
+    "id": "leet-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "g0bl0k",
+    "what": "one leetspeak match"
+   },
+   {
+    "id": "unicode-clean-chat",
+    "group": "chat",
+    "length": 280,
+    "seed": "😀 Terima kasih, café baru itu nyaman. Pengiriman sudah sampai. ",
+    "what": "clean, accents and emoji"
+   },
+   {
+    "id": "unicode-match-chat",
+    "group": "chat",
+    "length": 280,
+    "seed": "😀 Terima kasih, café baru itu nyaman. Pengiriman sudah sampai. ",
+    "position": "middle",
+    "term": "goblok",
+    "what": "one match, accents and emoji"
+   },
+   {
+    "id": "fullwidth-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "ＧＯＢＬＯＫ",
+    "what": "one full-width match"
+   },
+   {
+    "id": "invisible-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "kon​tol",
+    "what": "one match split by a zero-width space"
+   },
+   {
+    "id": "separator-chat",
+    "group": "chat",
+    "length": 280,
+    "position": "middle",
+    "term": "k-o-n-t-o-l",
+    "what": "one match spelled with hyphens"
+   },
+   {
+    "id": "clean-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "unicode-clean-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "seed": "😀 Terima kasih, café baru itu nyaman. Pengiriman sudah sampai. ",
+    "what": "clean, accents and emoji"
+   },
+   {
+    "id": "match-start-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "position": "start",
+    "term": "goblok",
+    "what": "one match at the start"
+   },
+   {
+    "id": "match-middle-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "position": "middle",
+    "term": "goblok",
+    "what": "one match at the middle"
+   },
+   {
+    "id": "match-end-paragraph",
+    "group": "paragraph",
+    "length": 4000,
+    "position": "end",
+    "term": "goblok",
+    "what": "one match at the end"
+   },
+   {
+    "id": "clean-long",
+    "group": "long",
+    "length": 64000,
+    "what": "clean ASCII"
+   },
+   {
+    "id": "clean-long-token",
+    "group": "adversarial",
+    "length": 64000,
+    "seed": "pengembanganinfrastrukturpendidikan",
+    "what": "one unbroken 64,000-letter token"
+   },
+   {
+    "id": "dense-paragraph",
+    "group": "adversarial",
+    "length": 4000,
+    "seed": "goblok kontol ",
+    "whole": true,
+    "what": "a match every 7 characters"
+   },
+   {
+    "id": "bang-dense-paragraph",
+    "group": "adversarial",
+    "length": 4000,
+    "seed": "!",
+    "what": "`!` repeated (no letters)"
+   },
+   {
+    "id": "separator-run-paragraph",
+    "group": "adversarial",
+    "length": 4000,
+    "seed": "a-",
+    "what": "letters joined by hyphens, no match"
+   }
+  ],
+  "probes": [
+   [
+    "Plain match (`goblok`)",
+    "dasar goblok kamu"
+   ],
+   [
+    "Leetspeak (`g0bl0k`)",
+    "dasar g0bl0k kamu"
+   ],
+   [
+    "Full-width letters (`ＧＯＢＬＯＫ`)",
+    "dasar ＧＯＢＬＯＫ kamu"
+   ],
+   [
+    "Zero-width space inside a word",
+    "dasar kon​tol kamu"
+   ],
+   [
+    "Hyphen-separated letters (`k-o-n-t-o-l`)",
+    "dasar k-o-n-t-o-l kamu"
+   ],
+   [
+    "Repeated letters (`gooobloook`)",
+    "dasar gooobloook kamu"
+   ],
+   [
+    "One-letter typo (`goblox`)",
+    "dasar goblox kamu"
+   ],
+   [
+    "Clean sentence not flagged (control)",
+    "Pesanan sudah sampai, terima kasih atas bantuannya."
+   ]
+  ],
+  "method": {
+   "warmupMs": 100,
+   "samples": 31,
+   "variants": 257,
+   "minimumBatchMs": 2
+  },
+  "identifierSet": {
+   "scheme": "q + two letters + q, followed by a space",
+   "variants": 257,
+   "first": "qaaq",
+   "last": "qjxq",
+   "rejected": [
+    "qcdq",
+    "qmlq",
+    "qsuq"
+   ],
+   "sha256": "3bec632221d0102d03a639271710eb2445cae619ac44d6281d157d9e1f5e1dbc"
+  }
+ },
  "method": {
   "warmupMs": 100,
   "samples": 31,
@@ -44,348 +357,384 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.4508,
-     "p95Us": 0.6553
+     "medianUs": 0.4081,
+     "p95Us": 0.4386
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.859,
-     "p95Us": 5.077
+     "medianUs": 2.46,
+     "p95Us": 3.012
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 1.635,
-     "p95Us": 1.761
+     "medianUs": 1.464,
+     "p95Us": 1.54
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 4.221,
-     "p95Us": 4.413
+     "medianUs": 3.997,
+     "p95Us": 4.374
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 2.02,
-     "p95Us": 3.294
+     "medianUs": 1.759,
+     "p95Us": 1.796
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 3.013,
-     "p95Us": 3.737
+     "medianUs": 2.639,
+     "p95Us": 2.671
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 6.71,
-     "p95Us": 7.38
+     "medianUs": 6.217,
+     "p95Us": 6.341
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 8.436,
-     "p95Us": 8.747
+     "medianUs": 7.937,
+     "p95Us": 7.992
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 34.75,
-     "p95Us": 35.52
+     "medianUs": 31.98,
+     "p95Us": 32.22
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 21.11,
-     "p95Us": 24.54
+     "medianUs": 19.2,
+     "p95Us": 20
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 3.567,
-     "p95Us": 3.705
+     "medianUs": 3.333,
+     "p95Us": 3.613
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 18.96,
-     "p95Us": 19.71
+     "medianUs": 17.43,
+     "p95Us": 17.96
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 34.38,
-     "p95Us": 35.68
+     "medianUs": 31.47,
+     "p95Us": 32.23
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 573.2,
-     "p95Us": 627.8
+     "medianUs": 507.3,
+     "p95Us": 539.2
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 89.7,
-     "p95Us": 93.87
+     "medianUs": 80.66,
+     "p95Us": 81.55
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 3.696,
-     "p95Us": 4.185
+     "medianUs": 3.321,
+     "p95Us": 3.457
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 96.66,
-     "p95Us": 104.5
+     "medianUs": 75.61,
+     "p95Us": 89.16
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 46.35,
-     "p95Us": 47.62
+     "medianUs": 41.34,
+     "p95Us": 42.25
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.1326,
-     "p95Us": 0.1449
+     "medianUs": 0.09692,
+     "p95Us": 0.09918
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 0.4981,
-     "p95Us": 0.5103
+     "medianUs": 0.4482,
+     "p95Us": 0.455
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 0.5026,
-     "p95Us": 0.5553
+     "medianUs": 0.4557,
+     "p95Us": 0.4773
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 5.83,
-     "p95Us": 6.19
+     "medianUs": 5.28,
+     "p95Us": 5.728
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1.639,
-     "p95Us": 1.701
+     "medianUs": 1.518,
+     "p95Us": 1.571
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 3.142,
-     "p95Us": 5.816
+     "medianUs": 2.873,
+     "p95Us": 2.981
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 7.737,
-     "p95Us": 8.367
+     "medianUs": 7.219,
+     "p95Us": 7.716
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 9.58,
-     "p95Us": 9.991
+     "medianUs": 9.02,
+     "p95Us": 9.487
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 5.267,
-     "p95Us": 5.544
+     "medianUs": 4.864,
+     "p95Us": 5.321
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 15.78,
-     "p95Us": 16.41
+     "medianUs": 14.73,
+     "p95Us": 15.13
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 5.319,
-     "p95Us": 11.28
+     "medianUs": 4.934,
+     "p95Us": 5.041
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 5.308,
-     "p95Us": 5.486
+     "medianUs": 4.909,
+     "p95Us": 4.981
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 5.089,
-     "p95Us": 5.561
+     "medianUs": 4.984,
+     "p95Us": 5.057
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 82.58,
-     "p95Us": 129.7
+     "medianUs": 79.25,
+     "p95Us": 91.23
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 67.67,
-     "p95Us": 96.17
+     "medianUs": 72.24,
+     "p95Us": 72.74
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 7.963,
-     "p95Us": 8.502
+     "medianUs": 7.839,
+     "p95Us": 9.805
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 96.54,
-     "p95Us": 154.2
+     "medianUs": 74.87,
+     "p95Us": 78.74
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 3.617,
-     "p95Us": 7.398
+     "medianUs": 4.069,
+     "p95Us": 4.377
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.1241,
-     "p95Us": 0.1395
+     "medianUs": 0.1338,
+     "p95Us": 0.1626
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 0.5912,
-     "p95Us": 0.8929
+     "medianUs": 0.6193,
+     "p95Us": 0.6922
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 0.908,
-     "p95Us": 1.121
+     "medianUs": 0.7787,
+     "p95Us": 0.8228
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 5.839,
-     "p95Us": 6.18
+     "medianUs": 5.674,
+     "p95Us": 5.923
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1.676,
-     "p95Us": 1.845
+     "medianUs": 1.614,
+     "p95Us": 1.743
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 3.157,
-     "p95Us": 3.561
+     "medianUs": 2.837,
+     "p95Us": 3.025
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 7.815,
-     "p95Us": 8.615
+     "medianUs": 7.691,
+     "p95Us": 8.699
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 9.526,
-     "p95Us": 11.26
+     "medianUs": 9.34,
+     "p95Us": 9.934
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 7.537,
-     "p95Us": 7.724
+     "medianUs": 7.383,
+     "p95Us": 8.207
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 16.07,
-     "p95Us": 16.6
+     "medianUs": 15.98,
+     "p95Us": 17.69
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 7.936,
-     "p95Us": 15.77
+     "medianUs": 7.584,
+     "p95Us": 10.03
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 8.117,
-     "p95Us": 8.409
+     "medianUs": 7.533,
+     "p95Us": 7.926
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 8.414,
-     "p95Us": 8.628
+     "medianUs": 7.4,
+     "p95Us": 7.501
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 128,
-     "p95Us": 131.2
+     "medianUs": 125,
+     "p95Us": 133.6
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 65.11,
-     "p95Us": 66.04
+     "medianUs": 62.48,
+     "p95Us": 63.08
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 77.05,
-     "p95Us": 80.55
+     "medianUs": 60.62,
+     "p95Us": 68.35
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 96.7,
-     "p95Us": 113.7
+     "medianUs": 70.89,
+     "p95Us": 79.08
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 11.74,
-     "p95Us": 11.9
+     "medianUs": 11.49,
+     "p95Us": 11.63
     }
    }
   },
@@ -394,348 +743,348 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.3426,
-     "p95Us": 0.3732
+     "medianUs": 0.3276,
+     "p95Us": 0.3321
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.307,
-     "p95Us": 4.38
+     "medianUs": 2.174,
+     "p95Us": 2.508
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 2.467,
-     "p95Us": 2.617
+     "medianUs": 2.381,
+     "p95Us": 2.659
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 7.066,
-     "p95Us": 9.249
+     "medianUs": 6.949,
+     "p95Us": 7.547
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 12.59,
-     "p95Us": 13.01
+     "medianUs": 12.58,
+     "p95Us": 13.49
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 16.72,
-     "p95Us": 17.68
+     "medianUs": 19.97,
+     "p95Us": 32.64
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 9.358,
-     "p95Us": 9.763
+     "medianUs": 9.456,
+     "p95Us": 11.67
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 21.67,
-     "p95Us": 23.07
+     "medianUs": 21.14,
+     "p95Us": 22.96
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 11.43,
-     "p95Us": 13.31
+     "medianUs": 11.1,
+     "p95Us": 13.95
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 30.91,
-     "p95Us": 31.3
+     "medianUs": 44.6,
+     "p95Us": 48.97
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 174.3,
-     "p95Us": 207.1
+     "medianUs": 183.2,
+     "p95Us": 253
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 27.79,
-     "p95Us": 31.92
+     "medianUs": 26.15,
+     "p95Us": 31.5
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 29.09,
-     "p95Us": 30.92
+     "medianUs": 29.32,
+     "p95Us": 34.62
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 34.19,
-     "p95Us": 38.19
+     "medianUs": 32.2,
+     "p95Us": 35.27
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 463.1,
-     "p95Us": 493.4
+     "medianUs": 466.9,
+     "p95Us": 551.6
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 392.6,
-     "p95Us": 423
+     "medianUs": 397.5,
+     "p95Us": 446.4
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 28.56,
-     "p95Us": 35.65
+     "medianUs": 27.94,
+     "p95Us": 30.39
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 182.2,
-     "p95Us": 210.2
+     "medianUs": 168.7,
+     "p95Us": 207.6
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 46.1,
-     "p95Us": 48.98
+     "medianUs": 43.13,
+     "p95Us": 45.47
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.3678,
-     "p95Us": 0.4286
+     "medianUs": 0.3489,
+     "p95Us": 0.3684
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.319,
-     "p95Us": 2.76
+     "medianUs": 2.05,
+     "p95Us": 2.849
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 2.519,
-     "p95Us": 3.017
+     "medianUs": 2.262,
+     "p95Us": 2.406
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 8.312,
-     "p95Us": 8.848
+     "medianUs": 8.246,
+     "p95Us": 12.14
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 12.25,
-     "p95Us": 12.34
+     "medianUs": 12.21,
+     "p95Us": 14.88
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 17.2,
-     "p95Us": 18.11
+     "medianUs": 17.05,
+     "p95Us": 17.86
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 10.21,
-     "p95Us": 14.75
+     "medianUs": 9.872,
+     "p95Us": 10.34
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 22.93,
-     "p95Us": 33.82
+     "medianUs": 21.56,
+     "p95Us": 23.65
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 13.09,
-     "p95Us": 13.72
+     "medianUs": 12.72,
+     "p95Us": 13.31
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 25.37,
-     "p95Us": 35.81
+     "medianUs": 25.43,
+     "p95Us": 27.29
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 170.6,
-     "p95Us": 289.1
+     "medianUs": 173.6,
+     "p95Us": 228.8
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 29.35,
-     "p95Us": 31.5
+     "medianUs": 30,
+     "p95Us": 42.06
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 28.58,
-     "p95Us": 31.52
+     "medianUs": 29.69,
+     "p95Us": 60.68
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 29.3,
-     "p95Us": 36.44
+     "medianUs": 27.87,
+     "p95Us": 29.42
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 425.3,
-     "p95Us": 642.6
+     "medianUs": 382.7,
+     "p95Us": 405.7
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 403.5,
-     "p95Us": 526.2
+     "medianUs": 353.7,
+     "p95Us": 413.9
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 34.4,
-     "p95Us": 54.34
+     "medianUs": 31.43,
+     "p95Us": 34.11
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 180.3,
-     "p95Us": 317.7
+     "medianUs": 162.1,
+     "p95Us": 167.8
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 41.25,
-     "p95Us": 70.57
+     "medianUs": 35.46,
+     "p95Us": 36.9
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 0.4111,
-     "p95Us": 0.7224
+     "medianUs": 0.336,
+     "p95Us": 0.3693
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 2.297,
-     "p95Us": 4.172
+     "medianUs": 2.042,
+     "p95Us": 2.27
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 4.195,
-     "p95Us": 7.012
+     "medianUs": 2.605,
+     "p95Us": 2.759
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 9.6,
-     "p95Us": 25.44
+     "medianUs": 8.473,
+     "p95Us": 9.942
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 13.45,
-     "p95Us": 19.77
+     "medianUs": 12.53,
+     "p95Us": 12.68
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 19.31,
-     "p95Us": 24.93
+     "medianUs": 16.56,
+     "p95Us": 19.89
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 11.85,
-     "p95Us": 14.24
+     "medianUs": 10.04,
+     "p95Us": 10.95
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 22.27,
-     "p95Us": 23.28
+     "medianUs": 21.33,
+     "p95Us": 21.96
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 14.17,
-     "p95Us": 17.58
+     "medianUs": 13.01,
+     "p95Us": 14.69
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 27.81,
-     "p95Us": 29.37
+     "medianUs": 26.49,
+     "p95Us": 26.78
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 165.2,
-     "p95Us": 174.8
+     "medianUs": 165.4,
+     "p95Us": 180.1
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 31.7,
-     "p95Us": 33.6
+     "medianUs": 31.55,
+     "p95Us": 33.22
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 33.51,
-     "p95Us": 44.92
+     "medianUs": 30.37,
+     "p95Us": 31.88
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 30.98,
-     "p95Us": 34.42
+     "medianUs": 29.99,
+     "p95Us": 31.29
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 481.6,
-     "p95Us": 724.8
+     "medianUs": 414.1,
+     "p95Us": 433.1
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 446.9,
-     "p95Us": 706.3
+     "medianUs": 354.4,
+     "p95Us": 373
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 99.05,
-     "p95Us": 116.4
+     "medianUs": 89.22,
+     "p95Us": 96.8
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 172.4,
-     "p95Us": 186.3
+     "medianUs": 163.7,
+     "p95Us": 172.1
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 42.19,
-     "p95Us": 44.79
+     "medianUs": 42.16,
+     "p95Us": 44.34
     }
    }
   },
@@ -744,232 +1093,280 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 306.4,
-     "p95Us": 421.2
+     "medianUs": 289,
+     "p95Us": 293.4
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 310.4,
-     "p95Us": 343.4
+     "medianUs": 311.6,
+     "p95Us": 381.6
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 311.1,
-     "p95Us": 319.2
+     "medianUs": 321.2,
+     "p95Us": 342.3
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 306.3,
-     "p95Us": 335.5
+     "medianUs": 313.3,
+     "p95Us": 317.5
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 299.5,
-     "p95Us": 303.3
+     "medianUs": 307,
+     "p95Us": 326
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 306.8,
-     "p95Us": 330.6
+     "medianUs": 311.8,
+     "p95Us": 322
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 302.8,
-     "p95Us": 306.5
+     "medianUs": 302.6,
+     "p95Us": 315.6
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 308.7,
-     "p95Us": 340.8
+     "medianUs": 302.3,
+     "p95Us": 311.8
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 535.6,
-     "p95Us": 623.9
+     "medianUs": 525.6,
+     "p95Us": 559.3
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 529.2,
-     "p95Us": 627.2
+     "medianUs": 511.8,
+     "p95Us": 575.4
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 542.6,
-     "p95Us": 562.4
+     "medianUs": 527.2,
+     "p95Us": 547.6
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 546.7,
-     "p95Us": 586.4
+     "medianUs": 532.9,
+     "p95Us": 570.7
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 544.9,
-     "p95Us": 560.4
+     "medianUs": 537.3,
+     "p95Us": 578.6
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4144,
-     "p95Us": 4356
+     "medianUs": 4084,
+     "p95Us": 4538
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 4133,
-     "p95Us": 4335
+     "medianUs": 3983,
+     "p95Us": 4032
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 2574,
-     "p95Us": 3091
+     "medianUs": 2192,
+     "p95Us": 2827
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 569.5,
-     "p95Us": 617.6
+     "medianUs": 485.1,
+     "p95Us": 501.3
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 561.3,
-     "p95Us": 626.3
+     "medianUs": 477.2,
+     "p95Us": 527.1
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 336.4,
-     "p95Us": 379.7
+     "medianUs": 292,
+     "p95Us": 337.5
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 632,
-     "p95Us": 694.5
+     "medianUs": 301.8,
+     "p95Us": 323.5
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 722.5,
-     "p95Us": 770.4
+     "medianUs": 657.5,
+     "p95Us": 787.8
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 1310,
-     "p95Us": 1429
+     "medianUs": 620.1,
+     "p95Us": 658.7
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 636.1,
-     "p95Us": 675.5
+     "medianUs": 305.4,
+     "p95Us": 322.8
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 1320,
-     "p95Us": 1435
+     "medianUs": 626.1,
+     "p95Us": 656.2
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 1112,
-     "p95Us": 1205
+     "medianUs": 537.5,
+     "p95Us": 600.9
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 1050,
-     "p95Us": 1155
+     "medianUs": 511.3,
+     "p95Us": 543.4
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 1293,
-     "p95Us": 2241
+     "medianUs": 1101,
+     "p95Us": 1271
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 1311,
-     "p95Us": 1448
+     "medianUs": 1092,
+     "p95Us": 1200
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 1256,
-     "p95Us": 1452
+     "medianUs": 1122,
+     "p95Us": 1424
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4829,
-     "p95Us": 5239
+     "medianUs": 4005,
+     "p95Us": 4189
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 4822,
-     "p95Us": 5113
+     "medianUs": 3999,
+     "p95Us": 4364
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 5482,
-     "p95Us": 7012
+     "medianUs": 4776,
+     "p95Us": 5546
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 563.4,
-     "p95Us": 614.4
+     "medianUs": 477.9,
+     "p95Us": 517.4
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 553.3,
-     "p95Us": 594.2
+     "medianUs": 473.5,
+     "p95Us": 495.2
     }
    },
    "locate": "unsupported"
@@ -979,232 +1376,328 @@
     "clean-short": {
      "id": "clean-short",
      "status": "different-output",
-     "expected": false,
-     "actual": true
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "different-output",
-     "expected": false,
-     "actual": true
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 1062,
-     "p95Us": 1121
+     "medianUs": 515.4,
+     "p95Us": 554
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 1061,
-     "p95Us": 1314
+     "medianUs": 507.9,
+     "p95Us": 551.4
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "different-output",
-     "expected": false,
-     "actual": true
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 1103,
-     "p95Us": 1217
+     "medianUs": 531.6,
+     "p95Us": 600.5
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "measured",
-     "medianUs": 638.4,
-     "p95Us": 933.8
+     "medianUs": 531,
+     "p95Us": 568.9
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 622.5,
-     "p95Us": 761.7
+     "medianUs": 514.2,
+     "p95Us": 545.6
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 619.5,
-     "p95Us": 732.2
+     "medianUs": 509.4,
+     "p95Us": 526.6
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "different-output",
-     "expected": false,
-     "actual": true
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "different-output",
-     "expected": false,
-     "actual": true
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 1327,
-     "p95Us": 1410
+     "medianUs": 1170,
+     "p95Us": 1233
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 1377,
-     "p95Us": 2280
+     "medianUs": 1180,
+     "p95Us": 1247
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 1385,
-     "p95Us": 1567
+     "medianUs": 1554,
+     "p95Us": 2208
     },
     "clean-long": {
      "id": "clean-long",
      "status": "different-output",
-     "expected": false,
-     "actual": true
+     "expected": "false",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "true",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-long-token": {
      "id": "clean-long-token",
-     "status": "different-output",
-     "expected": false,
-     "actual": true
+     "status": "measured",
+     "medianUs": 10130,
+     "p95Us": 10320
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 8165,
-     "p95Us": 8341
+     "medianUs": 4512,
+     "p95Us": 5587
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
-     "status": "different-output",
-     "expected": false,
-     "actual": true
+     "status": "measured",
+     "medianUs": 950.2,
+     "p95Us": 1051
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
-     "status": "different-output",
-     "expected": false,
-     "actual": true
+     "status": "measured",
+     "medianUs": 955.4,
+     "p95Us": 1018
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 1001,
-     "p95Us": 1384
+     "medianUs": 917.6,
+     "p95Us": 1013
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 1182,
-     "p95Us": 1352
+     "medianUs": 1048,
+     "p95Us": 1482
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 1294,
-     "p95Us": 1457
+     "medianUs": 1060,
+     "p95Us": 1183
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 1184,
-     "p95Us": 1298
+     "medianUs": 1079,
+     "p95Us": 1393
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 1167,
-     "p95Us": 1367
+     "medianUs": 1021,
+     "p95Us": 1142
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 1307,
-     "p95Us": 1507
+     "medianUs": 1112,
+     "p95Us": 1334
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 1220,
-     "p95Us": 1373
+     "medianUs": 1040,
+     "p95Us": 1127
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 2668,
-     "p95Us": 3154
+     "medianUs": 2312,
+     "p95Us": 2695
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 2892,
-     "p95Us": 2986
+     "medianUs": 2475,
+     "p95Us": 3086
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 2837,
-     "p95Us": 4792
+     "medianUs": 2349,
+     "p95Us": 2532
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 2816,
-     "p95Us": 3092
+     "medianUs": 2390,
+     "p95Us": 2541
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 2748,
-     "p95Us": 2927
+     "medianUs": 2344,
+     "p95Us": 2526
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 24870,
-     "p95Us": 43000
+     "medianUs": 21020,
+     "p95Us": 21430
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 9741,
-     "p95Us": 11340
+     "medianUs": 10050,
+     "p95Us": 10160
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 9684,
-     "p95Us": 11650
+     "medianUs": 7901,
+     "p95Us": 8342
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 1017,
-     "p95Us": 1186
+     "medianUs": 895.8,
+     "p95Us": 948.2
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 1060,
-     "p95Us": 1170
+     "medianUs": 909.5,
+     "p95Us": 1099
     }
    },
    "locate": "unsupported"
@@ -1214,348 +1707,420 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 4.596,
-     "p95Us": 4.721
+     "medianUs": 2.28,
+     "p95Us": 2.301
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 32.96,
-     "p95Us": 34.22
+     "medianUs": 15.92,
+     "p95Us": 16.23
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 29.05,
-     "p95Us": 33.76
+     "medianUs": 16.34,
+     "p95Us": 16.44
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 33.41,
-     "p95Us": 34.46
+     "medianUs": 16.21,
+     "p95Us": 16.34
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 33.7,
-     "p95Us": 34.12
+     "medianUs": 15.39,
+     "p95Us": 15.54
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 33.27,
-     "p95Us": 35.9
+     "medianUs": 15.58,
+     "p95Us": 15.77
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 32.28,
-     "p95Us": 34.89
+     "medianUs": 15.7,
+     "p95Us": 18.46
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 442.2,
-     "p95Us": 470.3
+     "medianUs": 216.4,
+     "p95Us": 219.2
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 438.9,
-     "p95Us": 476.7
+     "medianUs": 221.1,
+     "p95Us": 271.1
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 245.1,
-     "p95Us": 266.2
+     "medianUs": 214.2,
+     "p95Us": 218.5
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 245,
-     "p95Us": 262.1
+     "medianUs": 212.9,
+     "p95Us": 217.4
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 245.5,
-     "p95Us": 257.1
+     "medianUs": 217.1,
+     "p95Us": 221.8
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 7388,
-     "p95Us": 8235
+     "medianUs": 3640,
+     "p95Us": 3957
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 1671,
-     "p95Us": 2289
+     "medianUs": 1363,
+     "p95Us": 1815
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 244.2,
-     "p95Us": 338.4
+     "medianUs": 223.3,
+     "p95Us": 235.7
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 5.951,
-     "p95Us": 6.221
+     "medianUs": 4.984,
+     "p95Us": 5.635
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 87.23,
-     "p95Us": 93.92
+     "medianUs": 70.7,
+     "p95Us": 74.74
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 2.599,
-     "p95Us": 2.802
+     "medianUs": 2.261,
+     "p95Us": 2.373
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 18.02,
-     "p95Us": 20.02
+     "medianUs": 15.72,
+     "p95Us": 16.65
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 18.53,
-     "p95Us": 19.91
+     "medianUs": 15.9,
+     "p95Us": 16.94
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 18.8,
-     "p95Us": 19.92
+     "medianUs": 16.02,
+     "p95Us": 17.04
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 18.66,
-     "p95Us": 19.99
+     "medianUs": 15.55,
+     "p95Us": 16.54
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 19,
-     "p95Us": 20.25
+     "medianUs": 15.61,
+     "p95Us": 16.1
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 18.22,
-     "p95Us": 19.48
+     "medianUs": 15.63,
+     "p95Us": 16.64
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 465.3,
-     "p95Us": 489.7
+     "medianUs": 214,
+     "p95Us": 223
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 458.1,
-     "p95Us": 499.5
+     "medianUs": 212.6,
+     "p95Us": 221.4
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 444.5,
-     "p95Us": 478.8
+     "medianUs": 216.5,
+     "p95Us": 224.4
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 460.1,
-     "p95Us": 480.8
+     "medianUs": 213.3,
+     "p95Us": 221.2
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 445,
-     "p95Us": 480
+     "medianUs": 213.8,
+     "p95Us": 222
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 4375,
-     "p95Us": 4579
+     "medianUs": 3832,
+     "p95Us": 4613
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 1690,
-     "p95Us": 2789
+     "medianUs": 1400,
+     "p95Us": 1851
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 446.2,
-     "p95Us": 470
+     "medianUs": 218.3,
+     "p95Us": 232.2
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 9.411,
-     "p95Us": 10.22
+     "medianUs": 4.884,
+     "p95Us": 5.152
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 172.7,
-     "p95Us": 190.1
+     "medianUs": 73.45,
+     "p95Us": 78.84
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 4.377,
-     "p95Us": 4.731
+     "medianUs": 2.256,
+     "p95Us": 2.379
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 31.82,
-     "p95Us": 34.94
+     "medianUs": 15.57,
+     "p95Us": 16.1
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 31.51,
-     "p95Us": 32.67
+     "medianUs": 15.67,
+     "p95Us": 16.59
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 31.23,
-     "p95Us": 33.71
+     "medianUs": 15.72,
+     "p95Us": 16.63
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 31.55,
-     "p95Us": 33.42
+     "medianUs": 15.48,
+     "p95Us": 15.95
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 31.35,
-     "p95Us": 32.86
+     "medianUs": 15.46,
+     "p95Us": 15.82
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 31.15,
-     "p95Us": 34.57
+     "medianUs": 15.4,
+     "p95Us": 15.93
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 442.7,
-     "p95Us": 486.9
+     "medianUs": 215,
+     "p95Us": 224.9
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 438.5,
-     "p95Us": 470.1
+     "medianUs": 216.9,
+     "p95Us": 286
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 436.1,
-     "p95Us": 466.7
+     "medianUs": 223,
+     "p95Us": 235.1
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 443.8,
-     "p95Us": 492.8
+     "medianUs": 220.1,
+     "p95Us": 229.6
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 241.5,
-     "p95Us": 259.6
+     "medianUs": 220.7,
+     "p95Us": 228.7
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 7850,
-     "p95Us": 8149
+     "medianUs": 3601,
+     "p95Us": 3856
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 1666,
-     "p95Us": 2745
+     "medianUs": 1374,
+     "p95Us": 2290
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 453,
-     "p95Us": 485.3
+     "medianUs": 224.8,
+     "p95Us": 312.1
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 9.532,
-     "p95Us": 9.887
+     "medianUs": 4.778,
+     "p95Us": 5.028
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 90.48,
-     "p95Us": 168.9
+     "medianUs": 70.77,
+     "p95Us": 77.5
     }
    }
   },
@@ -1564,348 +2129,492 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 32.82,
-     "p95Us": 34.23
+     "medianUs": 15.72,
+     "p95Us": 16.73
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 33.79,
-     "p95Us": 36.25
+     "medianUs": 15.85,
+     "p95Us": 16.29
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 34.6,
-     "p95Us": 38.07
+     "medianUs": 16.19,
+     "p95Us": 16.43
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 31.75,
-     "p95Us": 32.68
+     "medianUs": 15.65,
+     "p95Us": 15.72
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 33.39,
-     "p95Us": 34.78
+     "medianUs": 16.13,
+     "p95Us": 16.17
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 54.29,
-     "p95Us": 57.54
+     "medianUs": 27.58,
+     "p95Us": 29.79
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 53.37,
-     "p95Us": 55.75
+     "medianUs": 26.66,
+     "p95Us": 27.01
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 55.33,
-     "p95Us": 57.92
+     "medianUs": 27.31,
+     "p95Us": 27.61
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 54.14,
-     "p95Us": 57.28
+     "medianUs": 27.43,
+     "p95Us": 27.86
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 54.42,
-     "p95Us": 57.37
+     "medianUs": 27.42,
+     "p95Us": 28.05
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 425.4,
-     "p95Us": 448.9
+     "medianUs": 212.9,
+     "p95Us": 213.3
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 307.6,
-     "p95Us": 314.1
+     "medianUs": 123.3,
+     "p95Us": 124.7
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 340.9,
-     "p95Us": 369.6
+     "medianUs": 182.9,
+     "p95Us": 210.8
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 30.72,
-     "p95Us": 31.92
+     "medianUs": 15.64,
+     "p95Us": 16.31
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 30.67,
-     "p95Us": 32.24
+     "medianUs": 15.5,
+     "p95Us": 15.92
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 27.52,
-     "p95Us": 29.32
+     "medianUs": 14.36,
+     "p95Us": 15.61
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 30.49,
-     "p95Us": 32.16
+     "medianUs": 15.07,
+     "p95Us": 15.63
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 30.68,
-     "p95Us": 31.92
+     "medianUs": 15.67,
+     "p95Us": 16.6
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 16.22,
-     "p95Us": 17.4
+     "medianUs": 15.13,
+     "p95Us": 15.72
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 17.31,
-     "p95Us": 19.03
+     "medianUs": 15.76,
+     "p95Us": 17.23
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 29.36,
-     "p95Us": 30.99
+     "medianUs": 26.54,
+     "p95Us": 27.44
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 28.12,
-     "p95Us": 29.31
+     "medianUs": 26.43,
+     "p95Us": 32.94
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 29.05,
-     "p95Us": 30.05
+     "medianUs": 27.28,
+     "p95Us": 38.42
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 27.45,
-     "p95Us": 28.52
+     "medianUs": 27.2,
+     "p95Us": 28.17
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 26.98,
-     "p95Us": 28.26
+     "medianUs": 27.13,
+     "p95Us": 28.34
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 213.1,
-     "p95Us": 248.9
+     "medianUs": 212.8,
+     "p95Us": 215.3
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 132.4,
-     "p95Us": 141.8
+     "medianUs": 154.5,
+     "p95Us": 155.8
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 195.9,
-     "p95Us": 209.5
+     "medianUs": 194,
+     "p95Us": 203
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 14.46,
-     "p95Us": 14.96
+     "medianUs": 15,
+     "p95Us": 15.39
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 14.51,
-     "p95Us": 15.67
+     "medianUs": 16.43,
+     "p95Us": 18.62
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 14.49,
-     "p95Us": 14.93
+     "medianUs": 17.33,
+     "p95Us": 21
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 15.5,
-     "p95Us": 17.8
+     "medianUs": 19.6,
+     "p95Us": 27.86
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 15.91,
-     "p95Us": 17.15
+     "medianUs": 20.03,
+     "p95Us": 21.27
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 15.59,
-     "p95Us": 16.59
+     "medianUs": 19.44,
+     "p95Us": 21.71
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 16,
-     "p95Us": 16.73
+     "medianUs": 20.01,
+     "p95Us": 24.3
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 27.38,
-     "p95Us": 28.11
+     "medianUs": 33.06,
+     "p95Us": 42.65
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 26.82,
-     "p95Us": 28
+     "medianUs": 33.62,
+     "p95Us": 44.75
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 27.64,
-     "p95Us": 28.46
+     "medianUs": 34.04,
+     "p95Us": 48.23
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 27.58,
-     "p95Us": 28.31
+     "medianUs": 34.44,
+     "p95Us": 45.73
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 27.55,
-     "p95Us": 28.34
+     "medianUs": 33.87,
+     "p95Us": 49.46
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 213.7,
-     "p95Us": 215.7
+     "medianUs": 248.5,
+     "p95Us": 320.5
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 135.5,
-     "p95Us": 136.2
+     "medianUs": 146.3,
+     "p95Us": 150.2
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 190.4,
-     "p95Us": 195.4
+     "medianUs": 210.3,
+     "p95Us": 288.5
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
-     "medianUs": 15.48,
-     "p95Us": 15.92
+     "medianUs": 20,
+     "p95Us": 22.97
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 15.47,
-     "p95Us": 15.93
+     "medianUs": 19.69,
+     "p95Us": 20.65
     }
    }
   },
@@ -1914,397 +2623,433 @@
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 299.6,
-     "p95Us": 304.6
+     "medianUs": 580.5,
+     "p95Us": 625.3
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 304.8,
-     "p95Us": 309.3
+     "medianUs": 366.7,
+     "p95Us": 536.6
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 304.3,
-     "p95Us": 307.1
+     "medianUs": 373.8,
+     "p95Us": 537.8
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 302.6,
-     "p95Us": 305.9
+     "medianUs": 370.7,
+     "p95Us": 536.9
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 299.8,
-     "p95Us": 302
+     "medianUs": 354.8,
+     "p95Us": 537.8
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 311.7,
-     "p95Us": 315.8
+     "medianUs": 354.7,
+     "p95Us": 375.6
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
-     "expected": true,
-     "actual": false
+     "expected": "true",
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "false",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 300.5,
-     "p95Us": 301.6
+     "medianUs": 352.7,
+     "p95Us": 411
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 308.9,
-     "p95Us": 310.3
+     "medianUs": 343.9,
+     "p95Us": 377.3
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 371.2,
-     "p95Us": 378.1
+     "medianUs": 438.4,
+     "p95Us": 459.1
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 374.3,
-     "p95Us": 400.7
+     "medianUs": 439.5,
+     "p95Us": 461.2
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 364.9,
-     "p95Us": 370.7
+     "medianUs": 431.1,
+     "p95Us": 470.3
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 368.9,
-     "p95Us": 605.2
+     "medianUs": 444.7,
+     "p95Us": 664.8
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 412.7,
-     "p95Us": 672.9
+     "medianUs": 475.4,
+     "p95Us": 712.2
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 1594,
-     "p95Us": 1666
+     "medianUs": 2100,
+     "p95Us": 3199
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 505.2,
-     "p95Us": 726.3
+     "medianUs": 540.5,
+     "p95Us": 593.1
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 631.8,
-     "p95Us": 853.7
+     "medianUs": 1049,
+     "p95Us": 1165
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
      "reduced": true,
-     "medianUs": 10100000,
-     "p95Us": 10300000
+     "medianUs": 10180000,
+     "p95Us": 11200000
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 425.5,
-     "p95Us": 737.4
+     "medianUs": 378.9,
+     "p95Us": 384.9
     }
    },
    "censor": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 322,
-     "p95Us": 364.2
+     "medianUs": 288.4,
+     "p95Us": 292.4
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 338.5,
-     "p95Us": 488.1
+     "medianUs": 295.7,
+     "p95Us": 322.2
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 319.8,
-     "p95Us": 490.9
+     "medianUs": 295.1,
+     "p95Us": 300.4
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 338.7,
-     "p95Us": 353.7
+     "medianUs": 295,
+     "p95Us": 322.2
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 326.2,
-     "p95Us": 444.5
+     "medianUs": 296.7,
+     "p95Us": 301.6
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 314.5,
-     "p95Us": 341.8
+     "medianUs": 305.1,
+     "p95Us": 312.2
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "text changed",
-     "actual": "text unchanged"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "text unchanged",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 297.2,
-     "p95Us": 319.6
+     "medianUs": 292.8,
+     "p95Us": 300.4
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 289.8,
-     "p95Us": 309.7
+     "medianUs": 296.6,
+     "p95Us": 299.7
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 427.1,
-     "p95Us": 707.5
+     "medianUs": 367.4,
+     "p95Us": 390.5
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 458.7,
-     "p95Us": 658
+     "medianUs": 373.7,
+     "p95Us": 390.5
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 745,
-     "p95Us": 809.4
+     "medianUs": 370.2,
+     "p95Us": 392.3
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 417.3,
-     "p95Us": 648.1
+     "medianUs": 377.9,
+     "p95Us": 415.3
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 421.1,
-     "p95Us": 439.7
+     "medianUs": 377.6,
+     "p95Us": 401.5
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 1768,
-     "p95Us": 1940
+     "medianUs": 1513,
+     "p95Us": 1560
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 494.2,
-     "p95Us": 583
+     "medianUs": 436.3,
+     "p95Us": 454.2
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 601.8,
-     "p95Us": 651.6
+     "medianUs": 551.4,
+     "p95Us": 599.7
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
      "reduced": true,
-     "medianUs": 14120000,
-     "p95Us": 16910000
+     "medianUs": 8025000,
+     "p95Us": 8641000
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 843.8,
-     "p95Us": 881.5
+     "medianUs": 821.5,
+     "p95Us": 852.6
     }
    },
    "locate": {
     "clean-short": {
      "id": "clean-short",
      "status": "measured",
-     "medianUs": 626.3,
-     "p95Us": 660.6
+     "medianUs": 598.8,
+     "p95Us": 627.9
     },
     "clean-chat": {
      "id": "clean-chat",
      "status": "measured",
-     "medianUs": 649.3,
-     "p95Us": 696.4
+     "medianUs": 537.2,
+     "p95Us": 599.2
     },
     "match-chat": {
      "id": "match-chat",
      "status": "measured",
-     "medianUs": 372.3,
-     "p95Us": 455
+     "medianUs": 348.8,
+     "p95Us": 442.4
     },
     "leet-chat": {
      "id": "leet-chat",
      "status": "measured",
-     "medianUs": 366.3,
-     "p95Us": 510
+     "medianUs": 354.7,
+     "p95Us": 602
     },
     "unicode-clean-chat": {
      "id": "unicode-clean-chat",
      "status": "measured",
-     "medianUs": 359.5,
-     "p95Us": 493.9
+     "medianUs": 345.3,
+     "p95Us": 598.7
     },
     "unicode-match-chat": {
      "id": "unicode-match-chat",
      "status": "measured",
-     "medianUs": 650.1,
-     "p95Us": 677.9
+     "medianUs": 348.5,
+     "p95Us": 546.5
     },
     "fullwidth-chat": {
      "id": "fullwidth-chat",
      "status": "different-output",
      "expected": "1 occurrence",
-     "actual": "0 occurrences"
+     "variantsChecked": 257,
+     "outcomes": [
+      {
+       "actual": "0 occurrences",
+       "count": 257,
+       "variants": [
+        0,
+        1,
+        2,
+        3
+       ]
+      }
+     ]
     },
     "invisible-chat": {
      "id": "invisible-chat",
      "status": "measured",
-     "medianUs": 643.4,
-     "p95Us": 701.2
+     "medianUs": 596.4,
+     "p95Us": 656.6
     },
     "separator-chat": {
      "id": "separator-chat",
      "status": "measured",
-     "medianUs": 624.7,
-     "p95Us": 684.9
+     "medianUs": 588.8,
+     "p95Us": 653.7
     },
     "clean-paragraph": {
      "id": "clean-paragraph",
      "status": "measured",
-     "medianUs": 745.8,
-     "p95Us": 814.3
+     "medianUs": 729.4,
+     "p95Us": 777.1
     },
     "unicode-clean-paragraph": {
      "id": "unicode-clean-paragraph",
      "status": "measured",
-     "medianUs": 726.9,
-     "p95Us": 821.3
+     "medianUs": 750.9,
+     "p95Us": 817.6
     },
     "match-start-paragraph": {
      "id": "match-start-paragraph",
      "status": "measured",
-     "medianUs": 696.9,
-     "p95Us": 761.8
+     "medianUs": 728.2,
+     "p95Us": 798.3
     },
     "match-middle-paragraph": {
      "id": "match-middle-paragraph",
      "status": "measured",
-     "medianUs": 701,
-     "p95Us": 810.9
+     "medianUs": 730,
+     "p95Us": 819.5
     },
     "match-end-paragraph": {
      "id": "match-end-paragraph",
      "status": "measured",
-     "medianUs": 716.3,
-     "p95Us": 791.7
+     "medianUs": 738.1,
+     "p95Us": 798.2
     },
     "clean-long": {
      "id": "clean-long",
      "status": "measured",
-     "medianUs": 2960,
-     "p95Us": 3032
+     "medianUs": 3012,
+     "p95Us": 3187
     },
     "clean-long-token": {
      "id": "clean-long-token",
      "status": "measured",
-     "medianUs": 865.6,
-     "p95Us": 885.3
+     "medianUs": 865.9,
+     "p95Us": 925.4
     },
     "dense-paragraph": {
      "id": "dense-paragraph",
      "status": "measured",
-     "medianUs": 610,
-     "p95Us": 785.3
+     "medianUs": 601.1,
+     "p95Us": 783.7
     },
     "bang-dense-paragraph": {
      "id": "bang-dense-paragraph",
      "status": "measured",
      "reduced": true,
-     "medianUs": 10570000,
-     "p95Us": 14440000
+     "medianUs": 8622000,
+     "p95Us": 8949000
     },
     "separator-run-paragraph": {
      "id": "separator-run-paragraph",
      "status": "measured",
-     "medianUs": 457.5,
-     "p95Us": 470
+     "medianUs": 446.4,
+     "p95Us": 729.3
     }
    }
   }
  },
  "startup": {
   "ours": {
-   "loadAndConstructMs": 2.4195509999999985,
-   "firstFlagMs": 0.4891839999999945,
-   "endingHeapMiB": 6.160591125488281,
-   "processPeakRssMiB": 201.2265625
+   "loadAndConstructMs": 1.4270250000000004,
+   "firstFlagMs": 0.31648299999999807,
+   "retainedHeapMiB": 0.16490936279296875,
+   "processPeakRssMiB": 190.43359375
   },
   "ours-evasion": {
-   "loadAndConstructMs": 4.877104999999997,
-   "firstFlagMs": 1.9275279999999952,
-   "endingHeapMiB": 6.67449951171875,
-   "processPeakRssMiB": 183.1953125
+   "loadAndConstructMs": 4.3300940000000026,
+   "firstFlagMs": 1.8644999999999996,
+   "retainedHeapMiB": 0.6091537475585938,
+   "processPeakRssMiB": 211.921875
   },
   "sideid": {
-   "loadAndConstructMs": 2.542973,
-   "firstFlagMs": 5.187247000000003,
-   "endingHeapMiB": 15.404548645019531,
-   "processPeakRssMiB": 194.63671875
+   "loadAndConstructMs": 2.479405,
+   "firstFlagMs": 5.178224,
+   "retainedHeapMiB": 1.1597137451171875,
+   "processPeakRssMiB": 189.375
   },
   "sideid-split": {
-   "loadAndConstructMs": 4.128667000000004,
-   "firstFlagMs": 49.148014999999994,
-   "endingHeapMiB": 26.026710510253906,
-   "processPeakRssMiB": 214.265625
+   "loadAndConstructMs": 2.3259140000000045,
+   "firstFlagMs": 27.740074,
+   "retainedHeapMiB": 2.57012939453125,
+   "processPeakRssMiB": 212.15234375
   },
   "sopan": {
-   "loadAndConstructMs": 2.809196,
-   "firstFlagMs": 0.24775199999999842,
-   "endingHeapMiB": 4.124229431152344,
-   "processPeakRssMiB": 186.41015625
+   "loadAndConstructMs": 1.5195659999999975,
+   "firstFlagMs": 0.12831100000000362,
+   "retainedHeapMiB": 0.10669708251953125,
+   "processPeakRssMiB": 187
   },
   "censorship": {
-   "loadAndConstructMs": 1.9446379999999976,
-   "firstFlagMs": 1.0637690000000006,
-   "endingHeapMiB": 5.355659484863281,
-   "processPeakRssMiB": 190.234375
+   "loadAndConstructMs": 1.0678309999999982,
+   "firstFlagMs": 0.6152960000000007,
+   "retainedHeapMiB": 0.1040191650390625,
+   "processPeakRssMiB": 187.81640625
   },
   "censorship-smart": {
-   "loadAndConstructMs": 1.091350000000002,
-   "firstFlagMs": 6.593639,
-   "endingHeapMiB": 6.9484710693359375,
-   "processPeakRssMiB": 189.015625
+   "loadAndConstructMs": 1.7535980000000038,
+   "firstFlagMs": 9.964561999999994,
+   "retainedHeapMiB": 0.23668670654296875,
+   "processPeakRssMiB": 189.91796875
   }
  },
  "probes": {
@@ -2379,6 +3124,16 @@
    false
   ]
  },
+ "sideidContext": {
+  "text": "satu dua tiga anjing empat lima enam",
+  "window": 1,
+  "matchStart": 14,
+  "matchEnd": 20,
+  "results": 1,
+  "start": 9,
+  "end": 26,
+  "context": "tiga anjing empat"
+ },
  "verifiedFeatures": [
   {
    "label": "Locates matches with offsets",
@@ -2423,297 +3178,713 @@
    "operation": "flag",
    "case": "separator-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "ours",
    "operation": "censor",
    "case": "separator-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "ours",
    "operation": "locate",
    "case": "separator-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid",
    "operation": "flag",
    "case": "fullwidth-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid",
    "operation": "censor",
    "case": "fullwidth-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid",
    "operation": "censor",
    "case": "invisible-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid",
    "operation": "censor",
    "case": "separator-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "flag",
    "case": "clean-short",
    "expected": "false",
-   "actual": "true"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "flag",
    "case": "clean-chat",
    "expected": "false",
-   "actual": "true"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "flag",
    "case": "unicode-clean-chat",
    "expected": "false",
-   "actual": "true"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "flag",
    "case": "clean-paragraph",
    "expected": "false",
-   "actual": "true"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "flag",
    "case": "unicode-clean-paragraph",
    "expected": "false",
-   "actual": "true"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "flag",
    "case": "clean-long",
    "expected": "false",
-   "actual": "true"
-  },
-  {
-   "config": "sideid-split",
-   "operation": "flag",
-   "case": "clean-long-token",
-   "expected": "false",
-   "actual": "true"
-  },
-  {
-   "config": "sideid-split",
-   "operation": "flag",
-   "case": "bang-dense-paragraph",
-   "expected": "false",
-   "actual": "true"
-  },
-  {
-   "config": "sideid-split",
-   "operation": "flag",
-   "case": "separator-run-paragraph",
-   "expected": "false",
-   "actual": "true"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "true",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "censor",
    "case": "fullwidth-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sideid-split",
    "operation": "censor",
    "case": "invisible-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sopan",
    "operation": "flag",
    "case": "fullwidth-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sopan",
    "operation": "flag",
    "case": "invisible-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sopan",
    "operation": "censor",
    "case": "fullwidth-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sopan",
    "operation": "censor",
    "case": "invisible-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sopan",
    "operation": "locate",
    "case": "fullwidth-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "sopan",
    "operation": "locate",
    "case": "invisible-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "flag",
    "case": "leet-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "flag",
    "case": "fullwidth-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "flag",
    "case": "invisible-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "flag",
    "case": "separator-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "censor",
    "case": "leet-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "censor",
    "case": "fullwidth-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "censor",
    "case": "invisible-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "censor",
    "case": "separator-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "locate",
    "case": "leet-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "locate",
    "case": "fullwidth-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "locate",
    "case": "invisible-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship",
    "operation": "locate",
    "case": "separator-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship-smart",
    "operation": "flag",
    "case": "fullwidth-chat",
    "expected": "true",
-   "actual": "false"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "false",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship-smart",
    "operation": "censor",
    "case": "fullwidth-chat",
    "expected": "text changed",
-   "actual": "text unchanged"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "text unchanged",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   },
   {
    "config": "censorship-smart",
    "operation": "locate",
    "case": "fullwidth-chat",
    "expected": "1 occurrence",
-   "actual": "0 occurrences"
+   "variantsChecked": 257,
+   "outcomes": [
+    {
+     "actual": "0 occurrences",
+     "count": 257,
+     "variants": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
   }
  ],
  "bundles": [
   {
+   "id": "ours",
    "title": "indonesian-badwords (default import)",
    "minifiedBytes": 37290,
    "gzipBytes": 13022
   },
   {
+   "id": "ours-evasion-fuzzy",
    "title": "indonesian-badwords + evasion + fuzzy",
    "minifiedBytes": 66114,
    "gzipBytes": 22811
   },
   {
+   "id": "sideid",
    "title": "@sideid/id-profanity-filter",
    "minifiedBytes": 63083,
    "gzipBytes": 13142
   },
   {
+   "id": "sopan",
    "title": "@fldx/sopan",
    "minifiedBytes": 3553,
    "gzipBytes": 1622
   },
   {
+   "id": "censorship",
    "title": "censorship-id",
    "minifiedBytes": 8641,
    "gzipBytes": 2006
