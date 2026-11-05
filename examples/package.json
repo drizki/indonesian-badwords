@@ -16,7 +16,7 @@
     "node": ">=22.12"
   },
   "dependencies": {
-    "indonesian-badwords": "2.5.1"
+    "indonesian-badwords": "2.7.0"
   },
   "devDependencies": {
     "vite": "8.3.5",
