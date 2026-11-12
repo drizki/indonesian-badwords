@@ -180,7 +180,7 @@
   },
   "devDependencies": {
     "esbuild": "0.28.2",
-    "semver": "7.8.5",
+    "semver": "7.8.6",
     "typescript": "7.0.2"
   }
 }
