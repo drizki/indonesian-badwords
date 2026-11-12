@@ -19,20 +19,20 @@
     "indonesian-badwords": "2.5.1"
   },
   "devDependencies": {
-    "vite": "8.3.5",
-    "@vitejs/plugin-react": "6.1.2",
+    "vite": "8.3.6",
+    "@vitejs/plugin-react": "6.3.0",
     "@vitejs/plugin-vue": "6.0.10",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "vue": "3.5.44",
+    "vue": "3.5.45",
     "svelte": "5.57.3",
-    "vue-tsc": "3.3.13",
-    "svelte-check": "4.7.7",
-    "@playwright/test": "1.64.1",
-    "typescript": "6.0.3",
-    "@types/node": "24.12.0"
+    "vue-tsc": "3.3.14",
+    "svelte-check": "4.7.8",
+    "@playwright/test": "1.65.0",
+    "typescript": "7.0.2",
+    "@types/node": "26.6.6"
   }
 }
